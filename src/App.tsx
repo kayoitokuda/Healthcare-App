@@ -20,12 +20,14 @@ import {
 } from "lucide-react";
 
 type Source = "You" | "Referring office" | "Specialist office" | "Health plan";
+type Milestone = "referral-sent" | "referral-received" | "ready-to-schedule";
 type Update = {
   id: number;
   title: string;
   detail: string;
   date: string;
   source: Source;
+  milestone?: Milestone;
 };
 type Referral = {
   id: number;
@@ -137,6 +139,7 @@ export default function App() {
   const [updateTitle, setUpdateTitle] = useState("");
   const [updateDetail, setUpdateDetail] = useState("");
   const [updateSource, setUpdateSource] = useState<Source>("You");
+  const [updateMilestone, setUpdateMilestone] = useState<Milestone | "">("");
   const [messageKind, setMessageKind] = useState<
     "Call script" | "Portal message" | "Email"
   >("Call script");
@@ -151,23 +154,23 @@ export default function App() {
 
   const referral =
     referrals.find((item) => item.id === selected) ?? referrals[0];
+  const sentRecorded =
+    referral?.updates.some((u) => u.milestone === "referral-sent") ?? false;
+  const receiptRecorded =
+    referral?.updates.some((u) => u.milestone === "referral-received") ?? false;
   const confirmedReceived =
     referral?.updates.some(
       (u) =>
-        u.title.toLowerCase().includes("received") &&
-        u.source === "Specialist office",
+        u.milestone === "referral-received" && u.source === "Specialist office",
     ) ?? false;
-  const sentRecorded =
-    referral?.updates.some(
-      (u) =>
-        u.title.toLowerCase().includes("sent") &&
-        u.source === "Referring office",
-    ) ?? false;
+  const readyRecorded =
+    referral?.updates.some((u) => u.milestone === "ready-to-schedule") ?? false;
   const status = useMemo(() => {
-    if (confirmedReceived) return "Receipt recorded";
+    if (confirmedReceived) return "Specialist office confirmation recorded";
+    if (receiptRecorded) return "Receipt update recorded";
     if (sentRecorded) return "Waiting for receipt";
     return "Not confirmed yet";
-  }, [confirmedReceived, sentRecorded]);
+  }, [confirmedReceived, receiptRecorded, sentRecorded]);
 
   function flash(message: string) {
     setToast(message);
@@ -178,6 +181,7 @@ export default function App() {
     setUpdateTitle(title);
     setUpdateDetail(detail);
     setUpdateSource(source);
+    setUpdateMilestone("");
     setModal("update");
   }
 
@@ -189,6 +193,7 @@ export default function App() {
       detail: updateDetail.trim() || "No additional notes.",
       date: today,
       source: updateSource,
+      ...(updateMilestone ? { milestone: updateMilestone } : {}),
     };
     setReferrals((all) =>
       all.map((r) =>
@@ -342,8 +347,12 @@ export default function App() {
                 const done =
                   i === 0 ||
                   (i === 1 && sentRecorded) ||
-                  (i === 2 && confirmedReceived);
-                const active = !done && (i === 1 || i === 2);
+                  (i === 2 && receiptRecorded) ||
+                  (i === 3 && readyRecorded);
+                const active =
+                  (!sentRecorded && i === 1) ||
+                  (sentRecorded && !receiptRecorded && i === 2) ||
+                  (receiptRecorded && !readyRecorded && i === 3);
                 return (
                   <div
                     className={`journey-step ${done ? "is-done" : ""} ${active ? "is-active" : ""}`}
@@ -373,11 +382,15 @@ export default function App() {
                 <div>
                   <p className="eyebrow">YOUR NEXT STEP</p>
                   <h2>
-                    {sentRecorded
-                      ? confirmedReceived
+                    {readyRecorded
+                      ? "Schedule your appointment"
+                      : confirmedReceived
                         ? "Ask how to schedule"
-                        : "Check that it arrived"
-                      : "Check whether it was sent"}
+                        : receiptRecorded
+                          ? "Confirm it with the specialist"
+                          : sentRecorded
+                            ? "Check that it arrived"
+                            : "Check whether it was sent"}
                   </h2>
                 </div>
                 <span className="round-icon">
@@ -385,11 +398,15 @@ export default function App() {
                 </span>
               </div>
               <p className="body-copy">
-                {sentRecorded
-                  ? confirmedReceived
-                    ? "The specialist office receipt is recorded from your update. Ask what to do next to schedule."
-                    : "You recorded that the referring office sent it. Contact the specialist office to ask if they received it."
-                  : `Contact ${referral.from} and ask if the referral has been sent to ${referral.to}.`}
+                {readyRecorded
+                  ? `You recorded that the referral is ready for scheduling. Contact ${referral.to} to book your visit.`
+                  : confirmedReceived
+                    ? "You recorded that the specialist office confirmed receipt. Ask what to do next to schedule."
+                    : receiptRecorded
+                      ? `You recorded that the referral arrived. Check with ${referral.to} to confirm whether anything else is needed before scheduling.`
+                      : sentRecorded
+                        ? `You recorded that ${referral.from} sent it. Contact ${referral.to} to ask if it arrived.`
+                        : `Contact ${referral.from} and ask if the referral has been sent to ${referral.to}.`}
               </p>
               <div className="action-list">
                 <button
@@ -539,6 +556,20 @@ export default function App() {
                     onChange={(e) => setUpdateTitle(e.target.value)}
                     placeholder="e.g. Called to ask if referral was sent"
                   />
+                </label>
+                <label>
+                  What part of the handoff is this about?
+                  <select
+                    value={updateMilestone}
+                    onChange={(e) =>
+                      setUpdateMilestone(e.target.value as Milestone | "")
+                    }
+                  >
+                    <option value="">General update</option>
+                    <option value="referral-sent">Referral sent</option>
+                    <option value="referral-received">Referral received</option>
+                    <option value="ready-to-schedule">Ready to schedule</option>
+                  </select>
                 </label>
                 <label>
                   Who provided this update?
@@ -772,15 +803,16 @@ export default function App() {
             <div className="referral-list-layout">
               <div className="referral-grid">
                 {referrals.map((r) => {
-                  const rec = r.updates.some(
+                  const receipt = r.updates.some(
+                    (u) => u.milestone === "referral-received",
+                  );
+                  const officeConfirmed = r.updates.some(
                     (u) =>
-                      u.title.toLowerCase().includes("received") &&
+                      u.milestone === "referral-received" &&
                       u.source === "Specialist office",
                   );
                   const sent = r.updates.some(
-                    (u) =>
-                      u.title.toLowerCase().includes("sent") &&
-                      u.source === "Referring office",
+                    (u) => u.milestone === "referral-sent",
                   );
                   return (
                     <article className="referral-card" key={r.id}>
@@ -789,14 +821,16 @@ export default function App() {
                           <Stethoscope size={19} />
                         </span>
                         <span
-                          className={`status-pill ${rec ? "status-green" : "status-amber"}`}
+                          className={`status-pill ${officeConfirmed ? "status-green" : "status-amber"}`}
                         >
                           <span className="status-dot" />
-                          {rec
-                            ? "Receipt recorded"
-                            : sent
-                              ? "Waiting for receipt"
-                              : "Not confirmed yet"}
+                          {officeConfirmed
+                            ? "Specialist confirmation recorded"
+                            : receipt
+                              ? "Receipt update recorded"
+                              : sent
+                                ? "Waiting for receipt"
+                                : "Not confirmed yet"}
                         </span>
                       </div>
                       <h3>{r.specialty}</h3>
@@ -817,11 +851,13 @@ export default function App() {
                       <div className="card-note">
                         <CircleHelp size={16} />
                         <span>
-                          {rec
-                            ? "You recorded that the specialist office received it."
-                            : sent
-                              ? "You recorded that the referring office sent it. Receipt is still unknown."
-                              : "Referral sending and receipt haven’t been confirmed yet."}
+                          {officeConfirmed
+                            ? "You recorded that the specialist office confirmed receipt."
+                            : receipt
+                              ? "You recorded a receipt update. Check the source in your timeline."
+                              : sent
+                                ? "You recorded that the referring office sent it. Receipt is still unknown."
+                                : "Referral sending and receipt haven’t been confirmed yet."}
                         </span>
                       </div>
                       <button
