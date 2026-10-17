@@ -1444,6 +1444,12 @@ body { background: var(--paper); }
 .help-list p { color: #6b7282; }
 .help-list strong { color: #353a49; }
 .toast { border-radius: 6px; background: #303b77; box-shadow: 0 7px 22px rgba(24,31,70,.24); }
+button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+  outline-color: #8c9de2;
+}
+.modal-head h2, .tools-intro h2, .help-list > div > span {
+  font-family: Inter, "Avenir Next", system-ui, sans-serif;
+}
 @media (max-width: 760px) {
   .topbar { height: 62px; padding: 0 18px; }
   .nav { top: 62px; border-bottom-color: var(--line); box-shadow: 0 10px 20px rgba(30,37,67,.08); }
