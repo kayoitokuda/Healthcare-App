@@ -263,12 +263,6 @@ function Modal({
 }
 
 function LandingPage({ onEnter }: { onEnter: () => void }) {
-  function showHowItWorks() {
-    document
-      .getElementById("landing-how-it-works")
-      ?.scrollIntoView({ behavior: "smooth", block: "start" });
-  }
-
   return (
     <div className="landing-page">
       <header className="landing-header">
@@ -284,10 +278,7 @@ function LandingPage({ onEnter }: { onEnter: () => void }) {
           <span>Referral Navigator</span>
         </button>
         <nav className="landing-nav" aria-label="Main navigation">
-          <button onClick={showHowItWorks}>How it works</button>
-          <button className="primary-button landing-nav-cta" onClick={onEnter}>
-            Open my tracker <ArrowRight size={15} />
-          </button>
+          <a href="#landing-how-it-works">How it works</a>
         </nav>
       </header>
 
@@ -305,10 +296,7 @@ function LandingPage({ onEnter }: { onEnter: () => void }) {
             </p>
             <div className="landing-actions">
               <button className="primary-button" onClick={onEnter}>
-                Start organizing <ArrowRight size={16} />
-              </button>
-              <button className="landing-secondary-action" onClick={showHowItWorks}>
-                See how it works
+                Explore the sample tracker <ArrowRight size={16} />
               </button>
             </div>
             <p className="landing-reassurance">
@@ -413,9 +401,7 @@ function LandingPage({ onEnter }: { onEnter: () => void }) {
               office or your health plan.
             </p>
           </div>
-          <button className="text-button" onClick={onEnter}>
-            Open my tracker <ArrowRight size={15} />
-          </button>
+          
         </section>
       </main>
       <footer className="landing-footer">
@@ -425,12 +411,85 @@ function LandingPage({ onEnter }: { onEnter: () => void }) {
   );
 }
 
+function InlineDraftPanel({
+  kind,
+  draft,
+  copied,
+  onKindChange,
+  onDraftChange,
+  onCopy,
+  onContact,
+  onClose,
+}: {
+  kind: "Call script" | "Portal message" | "Email";
+  draft: string;
+  copied: boolean;
+  onKindChange: (kind: "Call script" | "Portal message" | "Email") => void;
+  onDraftChange: (draft: string) => void;
+  onCopy: () => void;
+  onContact: () => void;
+  onClose: () => void;
+}) {
+  return (
+    <section className="inline-draft section-card" aria-label="Review your follow-up draft">
+      <div className="section-title-row">
+        <div>
+          <p className="eyebrow">REVIEW BEFORE YOU SEND</p>
+          <h3>Prepare a call script or message</h3>
+        </div>
+        <IconButton label="Close draft" onClick={onClose}>
+          <X size={18} />
+        </IconButton>
+      </div>
+      <p className="modal-intro">
+        Edit this draft for your situation. Nothing is sent from here.
+      </p>
+      <div className="segmented">
+        {(["Call script", "Portal message", "Email"] as const).map((option) => (
+          <button
+            type="button"
+            className={kind === option ? "selected" : ""}
+            key={option}
+            onClick={() => onKindChange(option)}
+          >
+            {option}
+          </button>
+        ))}
+      </div>
+      <label>
+        {kind} draft
+        <textarea
+          className="draft-area"
+          value={draft}
+          onChange={(event) => onDraftChange(event.target.value)}
+          rows={6}
+        />
+      </label>
+      <div className="inline-draft-actions">
+        <button className="primary-button" type="button" onClick={onCopy}>
+          {copied ? <Check size={16} /> : <Copy size={16} />}
+          {copied ? "Copied to clipboard" : "Copy draft to review"}
+        </button>
+        <button className="secondary-button" type="button" onClick={onContact}>
+          <Phone size={16} /> I contacted an office
+        </button>
+      </div>
+      <p className="helper-note">
+        <ShieldCheck size={15} /> You review and send it. Contact attempts are
+        logged by you; they don’t confirm the referral was sent or received.
+      </p>
+    </section>
+  );
+}
+
 export default function App() {
   const [referrals, setReferrals] = useState(initial);
+  const [demoMode, setDemoMode] = useState(true);
+  const [inlineDraftId, setInlineDraftId] = useState<number | null>(null);
   const [hasEnteredDashboard, setHasEnteredDashboard] = useState(false);
   const [selected, setSelected] = useState<number | null>(null);
   const [modal, setModal] = useState<
-    "new" | "update" | "message" | "notes" | "help" | null
+    "new" | "update" | "notes" | "help" | null
   >(null);
   const [updateTitle, setUpdateTitle] = useState("");
   const [updateDetail, setUpdateDetail] = useState("");
@@ -512,8 +571,8 @@ export default function App() {
     .flatMap((item) =>
       item.updates.map((update) => ({ referral: item, update })),
     )
-    .slice(-4)
-    .reverse();
+    .sort((a, b) => b.update.id - a.update.id)
+    .slice(0, 4);
 
   function flash(message: string) {
     setToast(message);
@@ -565,15 +624,55 @@ export default function App() {
 
   function startMessage(
     kind: "Call script" | "Portal message" | "Email" = "Call script",
+    target: Referral | undefined = referral,
   ) {
+    if (!target) return;
     setMessageKind(kind);
     setMessageDraft(
       kind === "Call script"
-        ? `Hi, my name is Maya Chen. ${referral?.from || "My clinician"} recommended that I see ${referral?.specialty || "a specialist"}, and I’m checking on the referral. Could you tell me whether it has been sent? If so, when and to which office? If not, is anything needed from me?`
-        : `Hello, I’m following up on a referral for ${referral?.specialty || "specialty care"}. ${referral?.from || "My referring office"} recommended this on ${referral?.date || "the date of my visit"}. Could you let me know whether the referral has been sent and whether you need anything else from me? Thank you.`,
+        ? `Hello, my name is [your name]. I’m calling about a ${target.specialty} referral recommended by ${target.from}. Could you tell me whether it has been sent to ${target.to}? If it has, when was it sent? If not, is anything needed from me?`
+        : `Hello, I’m following up on my ${target.specialty} referral. ${target.from} recommended this on ${target.date}. Could you let me know whether it has been sent to ${target.to}, and whether you need anything else from me? Thank you.`,
     );
     setCopied(false);
-    setModal("message");
+    setInlineDraftId(target.id);
+    setModal(null);
+  }
+
+  function logContactAttempt(target: Referral) {
+    const sent = target.updates.some(
+      (update) => update.milestone === "referral-sent",
+    );
+    const office = sent ? target.to : target.from;
+    const update: Update = {
+      id: Date.now(),
+      title: `You contacted ${office}`,
+      detail:
+        "You recorded a contact attempt. The referral status is still unconfirmed; add the office’s response when you have it.",
+      date: today,
+      source: "You",
+    };
+    setReferrals((all) =>
+      all.map((item) =>
+        item.id === target.id
+          ? { ...item, updates: [...item.updates, update] }
+          : item,
+      ),
+    );
+    setInlineDraftId(null);
+    flash("Contact attempt added to your activity. Referral status is unchanged.");
+  }
+
+  function openNewReferral() {
+    if (demoMode) {
+      setReferrals([]);
+      setSelected(null);
+      setDemoMode(false);
+    }
+    setNewSpecialty("");
+    setNewFrom("");
+    setNewTo("");
+    setNewDate("");
+    setModal("new");
   }
 
   async function copyDraft() {
@@ -615,6 +714,8 @@ export default function App() {
       notes: "",
     };
     setReferrals((all) => [created, ...all]);
+    setDemoMode(false);
+    setInlineDraftId(null);
     setSelected(created.id);
     setModal(null);
     setNewSpecialty("");
@@ -659,7 +760,7 @@ export default function App() {
               }}
               onAddReferral={() => {
                 setMenuOpen(false);
-                setModal("new");
+                openNewReferral();
               }}
               onHelp={() => {
                 setMenuOpen(false);
@@ -852,6 +953,19 @@ export default function App() {
             </section>
           </div>
 
+          {inlineDraftId === referral.id && (
+            <InlineDraftPanel
+              kind={messageKind}
+              draft={messageDraft}
+              copied={copied}
+              onKindChange={(kind) => startMessage(kind, referral)}
+              onDraftChange={setMessageDraft}
+              onCopy={copyDraft}
+              onContact={() => logContactAttempt(referral)}
+              onClose={() => setInlineDraftId(null)}
+            />
+          )}
+
           <section className="section-card tools-card">
             <div className="tools-intro">
               <p className="eyebrow">KEEP THINGS TOGETHER</p>
@@ -900,9 +1014,7 @@ export default function App() {
             title={
               modal === "update"
                 ? "Record an update"
-                : modal === "message"
-                  ? "Prepare a message"
-                  : modal === "notes"
+                : modal === "notes"
                     ? "Visit notes & questions"
                     : "A little guidance"
             }
@@ -969,53 +1081,6 @@ export default function App() {
                   onClick={saveUpdate}
                 >
                   Save update
-                </button>
-              </div>
-            )}
-            {modal === "message" && (
-              <div className="form-body">
-                <p className="modal-intro">
-                  Review and edit this draft. Referral Navigator won’t send it
-                  for you.
-                </p>
-                <div className="segmented">
-                  {(["Call script", "Portal message", "Email"] as const).map(
-                    (kind) => (
-                      <button
-                        className={messageKind === kind ? "selected" : ""}
-                        key={kind}
-                        onClick={() => startMessage(kind)}
-                      >
-                        {kind}
-                      </button>
-                    ),
-                  )}
-                </div>
-                <label>
-                  {messageKind} draft
-                  <textarea
-                    className="draft-area"
-                    value={messageDraft}
-                    onChange={(e) => setMessageDraft(e.target.value)}
-                    rows={7}
-                  />
-                </label>
-                <button className="primary-button full" onClick={copyDraft}>
-                  {copied ? <Check size={16} /> : <Copy size={16} />}
-                  {copied ? "Copied to clipboard" : "Copy draft to review"}
-                </button>
-                <button
-                  className="text-button center"
-                  onClick={() => {
-                    setModal(null);
-                    addUpdate(
-                      "Contacted an office",
-                      "I used a prepared draft. Add the office’s response when you have it.",
-                      "You",
-                    );
-                  }}
-                >
-                  I contacted an office
                 </button>
               </div>
             )}
@@ -1159,7 +1224,7 @@ export default function App() {
             }}
             onAddReferral={() => {
               setMenuOpen(false);
-              setModal("new");
+              openNewReferral();
             }}
             onHelp={() => {
               setMenuOpen(false);
@@ -1189,6 +1254,17 @@ export default function App() {
             <span className="spark spark-two">✳</span>
           </div>
         </section>
+        {demoMode && (
+          <aside className="demo-banner" aria-label="Sample tracker">
+            <span className="demo-banner-copy">
+              <strong>Sample referral</strong>
+              <span>Explore the tracker, then start your own when you’re ready.</span>
+            </span>
+            <button className="secondary-button" onClick={openNewReferral}>
+              Start your own <ArrowRight size={15} />
+            </button>
+          </aside>
+        )}
         <section className="dashboard-stats" aria-label="Referral summary">
           <article className="summary-card summary-coral">
             <div className="summary-card-top">
@@ -1232,7 +1308,7 @@ export default function App() {
             </div>
             <button
               className="primary-button add-button"
-              onClick={() => setModal("new")}
+              onClick={openNewReferral}
             >
               <Plus size={17} /> Add a referral
             </button>
@@ -1249,7 +1325,7 @@ export default function App() {
               </p>
               <button
                 className="primary-button"
-                onClick={() => setModal("new")}
+                onClick={openNewReferral}
               >
                 <Plus size={17} /> Add your first referral
               </button>
@@ -1316,10 +1392,28 @@ export default function App() {
                         </span>
                       </div>
                       <button
+                        className="primary-button card-primary-action"
+                        onClick={() => startMessage("Call script", r)}
+                      >
+                        <Phone size={16} /> Prepare a call script
+                      </button>
+                      {inlineDraftId === r.id && (
+                        <InlineDraftPanel
+                          kind={messageKind}
+                          draft={messageDraft}
+                          copied={copied}
+                          onKindChange={(kind) => startMessage(kind, r)}
+                          onDraftChange={setMessageDraft}
+                          onCopy={copyDraft}
+                          onContact={() => logContactAttempt(r)}
+                          onClose={() => setInlineDraftId(null)}
+                        />
+                      )}
+                      <button
                         className="card-link"
                         onClick={() => setSelected(r.id)}
                       >
-                        Open referral <ArrowRight size={17} />
+                        View full referral <ArrowRight size={17} />
                       </button>
                     </article>
                   );
@@ -1337,7 +1431,7 @@ export default function App() {
                   onClick={() =>
                     nextReferral
                       ? setSelected(nextReferral.id)
-                      : setModal("new")
+                      : openNewReferral()
                   }
                 >
                   {nextReferral ? "Open referral" : "Add a referral"}{" "}
