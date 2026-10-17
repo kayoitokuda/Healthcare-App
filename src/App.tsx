@@ -665,9 +665,9 @@ export default function App() {
   function openNewReferral() {
     if (demoMode) {
       setReferrals([]);
-      setSelected(null);
       setDemoMode(false);
     }
+    setSelected(null);
     setNewSpecialty("");
     setNewFrom("");
     setNewTo("");
