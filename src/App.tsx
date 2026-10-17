@@ -18,6 +18,7 @@ import {
   Copy,
   FileText,
   HeartHandshake,
+  Home,
   Menu,
   MessageCircle,
   Phone,
@@ -87,6 +88,46 @@ const steps = [
   { title: "Receipt confirmed", copy: "Check with the specialist’s office" },
   { title: "Ready to schedule", copy: "Ask how to book your visit" },
 ];
+
+function nextStepFor(referral: Referral) {
+  const sent = referral.updates.some(
+    (update) => update.milestone === "referral-sent",
+  );
+  const received = referral.updates.some(
+    (update) =>
+      update.milestone === "referral-received" &&
+      update.source === "Specialist office",
+  );
+  const ready = referral.updates.some(
+    (update) => update.milestone === "ready-to-schedule",
+  );
+
+  if (!sent) {
+    return {
+      title: "Check whether it was sent",
+      detail:
+        "Ask " + referral.from + " whether the referral was sent to " + referral.to + ".",
+    };
+  }
+  if (!received) {
+    return {
+      title: "Confirm it arrived",
+      detail:
+        "Ask " + referral.to + " whether they received the referral and need anything else.",
+    };
+  }
+  if (!ready) {
+    return {
+      title: "Ask how to schedule",
+      detail: "Contact " + referral.to + " to learn what you need before booking.",
+    };
+  }
+  return {
+    title: "Review your latest update",
+    detail:
+      "Open your referral tracker to see what you recorded and decide what comes next.",
+  };
+}
 
 function IconButton({
   label,
@@ -221,8 +262,172 @@ function Modal({
   );
 }
 
+function LandingPage({ onEnter }: { onEnter: () => void }) {
+  function showHowItWorks() {
+    document
+      .getElementById("landing-how-it-works")
+      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  return (
+    <div className="landing-page">
+      <header className="landing-header">
+        <button
+          type="button"
+          className="brand brand-home"
+          aria-label="Referral Navigator home"
+          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+        >
+          <span className="brand-mark">
+            <HeartHandshake size={20} />
+          </span>
+          <span>Referral Navigator</span>
+        </button>
+        <nav className="landing-nav" aria-label="Main navigation">
+          <button onClick={showHowItWorks}>How it works</button>
+          <button className="primary-button landing-nav-cta" onClick={onEnter}>
+            Open my tracker <ArrowRight size={15} />
+          </button>
+        </nav>
+      </header>
+
+      <main>
+        <section className="landing-hero">
+          <div className="landing-hero-copy">
+            <span className="landing-label">
+              <ShieldCheck size={14} /> A patient-owned referral companion
+            </span>
+            <p className="eyebrow">FROM RECOMMENDATION TO NEXT STEP</p>
+            <h1>Keep your specialist referral moving.</h1>
+            <p className="landing-lede">
+              One place to organize what you know, track what’s still unclear,
+              and prepare to follow up with the right office.
+            </p>
+            <div className="landing-actions">
+              <button className="primary-button" onClick={onEnter}>
+                Start organizing <ArrowRight size={16} />
+              </button>
+              <button className="landing-secondary-action" onClick={showHowItWorks}>
+                See how it works
+              </button>
+            </div>
+            <p className="landing-reassurance">
+              You enter updates yourself. The app doesn’t contact offices or
+              check their systems.
+            </p>
+          </div>
+
+          <div className="landing-preview" aria-label="Example referral progress">
+            <div className="landing-preview-top">
+              <span className="landing-preview-icon">
+                <Stethoscope size={18} />
+              </span>
+              <span className="status-pill status-amber">
+                <span className="status-dot" />
+                Still checking
+              </span>
+            </div>
+            <p className="landing-card-eyebrow">YOUR REFERRAL</p>
+            <h2>Cardiology</h2>
+            <p className="landing-route">Primary care <span>→</span> Heart clinic</p>
+            <div className="landing-progress">
+              <div className="landing-progress-step is-complete">
+                <span className="landing-progress-marker"><Check size={14} /></span>
+                <div>
+                  <strong>Recommendation</strong>
+                  <small>You added this</small>
+                </div>
+              </div>
+              <div className="landing-progress-step is-current">
+                <span className="landing-progress-marker">2</span>
+                <div>
+                  <strong>Referral sent?</strong>
+                  <small>Ask the referring office</small>
+                </div>
+              </div>
+              <div className="landing-progress-step">
+                <span className="landing-progress-marker">3</span>
+                <div>
+                  <strong>Received?</strong>
+                  <small>Confirm with the specialist</small>
+                </div>
+              </div>
+            </div>
+            <div className="landing-preview-note">
+              <MessageCircle size={16} />
+              <span>Next up: ask whether the referral was sent</span>
+              <ArrowRight size={15} />
+            </div>
+          </div>
+        </section>
+
+        <section className="landing-how" id="landing-how-it-works">
+          <div className="landing-section-heading">
+            <p className="eyebrow">A CLEARER HANDOFF</p>
+            <h2>Know what’s confirmed—and what to ask next.</h2>
+            <p>
+              Referral Navigator helps you keep the details straight while you
+              follow up at your own pace.
+            </p>
+          </div>
+          <div className="landing-steps">
+            <article className="landing-step">
+              <span>01</span>
+              <ClipboardList size={20} />
+              <h3>Save what you know</h3>
+              <p>
+                Note the specialist, referring office, and what your clinician
+                recommended.
+              </p>
+            </article>
+            <article className="landing-step">
+              <span>02</span>
+              <MessageCircle size={20} />
+              <h3>Follow up with confidence</h3>
+              <p>
+                See a practical next step and prepare a call script or message
+                to review.
+              </p>
+            </article>
+            <article className="landing-step">
+              <span>03</span>
+              <CheckCircle2 size={20} />
+              <h3>Record what you hear</h3>
+              <p>
+                Add the response and label whether it came from you or an
+                office.
+              </p>
+            </article>
+          </div>
+        </section>
+
+        <section className="landing-boundary">
+          <span className="landing-boundary-icon">
+            <ShieldCheck size={19} />
+          </span>
+          <div>
+            <strong>Your tracker is yours to update.</strong>
+            <p>
+              This tool can’t verify referral status, give medical advice, or
+              determine insurance coverage. Confirm details with the relevant
+              office or your health plan.
+            </p>
+          </div>
+          <button className="text-button" onClick={onEnter}>
+            Open my tracker <ArrowRight size={15} />
+          </button>
+        </section>
+      </main>
+      <footer className="landing-footer">
+        Referral Navigator · A personal referral companion
+      </footer>
+    </div>
+  );
+}
+
 export default function App() {
   const [referrals, setReferrals] = useState(initial);
+  const [hasEnteredDashboard, setHasEnteredDashboard] = useState(false);
   const [selected, setSelected] = useState<number | null>(null);
   const [modal, setModal] = useState<
     "new" | "update" | "message" | "notes" | "help" | null
@@ -287,6 +492,28 @@ export default function App() {
     if (sentRecorded) return "Waiting for receipt";
     return "Not confirmed yet";
   }, [confirmedReceived, receiptRecorded, sentRecorded]);
+  const receiptConfirmedCount = referrals.filter((item) =>
+    item.updates.some(
+      (update) =>
+        update.milestone === "referral-received" &&
+        update.source === "Specialist office",
+    ),
+  ).length;
+  const readyToScheduleCount = referrals.filter((item) =>
+    item.updates.some((update) => update.milestone === "ready-to-schedule"),
+  ).length;
+  const followUpCount = referrals.filter(
+    (item) =>
+      !item.updates.some((update) => update.milestone === "ready-to-schedule"),
+  ).length;
+  const nextReferral = referrals[0];
+  const nextStep = nextReferral ? nextStepFor(nextReferral) : null;
+  const latestUpdates = referrals
+    .flatMap((item) =>
+      item.updates.map((update) => ({ referral: item, update })),
+    )
+    .slice(-4)
+    .reverse();
 
   function flash(message: string) {
     setToast(message);
@@ -396,6 +623,9 @@ export default function App() {
     setNewDate("");
     flash("Referral added.");
   }
+
+  if (!hasEnteredDashboard)
+    return <LandingPage onEnter={() => setHasEnteredDashboard(true)} />;
 
   if (selected !== null && referral)
     return (
@@ -859,7 +1089,7 @@ export default function App() {
     );
 
   return (
-    <div className="app-shell">
+    <div className="app-shell dashboard-shell">
       <header className="topbar">
         <button
           type="button"
@@ -872,9 +1102,39 @@ export default function App() {
           </span>
           <span>Referral Navigator</span>
         </button>
-        <nav className="nav">
-          <button className="nav-active" onClick={() => setMenuOpen(false)}>
-            My referrals
+        <nav className="nav dashboard-nav" aria-label="Dashboard navigation">
+          <p className="sidebar-nav-label">YOUR SPACE</p>
+          <button
+            className="nav-active"
+            onClick={() => {
+              setMenuOpen(false);
+              document.getElementById("dashboard-overview")?.scrollIntoView({
+                behavior: "smooth",
+              });
+            }}
+          >
+            <Home size={17} /> Overview
+          </button>
+          <button
+            onClick={() => {
+              setMenuOpen(false);
+              document.getElementById("dashboard-referrals")?.scrollIntoView({
+                behavior: "smooth",
+              });
+            }}
+          >
+            <ClipboardList size={17} /> My referrals
+            <span className="sidebar-count">{referrals.length}</span>
+          </button>
+          <button
+            onClick={() => {
+              setMenuOpen(false);
+              document.getElementById("dashboard-next-step")?.scrollIntoView({
+                behavior: "smooth",
+              });
+            }}
+          >
+            <MessageCircle size={17} /> Next steps
           </button>
           <button
             onClick={() => {
@@ -882,7 +1142,7 @@ export default function App() {
               setModal("help");
             }}
           >
-            How it works
+            <CircleHelp size={17} /> How it works
           </button>
         </nav>
         <div className="top-actions">
@@ -909,7 +1169,7 @@ export default function App() {
           />
         </div>
       </header>
-      <main className="dashboard-wrap">
+      <main className="dashboard-wrap" id="dashboard-overview">
         <section className="welcome">
           <div>
             <p className="eyebrow">YOUR CARE, ORGANIZED</p>
@@ -929,7 +1189,42 @@ export default function App() {
             <span className="spark spark-two">✳</span>
           </div>
         </section>
-        <section className="dashboard-section">
+        <section className="dashboard-stats" aria-label="Referral summary">
+          <article className="summary-card summary-coral">
+            <div className="summary-card-top">
+              <ClipboardList size={17} />
+              <span>IN YOUR TRACKER</span>
+            </div>
+            <strong>{referrals.length}</strong>
+            <p>Referral{referrals.length === 1 ? "" : "s"} you added</p>
+          </article>
+          <article className="summary-card summary-gold">
+            <div className="summary-card-top">
+              <MessageCircle size={17} />
+              <span>FOLLOW-UP</span>
+            </div>
+            <strong>{followUpCount}</strong>
+            <p>Without a scheduling update</p>
+          </article>
+          <article className="summary-card summary-pink">
+            <div className="summary-card-top">
+              <CheckCircle2 size={17} />
+              <span>RECEIPT CONFIRMED</span>
+            </div>
+            <strong>{receiptConfirmedCount}</strong>
+            <p>Specialist office updates</p>
+          </article>
+          <article className="summary-card summary-blue">
+            <div className="summary-card-top">
+              <CalendarDays size={17} />
+              <span>READY TO SCHEDULE</span>
+            </div>
+            <strong>{readyToScheduleCount}</strong>
+            <p>Based on updates you recorded</p>
+          </article>
+        </section>
+
+        <section className="dashboard-section" id="dashboard-referrals">
           <div className="section-title-row list-title">
             <div>
               <h2>Your referrals</h2>
@@ -1030,28 +1325,80 @@ export default function App() {
                   );
                 })}
               </div>
-              <aside className="first-step-card">
+              <aside className="first-step-card" id="dashboard-next-step">
                 <span className="guide-icon">
                   <MessageCircle size={18} />
                 </span>
-                <p className="eyebrow">A GOOD FIRST QUESTION</p>
-                <h3>Has my referral been sent?</h3>
-                <p>
-                  Ask the referring office when it was sent and which specialist
-                  received it. Then record what they tell you.
-                </p>
+                <p className="eyebrow">YOUR NEXT STEP</p>
+                <h3>{nextStep?.title ?? "Add your first referral"}</h3>
+                <p>{nextStep?.detail ?? "Start with what your clinician recommended. You can fill in office details later."}</p>
                 <button
                   className="text-button"
-                  onClick={() => setSelected(referrals[0].id)}
+                  onClick={() =>
+                    nextReferral
+                      ? setSelected(nextReferral.id)
+                      : setModal("new")
+                  }
                 >
-                  See your next steps <ArrowRight size={15} />
+                  {nextReferral ? "Open referral" : "Add a referral"}{" "}
+                  <ArrowRight size={15} />
                 </button>
                 <div className="guide-foot">
-                  <ShieldCheck size={14} /> No automatic status checks
+                  <ShieldCheck size={14} /> Based on your saved updates
                 </div>
               </aside>
             </div>
           )}
+        </section>
+        <section className="dashboard-lower-grid">
+          <article className="dashboard-lower-card">
+            <div className="lower-card-heading">
+              <div>
+                <p className="eyebrow">RECENT ACTIVITY</p>
+                <h2>Referral updates</h2>
+              </div>
+              <span className="section-count">{latestUpdates.length}</span>
+            </div>
+            {latestUpdates.length ? (
+              <div className="recent-updates">
+                {latestUpdates.map(({ referral: item, update }) => (
+                  <button
+                    className="recent-update-row"
+                    key={item.id + "-" + update.id}
+                    onClick={() => setSelected(item.id)}
+                  >
+                    <span className="recent-update-icon">
+                      <FileText size={16} />
+                    </span>
+                    <span className="recent-update-copy">
+                      <strong>{update.title}</strong>
+                      <small>{item.specialty} · {update.date}</small>
+                    </span>
+                    <span className="source-chip">{update.source}</span>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <p className="lower-card-empty">Your saved updates will appear here.</p>
+            )}
+          </article>
+          <article className="dashboard-lower-card reminders-card">
+            <div className="lower-card-heading">
+              <div>
+                <p className="eyebrow">KEEP IN MIND</p>
+                <h2>Questions to take with you</h2>
+              </div>
+              <span className="reminder-icon"><ShieldCheck size={17} /></span>
+            </div>
+            <ul>
+              <li>Ask the referring office whether and when the referral was sent.</li>
+              <li>Check with the specialist office that it arrived.</li>
+              <li>Ask your health plan about network and authorization requirements.</li>
+            </ul>
+            <button className="text-button" onClick={() => setModal("help")}>
+              Review the steps <ArrowRight size={15} />
+            </button>
+          </article>
         </section>
         <section className="bottom-callout">
           <span className="callout-icon">
