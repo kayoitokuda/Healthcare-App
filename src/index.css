@@ -293,7 +293,69 @@ button:disabled {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 18px;
+  margin-top: 0;
+}
+.referral-list-layout {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: 18px;
   margin-top: 17px;
+  align-items: stretch;
+}
+.referral-list-layout .referral-grid {
+  grid-template-columns: 1fr;
+}
+.first-step-card {
+  border: 1px solid #dce8e4;
+  border-radius: 16px;
+  padding: 20px;
+  background: linear-gradient(145deg, #fff 18%, #f5faf7 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-height: 220px;
+}
+.guide-icon {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: 11px;
+  background: #e5f2ed;
+  color: var(--teal);
+  margin-bottom: 15px;
+}
+.first-step-card .eyebrow {
+  margin-bottom: 7px;
+}
+.first-step-card h3 {
+  font:
+    700 16px Manrope,
+    sans-serif;
+  letter-spacing: -0.35px;
+  color: var(--ink);
+  margin: 0;
+}
+.first-step-card > p:not(.eyebrow) {
+  font-size: 11px;
+  color: #70847e;
+  line-height: 1.6;
+  margin: 8px 0 5px;
+}
+.first-step-card > .text-button {
+  padding-left: 0;
+  margin-top: 3px;
+}
+.guide-foot {
+  border-top: 1px solid #e8efeb;
+  padding-top: 12px;
+  margin-top: auto;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  width: 100%;
+  color: #84948f;
+  font-size: 9px;
 }
 .referral-card {
   background: white;
@@ -1127,6 +1189,9 @@ button:disabled {
     transform: scale(0.82);
   }
   .referral-grid {
+    grid-template-columns: 1fr;
+  }
+  .referral-list-layout {
     grid-template-columns: 1fr;
   }
   .referral-card {

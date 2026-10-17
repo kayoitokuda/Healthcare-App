@@ -287,8 +287,11 @@ export default function App() {
             <span>Referral Navigator</span>
           </div>
           <div className="top-actions">
-            <span className="privacy-chip">
-              <ShieldCheck size={14} /> Private to you
+            <span
+              className="privacy-chip"
+              title="This preview keeps changes in memory. Refreshing clears them."
+            >
+              <CircleHelp size={14} /> Demo · resets on refresh
             </span>
             <IconButton label="Help" onClick={() => setModal("help")}>
               <CircleHelp size={20} />
@@ -505,7 +508,8 @@ export default function App() {
           <p className="disclaimer">
             Referral Navigator helps you organize information you provide. It
             can’t verify referral status, give medical advice, or determine
-            insurance coverage.
+            insurance coverage. This preview keeps edits in memory; refreshing
+            clears them.
           </p>
         </main>
         {modal && (
@@ -559,7 +563,8 @@ export default function App() {
                 </label>
                 <p className="helper-note">
                   <ShieldCheck size={15} /> Office updates mean you recorded
-                  what an office told you; Pathway doesn’t verify them.
+                  what an office told you; Referral Navigator doesn’t verify
+                  them.
                 </p>
                 <button
                   className="primary-button full"
@@ -573,7 +578,8 @@ export default function App() {
             {modal === "message" && (
               <div className="form-body">
                 <p className="modal-intro">
-                  Review and edit this draft. Pathway won’t send it for you.
+                  Review and edit this draft. Referral Navigator won’t send it
+                  for you.
                 </p>
                 <div className="segmented">
                   {(["Call script", "Portal message", "Email"] as const).map(
@@ -633,8 +639,8 @@ export default function App() {
             {modal === "help" && (
               <div className="form-body">
                 <p className="modal-intro">
-                  Pathway is your personal organizer. It doesn’t connect to
-                  clinic or insurance systems.
+                  Referral Navigator is your personal organizer. It doesn’t
+                  connect to clinic or insurance systems.
                 </p>
                 <div className="help-list">
                   <div>
@@ -702,7 +708,7 @@ export default function App() {
         </nav>
         <div className="top-actions">
           <span className="privacy-chip">
-            <ShieldCheck size={14} /> Private to you
+            <CircleHelp size={14} /> Demo · resets on refresh
           </span>
           <IconButton label="Help" onClick={() => setModal("help")}>
             <CircleHelp size={20} />
@@ -763,69 +769,91 @@ export default function App() {
               </button>
             </div>
           ) : (
-            <div className="referral-grid">
-              {referrals.map((r) => {
-                const rec = r.updates.some(
-                  (u) =>
-                    u.title.toLowerCase().includes("received") &&
-                    u.source === "Specialist office",
-                );
-                const sent = r.updates.some(
-                  (u) =>
-                    u.title.toLowerCase().includes("sent") &&
-                    u.source === "Referring office",
-                );
-                return (
-                  <article className="referral-card" key={r.id}>
-                    <div className="card-top">
-                      <span className="specialty-icon">
-                        <Stethoscope size={19} />
-                      </span>
-                      <span
-                        className={`status-pill ${rec ? "status-green" : "status-amber"}`}
+            <div className="referral-list-layout">
+              <div className="referral-grid">
+                {referrals.map((r) => {
+                  const rec = r.updates.some(
+                    (u) =>
+                      u.title.toLowerCase().includes("received") &&
+                      u.source === "Specialist office",
+                  );
+                  const sent = r.updates.some(
+                    (u) =>
+                      u.title.toLowerCase().includes("sent") &&
+                      u.source === "Referring office",
+                  );
+                  return (
+                    <article className="referral-card" key={r.id}>
+                      <div className="card-top">
+                        <span className="specialty-icon">
+                          <Stethoscope size={19} />
+                        </span>
+                        <span
+                          className={`status-pill ${rec ? "status-green" : "status-amber"}`}
+                        >
+                          <span className="status-dot" />
+                          {rec
+                            ? "Receipt recorded"
+                            : sent
+                              ? "Waiting for receipt"
+                              : "Not confirmed yet"}
+                        </span>
+                      </div>
+                      <h3>{r.specialty}</h3>
+                      <p className="route-line">
+                        {r.from}
+                        <span>→</span>
+                        {r.to}
+                      </p>
+                      <div className="card-divider" />
+                      <div className="card-meta">
+                        <span>
+                          <CalendarDays size={15} /> Added {r.date}
+                        </span>
+                        <span>
+                          <MessageCircle size={15} /> {r.updates.length} updates
+                        </span>
+                      </div>
+                      <div className="card-note">
+                        <CircleHelp size={16} />
+                        <span>
+                          {rec
+                            ? "You recorded that the specialist office received it."
+                            : sent
+                              ? "You recorded that the referring office sent it. Receipt is still unknown."
+                              : "Referral sending and receipt haven’t been confirmed yet."}
+                        </span>
+                      </div>
+                      <button
+                        className="card-link"
+                        onClick={() => setSelected(r.id)}
                       >
-                        <span className="status-dot" />
-                        {rec
-                          ? "Receipt recorded"
-                          : sent
-                            ? "Waiting for receipt"
-                            : "Not confirmed yet"}
-                      </span>
-                    </div>
-                    <h3>{r.specialty}</h3>
-                    <p className="route-line">
-                      {r.from}
-                      <span>→</span>
-                      {r.to}
-                    </p>
-                    <div className="card-divider" />
-                    <div className="card-meta">
-                      <span>
-                        <CalendarDays size={15} /> Added {r.date}
-                      </span>
-                      <span>
-                        <MessageCircle size={15} /> {r.updates.length} updates
-                      </span>
-                    </div>
-                    <div className="card-note">
-                      <CircleHelp size={16} />
-                      <span>
-                        {rec
-                          ? "You recorded that the specialist office received it."
-                          : sent
-                            ? "You recorded that the referring office sent it. Receipt is still unknown."
-                            : "Referral sending and receipt haven’t been confirmed yet."}
-                      </span>
-                    </div>
-                    <button
-                      className="card-link"
-                      onClick={() => setSelected(r.id)}
-                    >
-                      Open referral <ArrowRight size={17} />
-                    </button>
-                  </article>
-                );
-              })}
+                        Open referral <ArrowRight size={17} />
+                      </button>
+                    </article>
+                  );
+                })}
+              </div>
+              <aside className="first-step-card">
+                <span className="guide-icon">
+                  <MessageCircle size={18} />
+                </span>
+                <p className="eyebrow">A GOOD FIRST QUESTION</p>
+                <h3>Has my referral been sent?</h3>
+                <p>
+                  Ask the referring office when it was sent and which specialist
+                  received it. Then record what they tell you.
+                </p>
+                <button
+                  className="text-button"
+                  onClick={() => setSelected(referrals[0].id)}
+                >
+                  See your next steps <ArrowRight size={15} />
+                </button>
+                <div className="guide-foot">
+                  <ShieldCheck size={14} /> No automatic status checks
+                </div>
+              </aside>
             </div>
           )}
         </section>
@@ -834,10 +862,11 @@ export default function App() {
             <ShieldCheck size={19} />
           </span>
           <div>
-            <strong>Your tracker is patient-owned</strong>
+            <strong>Patient-owned, with no automatic status checks</strong>
             <p>
-              Pathway doesn’t contact offices or access their systems. You
-              decide what to record and when to follow up.
+              Changes in this preview stay in memory and reset on refresh.
+              Referral Navigator doesn’t contact offices or access their
+              systems.
             </p>
           </div>
           <button className="text-button" onClick={() => setModal("help")}>
