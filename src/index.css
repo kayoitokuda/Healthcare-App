@@ -2615,3 +2615,230 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
     font-size: 9px;
   }
 }
+
+/* Mobile reading scale and contrast */
+@media (max-width: 760px) {
+  .landing-hero-copy > .eyebrow,
+  .landing-section-heading .eyebrow {
+    color: #555e70;
+    font-size: 12px;
+  }
+  .landing-label {
+    color: #45517f;
+    font-size: 12px;
+  }
+  .landing-lede {
+    color: #535b6b;
+    font-size: 16px;
+  }
+  .landing-secondary-action,
+  .landing-nav-cta {
+    font-size: 13px;
+  }
+  .landing-nav-cta {
+    min-height: 40px;
+  }
+  .landing-reassurance {
+    color: #505867;
+    font-size: 13px;
+  }
+  .landing-card-eyebrow {
+    color: #596172;
+    font-size: 11px;
+  }
+  .landing-preview .status-pill {
+    font-size: 12px;
+  }
+  .landing-route,
+  .landing-progress-step strong {
+    font-size: 14px;
+  }
+  .landing-progress-step small {
+    color: #5d6474;
+    font-size: 12px;
+  }
+  .landing-preview-note {
+    color: #4d5676;
+    font-size: 12px;
+  }
+  .landing-section-heading > p:last-child {
+    color: #535b6b;
+    font-size: 15px;
+  }
+  .landing-step h3 {
+    font-size: 16px;
+  }
+  .landing-step p {
+    color: #535b6b;
+    font-size: 14px;
+  }
+  .landing-step > span {
+    color: #5d6474;
+    font-size: 11px;
+  }
+  .landing-boundary strong {
+    color: #303545;
+    font-size: 14px;
+  }
+  .landing-boundary p {
+    color: #4e5666;
+    font-size: 13px;
+  }
+  .landing-boundary .text-button {
+    font-size: 13px;
+  }
+  .landing-footer {
+    color: #505867;
+    font-size: 12px;
+  }
+
+  .dashboard-shell .welcome .eyebrow,
+  .dashboard-shell .lower-card-heading .eyebrow,
+  .dashboard-shell .first-step-card .eyebrow {
+    color: #555e70;
+    font-size: 12px;
+  }
+  .dashboard-shell .welcome > div:first-child > p:last-child {
+    color: #4e5666;
+    font-size: 14px;
+  }
+  .summary-card-top span {
+    font-size: 11px;
+    line-height: 1.3;
+    letter-spacing: 0.35px;
+  }
+  .summary-card {
+    min-height: 118px;
+  }
+  .summary-card > p {
+    font-size: 12px;
+    line-height: 1.45;
+  }
+  .dashboard-shell .dashboard-section .list-title p {
+    color: #4e5666;
+    font-size: 13px;
+  }
+  .dashboard-shell .dashboard-section .add-button {
+    min-height: 44px;
+    font-size: 12px;
+  }
+  .dashboard-shell .referral-card .status-pill {
+    font-size: 12px;
+    line-height: 1.3;
+    white-space: normal;
+  }
+  .dashboard-shell .route-line {
+    color: #4e5666;
+    font-size: 14px;
+  }
+  .dashboard-shell .card-meta span {
+    color: #4e5666;
+    font-size: 12px;
+  }
+  .dashboard-shell .card-note {
+    color: #4e5666;
+    font-size: 13px;
+  }
+  .dashboard-shell .card-link {
+    min-height: 44px;
+    font-size: 14px;
+  }
+  .dashboard-shell .first-step-card h3 {
+    font-size: 18px;
+  }
+  .dashboard-shell .first-step-card > p:not(.eyebrow) {
+    color: #4e5666;
+    font-size: 14px;
+  }
+  .dashboard-shell .first-step-card .text-button,
+  .dashboard-shell .reminders-card .text-button,
+  .dashboard-shell .bottom-callout .text-button {
+    min-height: 44px;
+    font-size: 14px;
+  }
+  .dashboard-shell .guide-foot {
+    color: #555e70;
+    font-size: 12px;
+  }
+  .dashboard-shell .lower-card-heading h2 {
+    font-size: 17px;
+  }
+  .recent-update-copy strong {
+    color: #303545;
+    font-size: 13px;
+  }
+  .recent-update-copy small {
+    color: #555e70;
+    font-size: 12px;
+  }
+  .source-chip {
+    color: #334a9c;
+    font-size: 11px;
+  }
+  .reminders-card li {
+    color: #4e5666;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  .dashboard-shell .bottom-callout strong {
+    color: #303545;
+    font-size: 14px;
+  }
+  .dashboard-shell .bottom-callout p {
+    color: #4e5666;
+    font-size: 13px;
+  }
+  .dashboard-shell .footer,
+  .dashboard-shell .footer button {
+    color: #505867;
+    font-size: 12px;
+  }
+
+  .menu-eyebrow {
+    color: #555e70;
+    font-size: 11px;
+  }
+  .menu-panel-head h2 {
+    font-size: 19px;
+  }
+  .menu-panel-head p,
+  .menu-note p {
+    color: #4e5666;
+    font-size: 13px;
+  }
+  .menu-item-copy strong {
+    color: #303545;
+    font-size: 14px;
+  }
+  .menu-item-copy small {
+    color: #555e70;
+    font-size: 12px;
+  }
+
+  .modal-intro {
+    color: #4e5666;
+    font-size: 14px;
+  }
+  .form-body label {
+    color: #3f4b5f;
+    font-size: 14px;
+  }
+  .form-body input,
+  .form-body select,
+  .form-body textarea {
+    font-size: 16px;
+  }
+  .helper-note {
+    color: #4e5666;
+    font-size: 13px;
+  }
+  .segmented button {
+    font-size: 12px;
+  }
+  .help-list > div > p {
+    color: #4e5666;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+}
+
