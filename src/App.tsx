@@ -1,4 +1,12 @@
-import { useMemo, useState, type FormEvent, type ReactNode } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type FormEvent,
+  type ReactNode,
+  type RefObject,
+} from "react";
 import {
   ArrowLeft,
   ArrowRight,
@@ -96,6 +104,89 @@ function IconButton({
   );
 }
 
+function HeaderMenu({
+  open,
+  menuRef,
+  onToggle,
+  onHome,
+  onAddReferral,
+  onHelp,
+  referralCount,
+}: {
+  open: boolean;
+  menuRef: RefObject<HTMLDivElement | null>;
+  onToggle: () => void;
+  onHome: () => void;
+  onAddReferral: () => void;
+  onHelp: () => void;
+  referralCount: number;
+}) {
+  return (
+    <div className="header-menu" ref={menuRef}>
+      <button
+        type="button"
+        className="icon-button menu-trigger"
+        aria-label={open ? "Close menu" : "Open menu"}
+        aria-expanded={open}
+        aria-controls="main-menu-panel"
+        onClick={onToggle}
+      >
+        {open ? <X size={20} /> : <Menu size={20} />}
+      </button>
+      {open && (
+        <div className="menu-panel" id="main-menu-panel">
+          <div className="menu-panel-head">
+            <span className="menu-eyebrow">REFERRAL NAVIGATOR</span>
+            <h2>Quick actions</h2>
+            <p>Keep your referral details and follow-ups together.</p>
+          </div>
+          <nav className="menu-links" aria-label="Quick actions">
+            <button className="menu-item" onClick={onHome}>
+              <span className="menu-item-icon">
+                <ClipboardList size={18} />
+              </span>
+              <span className="menu-item-copy">
+                <strong>My referrals</strong>
+                <small>
+                  {referralCount} {referralCount === 1 ? "referral" : "referrals"} in your tracker
+                </small>
+              </span>
+              <ArrowRight size={16} />
+            </button>
+            <button className="menu-item" onClick={onAddReferral}>
+              <span className="menu-item-icon">
+                <Plus size={18} />
+              </span>
+              <span className="menu-item-copy">
+                <strong>Add a referral</strong>
+                <small>Start with what you know</small>
+              </span>
+              <ArrowRight size={16} />
+            </button>
+            <button className="menu-item" onClick={onHelp}>
+              <span className="menu-item-icon">
+                <CircleHelp size={18} />
+              </span>
+              <span className="menu-item-copy">
+                <strong>How it works</strong>
+                <small>Learn what this tool can do</small>
+              </span>
+              <ArrowRight size={16} />
+            </button>
+          </nav>
+          <div className="menu-note">
+            <ShieldCheck size={17} />
+            <p>
+              <strong>You’re in control.</strong> Updates are entered by you;
+              referral status isn’t checked automatically.
+            </p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function Modal({
   title,
   onClose,
@@ -151,6 +242,31 @@ export default function App() {
   const [newDate, setNewDate] = useState("");
   const [toast, setToast] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+
+    function handlePointerDown(event: PointerEvent) {
+      if (
+        menuRef.current &&
+        event.target instanceof Node &&
+        !menuRef.current.contains(event.target)
+      ) {
+        setMenuOpen(false);
+      }
+    }
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") setMenuOpen(false);
+    }
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [menuOpen]);
 
   const referral =
     referrals.find((item) => item.id === selected) ?? referrals[0];
@@ -306,6 +422,24 @@ export default function App() {
             <IconButton label="Help" onClick={() => setModal("help")}>
               <CircleHelp size={20} />
             </IconButton>
+            <HeaderMenu
+              open={menuOpen}
+              menuRef={menuRef}
+              onToggle={() => setMenuOpen((open) => !open)}
+              onHome={() => {
+                setSelected(null);
+                setMenuOpen(false);
+              }}
+              onAddReferral={() => {
+                setMenuOpen(false);
+                setModal("new");
+              }}
+              onHelp={() => {
+                setMenuOpen(false);
+                setModal("help");
+              }}
+              referralCount={referrals.length}
+            />
           </div>
         </header>
         <main className="detail-wrap">
@@ -741,11 +875,18 @@ export default function App() {
           </span>
           <span>Referral Navigator</span>
         </button>
-        <nav className={`nav ${menuOpen ? "nav-open" : ""}`}>
+        <nav className="nav">
           <button className="nav-active" onClick={() => setMenuOpen(false)}>
             My referrals
           </button>
-          <button onClick={() => setModal("help")}>How it works</button>
+          <button
+            onClick={() => {
+              setMenuOpen(false);
+              setModal("help");
+            }}
+          >
+            How it works
+          </button>
         </nav>
         <div className="top-actions">
           <span className="privacy-chip">
@@ -754,9 +895,24 @@ export default function App() {
           <IconButton label="Help" onClick={() => setModal("help")}>
             <CircleHelp size={20} />
           </IconButton>
-          <IconButton label="Open menu" onClick={() => setMenuOpen(!menuOpen)}>
-            <Menu size={20} />
-          </IconButton>
+          <HeaderMenu
+            open={menuOpen}
+            menuRef={menuRef}
+            onToggle={() => setMenuOpen((open) => !open)}
+            onHome={() => {
+              setSelected(null);
+              setMenuOpen(false);
+            }}
+            onAddReferral={() => {
+              setMenuOpen(false);
+              setModal("new");
+            }}
+            onHelp={() => {
+              setMenuOpen(false);
+              setModal("help");
+            }}
+            referralCount={referrals.length}
+          />
         </div>
       </header>
       <main className="dashboard-wrap">
