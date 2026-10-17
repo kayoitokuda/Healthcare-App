@@ -79,6 +79,13 @@ button:disabled {
   letter-spacing: -0.7px;
   color: var(--ink);
 }
+.brand-home {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  text-align: left;
+}
+.brand-home:hover { opacity: 0.82; }
 .brand-mark {
   width: 34px;
   height: 34px;

@@ -285,12 +285,17 @@ export default function App() {
     return (
       <div className="app-shell">
         <header className="topbar">
-          <div className="brand">
+          <button
+            type="button"
+            className="brand brand-home"
+            aria-label="Referral Navigator home"
+            onClick={() => setSelected(null)}
+          >
             <span className="brand-mark">
               <HeartHandshake size={20} />
             </span>
             <span>Referral Navigator</span>
-          </div>
+          </button>
           <div className="top-actions">
             <span
               className="privacy-chip"
@@ -725,12 +730,17 @@ export default function App() {
   return (
     <div className="app-shell">
       <header className="topbar">
-        <div className="brand">
+        <button
+          type="button"
+          className="brand brand-home"
+          aria-label="Referral Navigator home"
+          onClick={() => setSelected(null)}
+        >
           <span className="brand-mark">
             <HeartHandshake size={20} />
           </span>
           <span>Referral Navigator</span>
-        </div>
+        </button>
         <nav className={`nav ${menuOpen ? "nav-open" : ""}`}>
           <button className="nav-active" onClick={() => setMenuOpen(false)}>
             My referrals
