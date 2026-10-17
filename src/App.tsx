@@ -419,9 +419,6 @@ export default function App() {
             >
               <CircleHelp size={14} /> Demo · resets on refresh
             </span>
-            <IconButton label="Help" onClick={() => setModal("help")}>
-              <CircleHelp size={20} />
-            </IconButton>
             <HeaderMenu
               open={menuOpen}
               menuRef={menuRef}
@@ -892,9 +889,6 @@ export default function App() {
           <span className="privacy-chip">
             <CircleHelp size={14} /> Demo · resets on refresh
           </span>
-          <IconButton label="Help" onClick={() => setModal("help")}>
-            <CircleHelp size={20} />
-          </IconButton>
           <HeaderMenu
             open={menuOpen}
             menuRef={menuRef}

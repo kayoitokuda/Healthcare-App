@@ -1166,9 +1166,6 @@ button:disabled {
     width: 16px;
     height: 16px;
   }
-  .top-actions > .icon-button:not(.menu-trigger) {
-    display: none;
-  }
   .dashboard-wrap {
     padding: 20px 18px 30px;
   }
