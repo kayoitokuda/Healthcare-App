@@ -24,6 +24,7 @@ import {
   Phone,
   Plus,
   ShieldCheck,
+  Sparkles,
   Stethoscope,
   X,
 } from "lucide-react";
@@ -76,6 +77,22 @@ const initial: Referral[] = [
         date: "Sep 10, 2026",
         source: "You",
       },
+      {
+        id: 3,
+        title: "Referring office says it was sent",
+        detail: "Bayview Dental told me they sent the referral to Peninsula Oral Surgery.",
+        date: "Sep 11, 2026",
+        source: "Referring office",
+        milestone: "referral-sent",
+      },
+      {
+        id: 4,
+        title: "Specialist office noted a missing item",
+        detail: "Peninsula Oral Surgery confirmed receipt and said they still need the latest dental X-ray before they can review it.",
+        date: "Sep 12, 2026",
+        source: "Specialist office",
+        milestone: "referral-received",
+      },
     ],
     done: [],
     notes: "",
@@ -89,7 +106,115 @@ const steps = [
   { title: "Ready to schedule", copy: "Ask how to book your visit" },
 ];
 
+type AgentInsight = {
+  signal: "Possible hold-up" | "Next step" | "Ready to schedule";
+  headline: string;
+  detail: string;
+  action: string;
+  rationale: string;
+  recipient: string;
+  question: string;
+};
+
+function referralAgentInsight(referral: Referral): AgentInsight {
+  const possibleBlocker = [...referral.updates].reverse().find((update) =>
+    /missing|still need|needs? (?:the |a |an )?|waiting for|awaiting|cannot review|can't review|cannot complete|can't complete/i.test(
+      update.detail,
+    ),
+  );
+
+  if (possibleBlocker) {
+    const itemMatch =
+      possibleBlocker.detail.match(
+        /(?:still )?need(?:s)?\s+(?:the |a |an |my )?([^,.;]+)/i,
+      ) ||
+      possibleBlocker.detail.match(
+        /(?:missing|waiting for|awaiting)\s+(?:the |a |an |my )?([^,.;]+)/i,
+      );
+    const item = itemMatch?.[1]
+      ?.replace(/\s+(?:before|so they|so it|to review|for review).*$/i, "")
+      .trim();
+    const itemLabel = item || "the requested item";
+    const rationale =
+      possibleBlocker.source === "You"
+        ? "Your note mentions a possible blocker."
+        : `You recorded this detail from the ${possibleBlocker.source.toLowerCase()}.`;
+    return {
+      signal: "Possible hold-up",
+      headline: item
+        ? `The ${itemLabel} may still be needed.`
+        : "A note mentions something needed before review.",
+      detail: possibleBlocker.detail,
+      action: `Ask ${referral.from} to send ${itemLabel} to ${referral.to}.`,
+      rationale,
+      recipient: referral.from,
+      question: item
+        ? `Could you send ${itemLabel} to ${referral.to}, and let me know when it has been sent?`
+        : `Could you check what is still needed for my referral to move forward?`,
+    };
+  }
+
+  const sent = referral.updates.some(
+    (update) => update.milestone === "referral-sent",
+  );
+  const receivedBySpecialist = referral.updates.some(
+    (update) =>
+      update.milestone === "referral-received" &&
+      update.source === "Specialist office",
+  );
+  const ready = referral.updates.some(
+    (update) => update.milestone === "ready-to-schedule",
+  );
+
+  if (!sent) {
+    return {
+      signal: "Next step",
+      headline: "Referral sending is not confirmed yet.",
+      detail: "There is no referral-sent update in your tracker.",
+      action: `Ask ${referral.from} whether the referral was sent to ${referral.to}.`,
+      rationale: "Your tracker does not include a sent confirmation.",
+      recipient: referral.from,
+      question: `Could you confirm whether you sent my ${referral.specialty} referral to ${referral.to}? If not, is anything needed from me?`,
+    };
+  }
+  if (!receivedBySpecialist) {
+    return {
+      signal: "Next step",
+      headline: "Receipt still needs confirmation.",
+      detail: "Your tracker says the referral was sent, but it does not include confirmation from the specialist office.",
+      action: `Ask ${referral.to} whether the referral arrived.`,
+      rationale: "The referral-sent update is recorded, but no specialist-office receipt update is recorded.",
+      recipient: referral.to,
+      question: `Could you confirm whether you received my ${referral.specialty} referral from ${referral.from}, and whether anything else is needed?`,
+    };
+  }
+  if (!ready) {
+    return {
+      signal: "Next step",
+      headline: "Ask what is needed before scheduling.",
+      detail: "You recorded that the specialist office received the referral.",
+      action: `Ask ${referral.to} what the next step is and how to schedule.`,
+      rationale: "Your latest recorded handoff milestone is receipt.",
+      recipient: referral.to,
+      question: `I recorded that you received my ${referral.specialty} referral. What should I do next to move toward scheduling?`,
+    };
+  }
+  return {
+    signal: "Ready to schedule",
+    headline: "Your tracker says the referral is ready for scheduling.",
+    detail: "You recorded that the office said the referral is ready.",
+    action: `Contact ${referral.to} to ask about appointment times.`,
+    rationale: "This is based on the ready-to-schedule update you recorded.",
+    recipient: referral.to,
+    question: `I recorded that my referral is ready to schedule. Could you help me find an appointment time?`,
+  };
+}
+
 function nextStepFor(referral: Referral) {
+  const agentInsight = referralAgentInsight(referral);
+  if (agentInsight.signal === "Possible hold-up") {
+    return { title: "Follow up on a possible hold-up", detail: agentInsight.action };
+  }
   const sent = referral.updates.some(
     (update) => update.milestone === "referral-sent",
   );
@@ -291,8 +416,8 @@ function LandingPage({ onEnter }: { onEnter: () => void }) {
             <p className="eyebrow">FROM RECOMMENDATION TO NEXT STEP</p>
             <h1>Keep your specialist referral moving.</h1>
             <p className="landing-lede">
-              One place to organize what you know, track what’s still unclear,
-              and prepare to follow up with the right office.
+              The Referral Agent uses updates you enter to flag possible holdups,
+              suggest a next step, and prepare a message for you to review.
             </p>
             <div className="landing-actions">
               <button className="primary-button" onClick={onEnter}>
@@ -482,10 +607,105 @@ function InlineDraftPanel({
   );
 }
 
+function ReferralAgentCard({
+  referral,
+  mode,
+  reminderDate,
+  reminderOpen,
+  reminderDraft,
+  onPrimary,
+  onOpenReminder,
+  onReminderDraftChange,
+  onSaveReminder,
+}: {
+  referral: Referral;
+  mode: "overview" | "detail";
+  reminderDate: string;
+  reminderOpen: boolean;
+  reminderDraft: string;
+  onPrimary: () => void;
+  onOpenReminder: () => void;
+  onReminderDraftChange: (value: string) => void;
+  onSaveReminder: () => void;
+}) {
+  const insight = referralAgentInsight(referral);
+  const reminderLabel = reminderDate
+    ? new Date(`${reminderDate}T12:00:00`).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      })
+    : "";
+
+  return (
+    <section className="section-card referral-agent-card" aria-label="Referral Agent recommendation">
+      <div className="agent-card-heading">
+        <span className="agent-icon"><Sparkles size={18} /></span>
+        <div>
+          <p className="eyebrow">REFERRAL AGENT · PROTOTYPE</p>
+          <h2>{insight.headline}</h2>
+        </div>
+        <span className={`agent-signal ${insight.signal === "Possible hold-up" ? "agent-signal-warn" : ""}`}>
+          {insight.signal}
+        </span>
+      </div>
+      <p className="agent-detail">{insight.detail}</p>
+      <div className="agent-suggestion">
+        <span>SUGGESTED NEXT STEP</span>
+        <strong>{insight.action}</strong>
+        <small>{insight.rationale}</small>
+      </div>
+      <div className="agent-actions">
+        <button className="primary-button" type="button" onClick={onPrimary}>
+          {mode === "overview" ? "Open referral action plan" : "Prepare a follow-up"}
+          <ArrowRight size={15} />
+        </button>
+        <button className="secondary-button" type="button" onClick={onOpenReminder}>
+          <CalendarDays size={15} /> Set a reminder
+        </button>
+      </div>
+      {reminderOpen && (
+        <div className="agent-reminder-editor">
+          <label>
+            Remind me on
+            <input
+              type="date"
+              value={reminderDraft}
+              onChange={(event) => onReminderDraftChange(event.target.value)}
+            />
+          </label>
+          <button className="secondary-button" type="button" onClick={onSaveReminder} disabled={!reminderDraft}>
+            Save reminder
+          </button>
+        </div>
+      )}
+      {reminderLabel && (
+        <p className="agent-reminder-saved">
+          <CheckCircle2 size={15} /> Follow-up reminder saved for {reminderLabel}
+        </p>
+      )}
+      <details className="agent-explanation">
+        <summary>Why is the agent suggesting this?</summary>
+        <p>
+          It uses only the referral details and updates you entered. It cannot
+          check office systems, so confirm the next step with {insight.recipient}.
+        </p>
+      </details>
+      <p className="agent-boundary">
+        Prototype suggestions use simple rules. They may miss context and do not
+        contact offices or send messages.
+      </p>
+    </section>
+  );
+}
+
 export default function App() {
   const [referrals, setReferrals] = useState(initial);
   const [demoMode, setDemoMode] = useState(true);
   const [inlineDraftId, setInlineDraftId] = useState<number | null>(null);
+  const [reminderDates, setReminderDates] = useState<Record<number, string>>({});
+  const [reminderEditorId, setReminderEditorId] = useState<number | null>(null);
+  const [reminderDraft, setReminderDraft] = useState("");
   const [hasEnteredDashboard, setHasEnteredDashboard] = useState(false);
   const [selected, setSelected] = useState<number | null>(null);
   const [modal, setModal] = useState<
@@ -627,11 +847,12 @@ export default function App() {
     target: Referral | undefined = referral,
   ) {
     if (!target) return;
+    const insight = referralAgentInsight(target);
     setMessageKind(kind);
     setMessageDraft(
       kind === "Call script"
-        ? `Hello, my name is [your name]. I’m calling about a ${target.specialty} referral recommended by ${target.from}. Could you tell me whether it has been sent to ${target.to}? If it has, when was it sent? If not, is anything needed from me?`
-        : `Hello, I’m following up on my ${target.specialty} referral. ${target.from} recommended this on ${target.date}. Could you let me know whether it has been sent to ${target.to}, and whether you need anything else from me? Thank you.`,
+        ? `Hello, my name is [your name]. I’m calling ${insight.recipient} about my ${target.specialty} referral. ${insight.question}`
+        : `Hello, I’m following up about my ${target.specialty} referral. ${insight.question} Thank you.`,
     );
     setCopied(false);
     setInlineDraftId(target.id);
@@ -660,6 +881,22 @@ export default function App() {
     );
     setInlineDraftId(null);
     flash("Contact attempt added to your activity. Referral status is unchanged.");
+  }
+
+  function openReminder(target: Referral) {
+    setReminderEditorId(target.id);
+    const suggestedDate = new Date();
+    suggestedDate.setDate(suggestedDate.getDate() + 3);
+    setReminderDraft(
+      reminderDates[target.id] || suggestedDate.toISOString().slice(0, 10),
+    );
+  }
+
+  function saveReminder(target: Referral) {
+    if (!reminderDraft) return;
+    setReminderDates((all) => ({ ...all, [target.id]: reminderDraft }));
+    setReminderEditorId(null);
+    flash("Follow-up reminder saved in this preview.");
   }
 
   function openNewReferral() {
@@ -798,6 +1035,30 @@ export default function App() {
               unknown.
             </p>
           </div>
+
+          <ReferralAgentCard
+            referral={referral}
+            mode="detail"
+            reminderDate={reminderDates[referral.id] || ""}
+            reminderOpen={reminderEditorId === referral.id}
+            reminderDraft={reminderDraft}
+            onPrimary={() => startMessage("Portal message", referral)}
+            onOpenReminder={() => openReminder(referral)}
+            onReminderDraftChange={setReminderDraft}
+            onSaveReminder={() => saveReminder(referral)}
+          />
+          {inlineDraftId === referral.id && (
+            <InlineDraftPanel
+              kind={messageKind}
+              draft={messageDraft}
+              copied={copied}
+              onKindChange={(kind) => startMessage(kind, referral)}
+              onDraftChange={setMessageDraft}
+              onCopy={copyDraft}
+              onContact={() => logContactAttempt(referral)}
+              onClose={() => setInlineDraftId(null)}
+            />
+          )}
 
           <section className="section-card journey-card">
             <div className="section-title-row">
@@ -952,19 +1213,6 @@ export default function App() {
               </button>
             </section>
           </div>
-
-          {inlineDraftId === referral.id && (
-            <InlineDraftPanel
-              kind={messageKind}
-              draft={messageDraft}
-              copied={copied}
-              onKindChange={(kind) => startMessage(kind, referral)}
-              onDraftChange={setMessageDraft}
-              onCopy={copyDraft}
-              onContact={() => logContactAttempt(referral)}
-              onClose={() => setInlineDraftId(null)}
-            />
-          )}
 
           <section className="section-card tools-card">
             <div className="tools-intro">
@@ -1264,6 +1512,19 @@ export default function App() {
               Start your own <ArrowRight size={15} />
             </button>
           </aside>
+        )}
+        {nextReferral && (
+          <ReferralAgentCard
+            referral={nextReferral}
+            mode="overview"
+            reminderDate={reminderDates[nextReferral.id] || ""}
+            reminderOpen={reminderEditorId === nextReferral.id}
+            reminderDraft={reminderDraft}
+            onPrimary={() => setSelected(nextReferral.id)}
+            onOpenReminder={() => openReminder(nextReferral)}
+            onReminderDraftChange={setReminderDraft}
+            onSaveReminder={() => saveReminder(nextReferral)}
+          />
         )}
         <section className="dashboard-stats" aria-label="Referral summary">
           <article className="summary-card summary-coral">
