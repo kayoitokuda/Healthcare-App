@@ -259,6 +259,14 @@ const rows: Array<[string, string, string, string, string]> = [
   ["Close draft", "下書きを閉じる", "关闭草稿", "Cerrar borrador", "Đóng bản nháp"],
   ["the requested item", "依頼された資料", "所需材料", "el documento solicitado", "tài liệu được yêu cầu"],
   ["e.g. Called to ask if referral was sent", "例：紹介状が送付されたか電話で確認", "例如：致电询问是否已发送转诊", "Ej.: Llamé para preguntar si enviaron la referencia", "Ví dụ: Gọi hỏi giấy giới thiệu đã được gửi chưa"],
+  ["Updates are entered by you; referral status isn’t checked automatically.", "更新はあなたが入力します。紹介状況は自動では確認されません。", "更新由你输入；系统不会自动查询转诊状态。", "Tú ingresas las actualizaciones; el estado de la referencia no se verifica automáticamente.", "Bạn tự nhập cập nhật; trạng thái giới thiệu không được tự động kiểm tra."],
+  ["Keep your referral moving.", "紹介を前に進めましょう。", "让转诊继续推进。", "Mantén en marcha tu referencia.", "Giúp lượt giới thiệu tiếp tục tiến triển."],
+  ["Record a response or update", "返答や更新を記録", "记录回复或更新", "Registrar una respuesta o actualización", "Ghi nhận phản hồi hoặc cập nhật"],
+  ["Was the referral sent? When and to which specialist?", "紹介状は送付されましたか？いつ、どの専門医に送られましたか？", "转诊是否已发送？何时发送给哪位专科医生？", "¿Se envió la referencia? ¿Cuándo y a qué especialista?", "Giấy giới thiệu đã được gửi chưa? Khi nào và đến bác sĩ nào?"],
+  ["Referral", "紹介", "转诊", "Referencia", "Giới thiệu"],
+  ["you added", "あなたが追加", "由你添加", "que agregaste", "bạn đã thêm"],
+  ["Specialist recommended", "専門医を勧められた", "医生建议看专科", "Especialista recomendado", "Được đề xuất khám chuyên khoa"],
+  ["A patient-owned referral companion", "患者が自分で管理する紹介サポートツール", "由患者自主使用的转诊助手", "Un asistente de referencias controlado por el paciente", "Công cụ theo dõi giới thiệu do bệnh nhân tự quản lý"],
   ["submit", "送信", "提交", "Enviar", "Gửi"],
 ];
 
