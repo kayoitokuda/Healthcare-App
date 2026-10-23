@@ -1,4 +1,4 @@
-import { LanguageToggle, localizedDraft, useAppLanguage } from "./i18n";
+import { LanguageToggle, localizedDraft, translateText, useAppLanguage } from "./i18n";
 import {
   useEffect,
   useRef,
@@ -915,7 +915,7 @@ export default function App() {
   }
 
   function addUpdate(title = "", detail = "", source: Source = "You", milestone: Milestone | "" = "") {
-    setUpdateTitle(title);
+    setUpdateTitle(title ? translateText(title, language) : title);
     setUpdateDetail(detail);
     setUpdateSource(source);
     setUpdateMilestone(milestone);
