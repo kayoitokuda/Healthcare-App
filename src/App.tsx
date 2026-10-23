@@ -35,7 +35,9 @@ type Milestone =
   | "referral-received"
   | "awaiting-records"
   | "declined-by-specialist"
-  | "ready-to-schedule";
+  | "ready-to-schedule"
+  | "appointment-scheduled"
+  | "appointment-completed";
 type CoverageUpdate = "authorization-required" | "out-of-network" | "coverage-confirmed";
 type UpdateCertainty = "confirmed" | "possible";
 type RecordsOwner = "Referring office" | "Specialist office" | "You" | "Not sure";
@@ -52,6 +54,8 @@ type Update = {
   missingItem?: string;
   recordsOwner?: RecordsOwner;
   readyConfirmed?: boolean;
+  appointmentDate?: string;
+  appointmentTime?: string;
 };
 type Referral = {
   id: number;
@@ -129,10 +133,12 @@ const steps = [
   { title: "Receipt confirmed", copy: "The specialist office confirms arrival" },
   { title: "Specialist review & records", copy: "Resolve requested information before review" },
   { title: "Ready to schedule", copy: "Only after the specialist confirms review is complete" },
+  { title: "Appointment scheduled", copy: "Record the date once you’ve booked with the office" },
+  { title: "Appointment completed", copy: "After the visit, record any next steps you were given" },
 ];
 
 type AgentInsight = {
-  signal: "Possible hold-up" | "Next step" | "Specialist response needed" | "Ready to schedule";
+  signal: "Possible hold-up" | "Next step" | "Specialist response needed" | "Ready to schedule" | "Appointment scheduled" | "Appointment completed";
   headline: string;
   detail: string;
   action: string;
@@ -173,6 +179,8 @@ function handoffLabel(state: HandoffState, update?: Update) {
       ? "Possible specialist decline"
       : "Declined by specialist";
   }
+  if (state === "appointment-scheduled") return "Appointment scheduled";
+  if (state === "appointment-completed") return "Appointment completed";
   return "Ready to schedule";
 }
 
@@ -317,6 +325,33 @@ function referralAgentInsight(referral: Referral): AgentInsight {
       rationale: "Receipt is distinct from specialist acceptance and from insurance authorization.",
       recipient: referral.to,
       question: `I recorded that you received my ${referral.specialty} referral. Is it ready for review, and do you need any records or other information before it can proceed?`,
+    };
+  }
+  if (currentState === "appointment-scheduled") {
+    const appointment = [...referral.updates].reverse().find((update) => update.milestone === "appointment-scheduled");
+    const dateLabel = appointment?.appointmentDate
+      ? new Date(`${appointment.appointmentDate}T12:00:00`).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+      : undefined;
+    const when = [dateLabel, appointment?.appointmentTime].filter(Boolean).join(" · ");
+    return {
+      signal: "Appointment scheduled",
+      headline: "Your appointment is scheduled.",
+      detail: when ? `You recorded an appointment for ${when}.` : "You recorded that an appointment has been scheduled.",
+      action: "Keep any preparation instructions from the office handy. After your visit, record any next steps your clinician gives you.",
+      rationale: "Based on the appointment update you recorded; the app does not verify the booking.",
+      recipient: referral.to,
+      question: "Is there anything I should bring or do before my appointment?",
+    };
+  }
+  if (currentState === "appointment-completed") {
+    return {
+      signal: "Appointment completed",
+      headline: "You recorded that the appointment is complete.",
+      detail: "Add any follow-up instructions or next appointment your clinician recommended, if there are any.",
+      action: "Record the follow-up plan you were given, or add a note if no further step was discussed. The app won’t interpret your care plan.",
+      rationale: "Based on your recorded update; this does not indicate a medical outcome.",
+      recipient: referral.to,
+      question: "Could you clarify the follow-up steps we discussed and when I should complete them?",
     };
   }
   return {
@@ -801,6 +836,8 @@ export default function App() {
   const [updateMissingItem, setUpdateMissingItem] = useState("");
   const [updateRecordsOwner, setUpdateRecordsOwner] = useState<RecordsOwner>("Not sure");
   const [readyConfirmation, setReadyConfirmation] = useState(false);
+  const [appointmentDate, setAppointmentDate] = useState("");
+  const [appointmentTime, setAppointmentTime] = useState("");
   const [messageKind, setMessageKind] = useState<
     "Call script" | "Portal message" | "Email"
   >("Call script");
@@ -859,7 +896,7 @@ export default function App() {
     (item) => getHandoffState(item) === "ready-to-schedule",
   ).length;
   const followUpCount = referrals.filter(
-    (item) => getHandoffState(item) !== "ready-to-schedule",
+    (item) => !["ready-to-schedule", "appointment-scheduled", "appointment-completed"].includes(getHandoffState(item)),
   ).length;
   const nextReferral = referrals[0];
   const nextStep = nextReferral ? nextStepFor(nextReferral) : null;
@@ -875,21 +912,31 @@ export default function App() {
     window.setTimeout(() => setToast(""), 2800);
   }
 
-  function addUpdate(title = "", detail = "", source: Source = "You") {
+  function addUpdate(title = "", detail = "", source: Source = "You", milestone: Milestone | "" = "") {
     setUpdateTitle(title);
     setUpdateDetail(detail);
     setUpdateSource(source);
-    setUpdateMilestone("");
+    setUpdateMilestone(milestone);
     setUpdateCoverage("");
     setUpdateCertainty("confirmed");
     setUpdateMissingItem("");
     setUpdateRecordsOwner("Not sure");
     setReadyConfirmation(false);
+    setAppointmentDate("");
+    setAppointmentTime("");
     setModal("update");
   }
 
   function saveUpdate() {
     if (!referral || !updateTitle.trim()) return;
+    if (updateMilestone === "appointment-scheduled" && getHandoffState(referral) !== "ready-to-schedule") {
+      flash("Record an appointment only after the specialist confirms the referral is ready to schedule.");
+      return;
+    }
+    if (updateMilestone === "appointment-completed" && getHandoffState(referral) !== "appointment-scheduled") {
+      flash("Mark the appointment complete after you have recorded it as scheduled.");
+      return;
+    }
     if (
       updateMilestone === "ready-to-schedule" &&
       (updateSource !== "Specialist office" || !readyConfirmation)
@@ -910,6 +957,8 @@ export default function App() {
         ? { missingItem: updateMissingItem.trim(), recordsOwner: updateRecordsOwner }
         : {}),
       ...(updateMilestone === "ready-to-schedule" ? { readyConfirmed: true } : {}),
+      ...(updateMilestone === "appointment-scheduled" && appointmentDate.trim() ? { appointmentDate: appointmentDate.trim() } : {}),
+      ...(updateMilestone === "appointment-scheduled" && appointmentTime.trim() ? { appointmentTime: appointmentTime.trim() } : {}),
     };
     setReferrals((all) =>
       all.map((r) =>
@@ -1112,7 +1161,7 @@ export default function App() {
               </p>
             </div>
             <span
-              className={`status-pill ${handoffState === "ready-to-schedule" ? "status-green" : "status-amber"}`}
+              className={`status-pill ${["ready-to-schedule", "appointment-scheduled", "appointment-completed"].includes(handoffState) ? "status-green" : "status-amber"}`}
             >
               <span className="status-dot" />
               {status}
@@ -1158,9 +1207,21 @@ export default function App() {
                 <p className="eyebrow">THE HANDOFF</p>
                 <h2>From recommendation to appointment</h2>
               </div>
-              <button className="text-button" onClick={() => addUpdate()}>
-                + Add update
-              </button>
+              <div className="journey-actions button-stack">
+                {handoffState === "ready-to-schedule" && (
+                  <button className="primary-button compact" onClick={() => addUpdate("Appointment scheduled", "", "You", "appointment-scheduled")}>
+                    <CalendarDays size={16} /> Record appointment booked
+                  </button>
+                )}
+                {handoffState === "appointment-scheduled" && (
+                  <button className="primary-button compact" onClick={() => addUpdate("Appointment completed", "", "You", "appointment-completed")}>
+                    <CheckCircle2 size={16} /> Mark appointment complete
+                  </button>
+                )}
+                <button className="text-button" onClick={() => addUpdate()}>
+                  + Add update
+                </button>
+              </div>
             </div>
             <div className="journey">
               {steps.map((step, i) => {
@@ -1177,20 +1238,28 @@ export default function App() {
                   "declined-by-specialist",
                   "ready-to-schedule",
                 ].includes(handoffState);
-                const reviewComplete = handoffState === "ready-to-schedule";
+                const reviewComplete = ["ready-to-schedule", "appointment-scheduled", "appointment-completed"].includes(handoffState);
                 const done =
                   i === 0 ||
                   (i === 1 && sentOrLater) ||
                   (i === 2 && receivedOrLater) ||
                   (i === 3 && reviewComplete) ||
-                  (i === 4 && readyRecorded);
+                  (i === 4 && reviewComplete) ||
+                  (i === 5 && ["appointment-scheduled", "appointment-completed"].includes(handoffState)) ||
+                  (i === 6 && handoffState === "appointment-completed");
                 const active =
                   (i === 1 && ["status-not-confirmed", "referral-not-sent"].includes(handoffState)) ||
                   (i === 2 && handoffState === "referral-sent") ||
-                  (i === 3 && ["referral-received", "awaiting-records", "declined-by-specialist"].includes(handoffState));
+                  (i === 3 && ["referral-received", "awaiting-records", "declined-by-specialist"].includes(handoffState)) ||
+                  (i === 4 && handoffState === "ready-to-schedule") ||
+                  (i === 5 && handoffState === "ready-to-schedule");
                 const stateLabel =
                   i === 4
-                    ? readyRecorded ? "Confirmed" : "Only after confirmation"
+                    ? reviewComplete ? "Confirmed" : "Only after confirmation"
+                    : i === 5
+                      ? handoffState === "appointment-scheduled" || handoffState === "appointment-completed" ? "Recorded" : "Not recorded"
+                      : i === 6
+                        ? handoffState === "appointment-completed" ? "Recorded" : "After appointment"
                     : i === 3 && handoffState === "awaiting-records"
                       ? "Awaiting records"
                       : i === 3 && handoffState === "declined-by-specialist"
@@ -1300,6 +1369,8 @@ export default function App() {
                       {update.milestone && (
                         <span className="source-tag">{handoffLabel(update.milestone, update)}</span>
                       )}
+                      {update.appointmentDate && <span className="source-tag">Appointment · {new Date(`${update.appointmentDate}T12:00:00`).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</span>}
+                      {update.appointmentTime && <span className="source-tag">Time · {update.appointmentTime}</span>}
                       {update.coverageUpdate && (
                         <span className="source-tag source-tag-office">Insurance · {coverageLabel(update.coverageUpdate)}</span>
                       )}
@@ -1412,6 +1483,8 @@ export default function App() {
                     <option value="awaiting-records">Awaiting records</option>
                     <option value="declined-by-specialist">Declined by specialist</option>
                     <option value="ready-to-schedule">Ready to schedule</option>
+                    <option value="appointment-scheduled" disabled={handoffState !== "ready-to-schedule"}>Appointment scheduled</option>
+                    <option value="appointment-completed" disabled={handoffState !== "appointment-scheduled"}>Appointment completed</option>
                   </select>
                 </label>
                 <label>
@@ -1469,6 +1542,19 @@ export default function App() {
                       <option value="possible">Possible / not final</option>
                     </select>
                   </label>
+                )}
+                {updateMilestone === "appointment-scheduled" && (
+                  <>
+                    <label>
+                      Appointment date (if known)
+                      <input type="date" value={appointmentDate} onChange={(e) => setAppointmentDate(e.target.value)} />
+                    </label>
+                    <label>
+                      Appointment time (if known)
+                      <input type="time" value={appointmentTime} onChange={(e) => setAppointmentTime(e.target.value)} />
+                    </label>
+                    <small>This records what you entered; it doesn’t confirm the booking with the office.</small>
+                  </>
                 )}
                 {updateMilestone === "ready-to-schedule" && (
                   <label className="ready-confirmation">
@@ -1791,7 +1877,7 @@ export default function App() {
                           <Stethoscope size={19} />
                         </span>
                         <span
-                          className={`status-pill ${getHandoffState(r) === "ready-to-schedule" ? "status-green" : "status-amber"}`}
+                          className={`status-pill ${["ready-to-schedule", "appointment-scheduled", "appointment-completed"].includes(getHandoffState(r)) ? "status-green" : "status-amber"}`}
                         >
                           <span className="status-dot" />
                           {handoffLabel(getHandoffState(r), latestStatusUpdate(r))}
@@ -1815,7 +1901,11 @@ export default function App() {
                       <div className="card-note">
                         <CircleHelp size={16} />
                         <span>
-                          {getHandoffState(r) === "awaiting-records"
+                          {getHandoffState(r) === "appointment-scheduled"
+                            ? "You recorded an appointment booking."
+                            : getHandoffState(r) === "appointment-completed"
+                              ? "You recorded that the appointment is complete."
+                              : getHandoffState(r) === "awaiting-records"
                             ? "A record is needed before specialist review can continue."
                             : getHandoffState(r) === "declined-by-specialist"
                               ? "Review the specialist-office update and confirm whether the decision is final."
