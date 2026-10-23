@@ -267,6 +267,11 @@ const rows: Array<[string, string, string, string, string]> = [
   ["you added", "あなたが追加", "由你添加", "que agregaste", "bạn đã thêm"],
   ["Specialist recommended", "専門医を勧められた", "医生建议看专科", "Especialista recomendado", "Được đề xuất khám chuyên khoa"],
   ["A patient-owned referral companion", "患者が自分で管理する紹介サポートツール", "由患者自主使用的转诊助手", "Un asistente de referencias controlado por el paciente", "Công cụ theo dõi giới thiệu do bệnh nhân tự quản lý"],
+  ["Sample tracker", "サンプルの紹介記録", "示例转诊记录", "Registro de ejemplo", "Danh sách mẫu"],
+  ["Specialist office noted a missing item", "専門医療機関から不足している資料について連絡がありました", "专科诊所表示缺少一项资料", "El consultorio especialista indicó que falta un documento", "Phòng khám chuyên khoa cho biết còn thiếu tài liệu"],
+  ["You recorded that the specialist office confirmed receipt.", "専門医療機関が受領を確認したと記録しました。", "你记录了专科诊所已确认收到。", "Registraste que el consultorio especialista confirmó la recepción.", "Bạn đã ghi nhận phòng khám chuyên khoa xác nhận đã nhận."],
+  ["You recorded a receipt update. Check the source in your timeline.", "受領に関する更新を記録しました。タイムラインで情報源を確認してください。", "你记录了收件更新。请在时间线上查看来源。", "Registraste una actualización de recepción. Consulta su fuente en la cronología.", "Bạn đã ghi nhận cập nhật tiếp nhận. Hãy xem nguồn trong dòng thời gian."],
+  ["KEEP IN MIND", "覚えておくこと", "请记住", "A TENER EN CUENTA", "CẦN LƯU Ý"],
   ["submit", "送信", "提交", "Enviar", "Gửi"],
 ];
 
