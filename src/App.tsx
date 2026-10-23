@@ -1573,9 +1573,9 @@ export default function App() {
                     value={updateSource}
                     onChange={(e) => setUpdateSource(e.target.value as Source)}
                   >
-                    <option>You</option>
-                    <option>Referring office</option>
-                    <option>Specialist office</option>
+                    <option value="You">You</option>
+                    <option value="Referring office">Referring office</option>
+                    <option value="Specialist office">Specialist office</option>
                     <option value="Health plan">Health plan</option>
                   </select>
                 </label>
