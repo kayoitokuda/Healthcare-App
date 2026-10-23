@@ -410,7 +410,6 @@ export function LanguageToggle() {
         aria-label="Language"
         value={language}
         onChange={(event) => setLanguage(event.target.value as AppLanguage)}
-        data-no-translate="true"
       >
         <option value="en">English</option>
         <option value="ja">日本語</option>
