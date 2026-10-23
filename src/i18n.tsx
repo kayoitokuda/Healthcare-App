@@ -86,6 +86,7 @@ const rows: Array<[string, string, string, string, string]> = [
   ["Call script draft", "電話用スクリプトの下書き", "电话提纲草稿", "Borrador de guion de llamada", "Bản nháp kịch bản gọi điện"],
   ["Portal message draft", "ポータルメッセージの下書き", "患者门户信息草稿", "Borrador de mensaje del portal", "Bản nháp tin nhắn trên cổng thông tin"],
   ["Email draft", "メールの下書き", "电子邮件草稿", "Borrador de correo electrónico", "Bản nháp email"],
+  ["draft", "下書き", "草稿", "borrador", "bản nháp"],
   ["Portal message", "ポータルメッセージ", "患者门户信息", "Mensaje del portal", "Tin nhắn trên cổng thông tin"],
   ["Email", "メール", "电子邮件", "Correo electrónico", "Email"],
   ["Copied to clipboard", "クリップボードにコピーしました", "已复制到剪贴板", "Copiado al portapapeles", "Đã sao chép"],
