@@ -83,6 +83,9 @@ const rows: Array<[string, string, string, string, string]> = [
   ["Prepare a call script or message", "電話用スクリプトまたはメッセージを作成", "准备电话提纲或信息", "Prepara un guion de llamada o mensaje", "Soạn kịch bản gọi điện hoặc tin nhắn"],
   ["Edit this draft for your situation. Nothing is sent from here.", "状況に合わせて下書きを編集してください。ここから送信されることはありません。", "请根据你的情况编辑草稿。此处不会发送任何内容。", "Adapta este borrador a tu situación. No se envía desde aquí.", "Chỉnh sửa bản nháp cho phù hợp. Nội dung sẽ không được gửi từ đây."],
   ["Call script", "電話用スクリプト", "电话提纲", "Guion de llamada", "Kịch bản gọi điện"],
+  ["Call script draft", "電話用スクリプトの下書き", "电话提纲草稿", "Borrador de guion de llamada", "Bản nháp kịch bản gọi điện"],
+  ["Portal message draft", "ポータルメッセージの下書き", "患者门户信息草稿", "Borrador de mensaje del portal", "Bản nháp tin nhắn trên cổng thông tin"],
+  ["Email draft", "メールの下書き", "电子邮件草稿", "Borrador de correo electrónico", "Bản nháp email"],
   ["Portal message", "ポータルメッセージ", "患者门户信息", "Mensaje del portal", "Tin nhắn trên cổng thông tin"],
   ["Email", "メール", "电子邮件", "Correo electrónico", "Email"],
   ["Copied to clipboard", "クリップボードにコピーしました", "已复制到剪贴板", "Copiado al portapapeles", "Đã sao chép"],
@@ -478,26 +481,27 @@ export function localizedDraft(
 ) {
   if (language === "en") {
     return kind === "Call script"
-      ? `Hello, my name is [your name]. I’m calling ${recipient} about my ${specialty} referral. ${question}`
-      : `Hello, I’m following up about my ${specialty} referral. ${question} Thank you.`;
+      ? `Hello, my name is [your name]. I’m calling ${recipient} about my ${localizedSpecialty} referral. ${question}`
+      : `Hello, I’m following up about my ${localizedSpecialty} referral. ${question} Thank you.`;
   }
 
+  const localizedSpecialty = translateText(specialty, language);
   const prompts = {
     ja: {
-      call: `こんにちは。[お名前]です。${recipient}に、${specialty}の紹介についてお電話しています。${translateText(question, language)}`,
-      message: `こんにちは。${specialty}の紹介について確認のご連絡です。${translateText(question, language)}よろしくお願いいたします。`,
+      call: `こんにちは。[お名前]です。${recipient}に、${localizedSpecialty}の紹介についてお電話しています。${translateText(question, language)}`,
+      message: `こんにちは。${localizedSpecialty}の紹介について確認のご連絡です。${translateText(question, language)}よろしくお願いいたします。`,
     },
     zh: {
-      call: `您好，我是[姓名]。我致电${recipient}，想咨询${specialty}转诊的情况。${translateText(question, language)}`,
-      message: `您好，我想跟进${specialty}转诊的情况。${translateText(question, language)}谢谢。`,
+      call: `您好，我是[姓名]。我致电${recipient}，想咨询${localizedSpecialty}转诊的情况。${translateText(question, language)}`,
+      message: `您好，我想跟进${localizedSpecialty}转诊的情况。${translateText(question, language)}谢谢。`,
     },
     es: {
-      call: `Hola, me llamo [tu nombre]. Llamo a ${recipient} para consultar sobre mi referencia a ${specialty}. ${translateText(question, language)}`,
-      message: `Hola, escribo para dar seguimiento a mi referencia a ${specialty}. ${translateText(question, language)} Gracias.`,
+      call: `Hola, me llamo [tu nombre]. Llamo a ${recipient} para consultar sobre mi referencia a ${localizedSpecialty}. ${translateText(question, language)}`,
+      message: `Hola, escribo para dar seguimiento a mi referencia a ${localizedSpecialty}. ${translateText(question, language)} Gracias.`,
     },
     vi: {
-      call: `Xin chào, tôi tên là [tên của bạn]. Tôi gọi cho ${recipient} để hỏi về giấy giới thiệu đến khoa ${specialty}. ${translateText(question, language)}`,
-      message: `Xin chào, tôi liên hệ để hỏi về giấy giới thiệu đến khoa ${specialty}. ${translateText(question, language)} Xin cảm ơn.`,
+      call: `Xin chào, tôi tên là [tên của bạn]. Tôi gọi cho ${recipient} để hỏi về giấy giới thiệu đến khoa ${localizedSpecialty}. ${translateText(question, language)}`,
+      message: `Xin chào, tôi liên hệ để hỏi về giấy giới thiệu đến khoa ${localizedSpecialty}. ${translateText(question, language)} Xin cảm ơn.`,
     },
   }[language];
   return kind === "Call script" ? prompts.call : prompts.message;
