@@ -478,14 +478,14 @@ export function localizedDraft(
   recipient: string,
   specialty: string,
   question: string,
-) {
+ ) {
+  const localizedSpecialty = language === "en" ? specialty : translateText(specialty, language);
   if (language === "en") {
     return kind === "Call script"
       ? `Hello, my name is [your name]. I’m calling ${recipient} about my ${localizedSpecialty} referral. ${question}`
       : `Hello, I’m following up about my ${localizedSpecialty} referral. ${question} Thank you.`;
   }
 
-  const localizedSpecialty = translateText(specialty, language);
   const prompts = {
     ja: {
       call: `こんにちは。[お名前]です。${recipient}に、${localizedSpecialty}の紹介についてお電話しています。${translateText(question, language)}`,
