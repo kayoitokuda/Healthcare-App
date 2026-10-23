@@ -766,7 +766,7 @@ function localizedQuestion(question: string, language: AppLanguage, specialty: s
   if (/clarify the follow-up steps/.test(common)) return t.completed;
   if (/help me find an appointment time/.test(common)) return t.schedule;
   if (/is needed|which item is required|what is still needed/.test(common)) {
-    const item = question.match(/(?:said )?(.+?) is needed/i)?.[1];
+    const item = question.match(/(?:said|recorded that)\\s+(.+?)\\s+is needed/i)?.[1] ?? question.match(/(.+?)\\s+is needed/i)?.[1]?.replace(/^.*(?:said|recorded that)\\s+/i, "");
     if (item) {
       const localizedItem = translateText(item, language);
       if (language === "ja") return `${localizedItem}が必要とのことです。どのように提出すればよいか教えていただき、提出後に確認いただけますか？`;
@@ -818,15 +818,15 @@ export function localizedDraft(
     },
     es: {
       call: `Hola, me llamo [tu nombre]. Llamo a ${recipient} para dar seguimiento a mi referencia de ${localizedSpecialty}. ${localizedPrompt}¿Podrían repetir el siguiente paso e indicarme con quién debo hablar? Gracias.`,
-      text: `Hola, soy [tu nombre]. Doy seguimiento con ${recipient} a mi referencia de ${localizedSpecialty}. ${localizedPrompt}Gracias. [Tu nombre]`,
-      portal: `Hola, escribo para dar seguimiento a mi referencia de ${localizedSpecialty}. ${localizedPrompt}Avísenme si necesitan algún otro dato. Gracias. [Tu nombre]`,
-      email: `Hola, escribo a ${recipient} para dar seguimiento a mi referencia de ${localizedSpecialty}. ${localizedPrompt}Por favor, avísenme si necesitan información adicional. Gracias. [Tu nombre]`,
+      text: `Hola, soy [tu nombre]. Doy seguimiento con ${recipient} a mi referencia de ${localizedSpecialty}. ${localizedPrompt} Gracias. [Tu nombre]`,
+      portal: `Hola, escribo para dar seguimiento a mi referencia de ${localizedSpecialty}. ${localizedPrompt} Avísenme si necesitan algún otro dato. Gracias. [Tu nombre]`,
+      email: `Hola, escribo a ${recipient} para dar seguimiento a mi referencia de ${localizedSpecialty}. ${localizedPrompt} Por favor, avísenme si necesitan información adicional. Gracias. [Tu nombre]`,
     },
     vi: {
       call: `Xin chào, tôi tên là [tên của bạn]. Tôi gọi cho ${recipient} để hỏi về giấy giới thiệu đến khoa ${localizedSpecialty} của tôi. ${localizedPrompt}Xin vui lòng nhắc lại bước tiếp theo và cho tôi biết nên trao đổi với ai. Cảm ơn.`,
-      text: `Xin chào, tôi là [tên của bạn]. Tôi liên hệ với ${recipient} để hỏi về giấy giới thiệu đến khoa ${localizedSpecialty}. ${localizedPrompt}Xin cảm ơn. [Tên của bạn]`,
-      portal: `Xin chào, tôi liên hệ để hỏi về giấy giới thiệu đến khoa ${localizedSpecialty}. ${localizedPrompt}Xin cho biết nếu cần tôi cung cấp thêm thông tin. Xin cảm ơn. [Tên của bạn]`,
-      email: `Xin chào, tôi viết thư để hỏi ${recipient} về giấy giới thiệu đến khoa ${localizedSpecialty}. ${localizedPrompt}Xin cho biết nếu cần thêm thông tin. Xin cảm ơn. [Tên của bạn]`,
+      text: `Xin chào, tôi là [tên của bạn]. Tôi liên hệ với ${recipient} để hỏi về giấy giới thiệu đến khoa ${localizedSpecialty}. ${localizedPrompt} Xin cảm ơn. [Tên của bạn]`,
+      portal: `Xin chào, tôi liên hệ để hỏi về giấy giới thiệu đến khoa ${localizedSpecialty}. ${localizedPrompt} Xin cho biết nếu cần tôi cung cấp thêm thông tin. Xin cảm ơn. [Tên của bạn]`,
+      email: `Xin chào, tôi viết thư để hỏi ${recipient} về giấy giới thiệu đến khoa ${localizedSpecialty}. ${localizedPrompt} Xin cho biết nếu cần thêm thông tin. Xin cảm ơn. [Tên của bạn]`,
     },
   };
   const localized = prompts[language];
