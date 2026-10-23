@@ -775,7 +775,7 @@ function ReferralAgentCard({
       </div>
       <div className="agent-actions">
         <button className="primary-button" type="button" onClick={onPrimary}>
-          {mode === "overview" ? "Open referral action plan" : "Prepare a follow-up"}
+          {mode === "overview" ? "Open referral action plan" : "Draft a text or portal message"}
           <ArrowRight size={15} />
         </button>
         <button className="secondary-button" type="button" onClick={onOpenReminder}>
