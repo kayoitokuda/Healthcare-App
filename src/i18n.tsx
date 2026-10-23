@@ -366,6 +366,10 @@ const rows: Array<[string, string, string, string, string]> = [
   ["specialist office","専門医療機関","专科诊所","consultorio especialista","phòng khám chuyên khoa"],
   ["referring office","紹介元の医療機関","转诊诊所","consultorio que te refirió","nơi giới thiệu"],
   ["health plan","保険プラン","保险计划","plan de salud","chương trình bảo hiểm"],
+  ["The specialist confirmed the referral can proceed to scheduling.", "専門医療機関は紹介状が予約手続きに進めることを確認しました。", "专科诊所确认转诊可以进入预约流程。", "El especialista confirmó que la referencia puede pasar a programación.", "Phòng khám chuyên khoa xác nhận giấy giới thiệu có thể chuyển sang bước đặt lịch."],
+  ["You recorded that the specialist can proceed and known records or review steps are complete. Check any insurance requirements separately.", "専門医療機関が進行可能と確認し、把握している必要書類や審査が完了したと記録しました。保険の要件は別途確認してください。", "你记录了专科诊所确认可以继续，且已知资料或审核步骤已完成。请另行确认保险要求。", "Registraste que el especialista puede continuar y que los documentos o la revisión conocidos están completos. Revisa por separado los requisitos del seguro.", "Bạn đã ghi nhận phòng khám chuyên khoa có thể tiếp tục và hồ sơ hoặc bước xem xét đã biết đều hoàn tất. Hãy kiểm tra riêng các yêu cầu bảo hiểm."],
+  ["This is based on a specialist-office confirmation you recorded.", "専門医療機関の確認としてあなたが記録した内容に基づいています。", "根据你记录的专科诊所确认信息。", "Se basa en la confirmación del consultorio especialista que registraste.", "Dựa trên xác nhận từ phòng khám chuyên khoa mà bạn đã ghi nhận."],
+  ["Confirmed", "確認済み", "已确认", "Confirmado", "Đã xác nhận"],
   ["submit", "送信", "提交", "Enviar", "Gửi"],
 ];
 
