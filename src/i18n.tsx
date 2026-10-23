@@ -363,6 +363,9 @@ const rows: Array<[string, string, string, string, string]> = [
   ["The specialist office said","専門医療機関から聞いた内容","专科诊所表示","El consultorio especialista dijo","Phòng khám chuyên khoa cho biết"],
   ["The referring office said","紹介元から聞いた内容","转诊诊所表示","El consultorio que te refirió dijo","Nơi giới thiệu cho biết"],
   ["my note says","自分のメモには","我的备注写着","mi nota indica","ghi chú của tôi cho biết"],
+  ["specialist office","専門医療機関","专科诊所","consultorio especialista","phòng khám chuyên khoa"],
+  ["referring office","紹介元の医療機関","转诊诊所","consultorio que te refirió","nơi giới thiệu"],
+  ["health plan","保険プラン","保险计划","plan de salud","chương trình bảo hiểm"],
   ["submit", "送信", "提交", "Enviar", "Gửi"],
 ];
 
