@@ -288,7 +288,7 @@ function formatEnglishDate(source: string, language: AppLanguage) {
   return new Intl.DateTimeFormat(languageLocales[language], { year: "numeric", month: "short", day: "numeric" }).format(date);
 }
 
-export function translateText(source: string, language: AppLanguage) {
+export function translateText(source: string, language: AppLanguage): string {
   if (language === "en") return source;
   const clean = source.replace(/\s+/g, " ").trim();
   const exact = dictionary[clean]?.[language];
@@ -328,6 +328,12 @@ const LanguageContext = createContext<LanguageContextValue>({
 });
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
+  const maps = useRef({
+    originals: new WeakMap<Text, string>(),
+    rendered: new WeakMap<Text, string>(),
+    attributeOriginals: new WeakMap<Element, Map<string, string>>(),
+    attributeRendered: new WeakMap<Element, Map<string, string>>(),
+  });
   const [language, setLanguageState] = useState<AppLanguage>(() => {
     try {
       const saved = localStorage.getItem("referral-navigator-language");
