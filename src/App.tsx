@@ -948,7 +948,11 @@ export default function App() {
     }
     const update: Update = {
       id: Date.now(),
-      title: updateTitle.trim(),
+      title: updateMilestone === "appointment-scheduled"
+        ? "Appointment scheduled"
+        : updateMilestone === "appointment-completed"
+          ? "Appointment completed"
+          : updateTitle.trim(),
       detail: updateDetail.trim() || "No additional notes.",
       date: today,
       source: updateSource,
