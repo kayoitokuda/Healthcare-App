@@ -1524,10 +1524,10 @@ export default function App() {
                         value={updateRecordsOwner}
                         onChange={(e) => setUpdateRecordsOwner(e.target.value as RecordsOwner)}
                       >
-                        <option>Not sure</option>
-                        <option>Referring office</option>
-                        <option>Specialist office</option>
-                        <option>You</option>
+                        <option value="Not sure">Not sure</option>
+                        <option value="Referring office">Referring office</option>
+                        <option value="Specialist office">Specialist office</option>
+                        <option value="You">You</option>
                       </select>
                     </label>
                   </>
@@ -1576,7 +1576,7 @@ export default function App() {
                     <option>You</option>
                     <option>Referring office</option>
                     <option>Specialist office</option>
-                    <option>Health plan</option>
+                    <option value="Health plan">Health plan</option>
                   </select>
                 </label>
                 <label>
