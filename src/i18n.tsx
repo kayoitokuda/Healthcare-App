@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 
 export type AppLanguage = "en" | "ja" | "zh" | "es" | "vi";
 
@@ -12,6 +12,20 @@ const languageLocales: Record<AppLanguage, string> = {
 
 const rows: Array<[string, string, string, string, string]> = [
   ["Language", "言語", "语言", "Idioma", "Ngôn ngữ"],
+  ["Possible hold-up", "遅れの可能性", "可能存在延误", "Posible demora", "Có thể bị trì hoãn"],
+  ["Follow up on a possible hold-up", "遅れの可能性について確認する", "跟进可能的延误", "Dar seguimiento a una posible demora", "Theo dõi khả năng bị trì hoãn"],
+  ["The latest dental X-ray may still be needed.", "最新の歯科X線画像がまだ必要な可能性があります。", "可能仍需要最新的牙科X光片。", "Es posible que aún necesiten la radiografía dental más reciente.", "Có thể vẫn cần phim X-quang răng mới nhất."],
+  ["latest dental X-ray", "最新の歯科X線画像", "最新的牙科X光片", "radiografía dental más reciente", "phim X-quang răng mới nhất"],
+  ["You recorded this detail from the specialist office.", "専門医療機関から聞いた内容として記録しました。", "你将此信息记录为专科诊所告知的内容。", "Registraste este dato según lo que te dijo el consultorio especialista.", "Bạn đã ghi lại thông tin này theo lời phòng khám chuyên khoa."],
+  ["Peninsula Oral Surgery confirmed receipt and said they still need the latest dental X-ray before they can review it.", "Peninsula Oral Surgery は紹介状を受領したものの、確認には最新の歯科X線画像が必要だと伝えました。", "Peninsula Oral Surgery 确认已收到转诊，但表示审核前仍需要最新的牙科X光片。", "Peninsula Oral Surgery confirmó que recibió la referencia, pero aún necesita la radiografía dental más reciente para revisarla.", "Peninsula Oral Surgery xác nhận đã nhận giấy giới thiệu nhưng vẫn cần phim X-quang răng mới nhất trước khi xem xét."],
+  ["Ask Bayview Dental to send latest dental X-ray to Peninsula Oral Surgery.", "Bayview Dental に最新の歯科X線画像を Peninsula Oral Surgery へ送るよう依頼してください。", "请 Bayview Dental 将最新的牙科X光片发送给 Peninsula Oral Surgery。", "Pide a Bayview Dental que envíe la radiografía dental más reciente a Peninsula Oral Surgery.", "Hãy đề nghị Bayview Dental gửi phim X-quang răng mới nhất đến Peninsula Oral Surgery."],
+  ["Could you send latest dental X-ray to Peninsula Oral Surgery, and let me know when it has been sent?", "最新の歯科X線画像を Peninsula Oral Surgery に送っていただき、送付後にお知らせいただけますか？", "可以请您将最新的牙科X光片发送给 Peninsula Oral Surgery，并告知我发送时间吗？", "¿Podrían enviar la radiografía dental más reciente a Peninsula Oral Surgery e indicarme cuándo la enviaron?", "Quý vị có thể gửi phim X-quang răng mới nhất đến Peninsula Oral Surgery và cho tôi biết khi nào đã gửi không?"],
+  ["Specialist recommended", "専門医を勧められた", "医生建议看专科", "Especialista recomendado", "Được đề xuất khám chuyên khoa"],
+  ["Dr. Chen recommended an oral surgery consultation.", "Chen 医師から口腔外科の診察を勧められました。", "Chen 医生建议进行口腔外科会诊。", "La Dra. Chen recomendó una consulta de cirugía oral.", "Bác sĩ Chen đề xuất tư vấn phẫu thuật miệng."],
+  ["Referral added to your tracker", "紹介を記録に追加しました", "已将转诊添加到记录", "Referencia añadida a tu registro", "Đã thêm lượt giới thiệu vào danh sách"],
+  ["You added the details you had from your visit.", "診察で得た情報を追加しました。", "你添加了就诊时获得的信息。", "Añadiste los datos que tenías de la consulta.", "Bạn đã thêm thông tin có được từ buổi khám."],
+  ["Referring office says it was sent", "紹介元が送付したと伝えています", "转诊诊所表示已发送", "El consultorio que te refirió dice que la envió", "Nơi giới thiệu cho biết đã gửi"],
+  ["Bayview Dental told me they sent the referral to Peninsula Oral Surgery.", "Bayview Dental から Peninsula Oral Surgery に紹介状を送付したと聞きました。", "Bayview Dental 告诉我，他们已将转诊发送给 Peninsula Oral Surgery。", "Bayview Dental me dijo que envió la referencia a Peninsula Oral Surgery.", "Bayview Dental cho biết họ đã gửi giấy giới thiệu đến Peninsula Oral Surgery."],
   ["Referral Navigator home", "Referral Navigator ホーム", "Referral Navigator 首页", "Inicio de Referral Navigator", "Trang chủ Referral Navigator"],
   ["Main navigation", "メインナビゲーション", "主导航", "Navegación principal", "Điều hướng chính"],
   ["Dashboard navigation", "ダッシュボードナビゲーション", "控制面板导航", "Navegación del panel", "Điều hướng bảng điều khiển"],
@@ -288,10 +302,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   });
 
   useEffect(() => {
-    const originals = new WeakMap<Text, string>();
-    const rendered = new WeakMap<Text, string>();
-    const attributeOriginals = new WeakMap<Element, Map<string, string>>();
-    const attributeRendered = new WeakMap<Element, Map<string, string>>();
+    const { originals, rendered, attributeOriginals, attributeRendered } = maps.current;
 
     const applyText = (node: Text) => {
       const current = node.data;
