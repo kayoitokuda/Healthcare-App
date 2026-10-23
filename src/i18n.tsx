@@ -348,6 +348,21 @@ const rows: Array<[string, string, string, string, string]> = [
   ["Referral status is still open.","紹介状の状況は未確定です。","转诊状态仍未确定。","El estado de la referencia sigue abierto.","Trạng thái chuyển tuyến vẫn chưa được xác định."],
   ["Appointment ·","予約 ·","预约 ·","Cita ·","Lịch hẹn ·"],
   ["Time ·","時間 ·","时间 ·","Hora ·","Giờ ·"],
+  ["Specialist response needed","専門医療機関からの回答が必要","需要专科诊所回复","Se necesita una respuesta del especialista","Cần phản hồi từ phòng khám chuyên khoa"],
+  ["Confirm the referring office sent it","紹介元が送付したか確認","确认转诊诊所已发送","Confirma que el consultorio que te refirió la envió","Xác nhận nơi giới thiệu đã gửi"],
+  ["The specialist office confirms arrival","専門医療機関が受領を確認","专科诊所确认收到","El consultorio especialista confirma la recepción","Phòng khám chuyên khoa xác nhận đã nhận"],
+  ["Only after confirmation","確認後のみ","仅在确认后","Solo después de la confirmación","Chỉ sau khi xác nhận"],
+  ["Not recorded","未記録","尚未记录","Sin registrar","Chưa ghi nhận"],
+  ["After appointment","予約後","预约后","Después de la cita","Sau cuộc hẹn"],
+  ["Specialist office requested an X-ray","専門医療機関がX線画像を依頼","专科诊所要求提供X光片","El consultorio especialista solicitó una radiografía","Phòng khám chuyên khoa yêu cầu phim X-quang"],
+  ["Peninsula Oral Surgery said they still need the latest dental X-ray before they can review it.","Peninsula Oral Surgery は、確認前に最新の歯科X線画像がまだ必要だと伝えました。","Peninsula Oral Surgery 表示审核前仍需要最新的牙科X光片。","Peninsula Oral Surgery dijo que aún necesita la radiografía dental más reciente para revisarla.","Peninsula Oral Surgery cho biết họ vẫn cần phim X-quang răng mới nhất trước khi xem xét."],
+  ["Specialist office confirmed receipt","専門医療機関が受領を確認","专科诊所确认收到","El consultorio especialista confirmó la recepción","Phòng khám chuyên khoa đã xác nhận tiếp nhận"],
+  ["Peninsula Oral Surgery confirmed receipt and opened the referral for review.","Peninsula Oral Surgery は受領を確認し、紹介状の確認を開始しました。","Peninsula Oral Surgery 确认已收到转诊，并开始审核。","Peninsula Oral Surgery confirmó la recepción y comenzó a revisar la referencia.","Peninsula Oral Surgery xác nhận đã nhận và bắt đầu xem xét giấy giới thiệu."],
+  ["The specialist office confirmed receipt and opened the referral for review.","専門医療機関が受領を確認し、紹介状の確認を開始しました。","专科诊所确认已收到转诊，并开始审核。","El consultorio especialista confirmó la recepción y comenzó a revisar la referencia.","Phòng khám chuyên khoa xác nhận đã nhận và bắt đầu xem xét giấy giới thiệu."],
+  ["Your note says","あなたのメモには","你的备注写着","Tu nota indica","Ghi chú của bạn cho biết"],
+  ["The specialist office said","専門医療機関から聞いた内容","专科诊所表示","El consultorio especialista dijo","Phòng khám chuyên khoa cho biết"],
+  ["The referring office said","紹介元から聞いた内容","转诊诊所表示","El consultorio que te refirió dijo","Nơi giới thiệu cho biết"],
+  ["my note says","自分のメモには","我的备注写着","mi nota indica","ghi chú của tôi cho biết"],
   ["submit", "送信", "提交", "Enviar", "Gửi"],
 ];
 
@@ -510,6 +525,24 @@ export function translateText(source: string, language: AppLanguage): string {
     },
   ];
 
+    {
+      pattern: /^Based on your note from the (.+); confirm who owns the next step\\.$/,
+      translate: (m: RegExpMatchArray) => ({
+        ja: `${translateText(m[1], language)}から聞いた内容に基づいています。次の手順をどちらが担当するか確認してください。`,
+        zh: `根据你记录的${translateText(m[1], language)}提供的信息；请确认下一步由谁负责。`,
+        es: `Se basa en lo que registraste del ${translateText(m[1], language)}; confirma quién debe encargarse del siguiente paso.`,
+        vi: `Dựa trên thông tin bạn ghi nhận từ ${translateText(m[1], language)}; hãy xác nhận ai phụ trách bước tiếp theo.`,
+      }[language]),
+    },
+    {
+      pattern: /^You recorded · (.+)$/,
+      translate: (m: RegExpMatchArray) => ({
+        ja: `あなたが記録 · ${translateText(m[1], language)}`,
+        zh: `你记录 · ${translateText(m[1], language)}`,
+        es: `Lo registraste · ${translateText(m[1], language)}`,
+        vi: `Bạn đã ghi nhận · ${translateText(m[1], language)}`,
+      }[language]),
+    },
   for (const entry of dynamicText) {
     const match = clean.match(entry.pattern);
     if (match) return preserveWhitespace(source, entry.translate(match));
