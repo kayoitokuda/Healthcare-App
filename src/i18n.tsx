@@ -709,9 +709,9 @@ function localizedQuestion(question: string, language: AppLanguage, specialty: s
   const byLanguage: Record<Exclude<AppLanguage, "en">, Record<string, string>> = {
     ja: {
       notSent: `記録では、${specialty}の紹介状はまだ送付されていません。私から必要なことはありますか？また、`,
-      status: `${specialty}の紹介状を`,
-      sent: `${specialty}の紹介状を受け取りましたか？確認いただけますか？`,
-      received: `紹介状を受領したと記録しています。審査の準備はできていますか？`,
+      status: `私の${specialty}の紹介状を送付したか確認いただけますか？`,
+      sent: `紹介状を受領したと記録しています。審査の準備はできていますか？必要な記録や情報があればお知らせください。`,
+      received: `紹介状を受領したと記録しています。審査の準備はできていますか？必要な記録や情報があればお知らせください。`,
       prep: "予約の前に持参または準備すべきものはありますか？",
       completed: "先ほど相談した今後の手順と、いつ行えばよいかを教えていただけますか？",
       schedule: "予約可能な日時を教えていただけますか？",
@@ -721,9 +721,9 @@ function localizedQuestion(question: string, language: AppLanguage, specialty: s
     },
     zh: {
       notSent: `我记录的情况是，我的${specialty}转诊尚未发送。我需要提供什么吗？预计何时发送给`,
-      status: `${specialty}转诊`,
-      sent: `请确认是否收到了我的${specialty}转诊？`,
-      received: "我记录到你们已收到转诊。它可以开始审核了吗？",
+      status: `请确认是否已将我的${specialty}转诊发送？`,
+      sent: `我记录到你们已收到转诊。它可以开始审核了吗？审核前还需要其他资料吗？`,
+      received: `我记录到你们已收到转诊。它可以开始审核了吗？审核前还需要其他资料吗？`,
       prep: "预约前我需要携带或准备什么吗？",
       completed: "请问我们讨论的后续步骤是什么，我应该何时完成？",
       schedule: "可以帮我看看有哪些预约时间吗？",
@@ -733,9 +733,9 @@ function localizedQuestion(question: string, language: AppLanguage, specialty: s
     },
     es: {
       notSent: `Anoté que aún no se ha enviado mi referencia de ${specialty}. ¿Necesitan algo de mi parte? ¿Cuándo prevén enviarla a `,
-      status: `mi referencia de ${specialty}`,
-      sent: `¿Podrían confirmar si recibieron mi referencia de ${specialty}?`,
-      received: "Anoté que recibieron mi referencia. ¿Está lista para revisión?",
+      status: `¿Podrían confirmar si enviaron mi referencia de ${specialty}?`,
+      sent: `Anoté que recibieron mi referencia de ${specialty}. ¿Está lista para revisión? ¿Necesitan algún otro documento o dato?`,
+      received: `Anoté que recibieron mi referencia de ${specialty}. ¿Está lista para revisión? ¿Necesitan algún otro documento o dato?`,
       prep: "¿Debo llevar o preparar algo antes de la cita?",
       completed: "¿Podrían aclararme los pasos de seguimiento que hablamos y cuándo debo realizarlos?",
       schedule: "¿Podrían ayudarme a encontrar una fecha para la cita?",
@@ -745,9 +745,9 @@ function localizedQuestion(question: string, language: AppLanguage, specialty: s
     },
     vi: {
       notSent: `Tôi ghi nhận giấy giới thiệu đến khoa ${specialty} chưa được gửi. Tôi cần cung cấp gì không? Khi nào dự kiến gửi đến `,
-      status: `giấy giới thiệu đến khoa ${specialty}`,
-      sent: `Quý vị có thể xác nhận đã nhận giấy giới thiệu đến khoa ${specialty} của tôi chưa?`,
-      received: "Tôi ghi nhận quý vị đã nhận giấy giới thiệu. Hồ sơ đã sẵn sàng để xem xét chưa?",
+      status: `Quý vị có thể xác nhận đã gửi giấy giới thiệu đến khoa ${specialty} chưa?`,
+      sent: `Tôi ghi nhận quý vị đã nhận giấy giới thiệu đến khoa ${specialty}. Hồ sơ đã sẵn sàng xem xét chưa? Có cần thêm giấy tờ hoặc thông tin nào không?`,
+      received: `Tôi ghi nhận quý vị đã nhận giấy giới thiệu đến khoa ${specialty}. Hồ sơ đã sẵn sàng xem xét chưa? Có cần thêm giấy tờ hoặc thông tin nào không?`,
       prep: "Tôi cần mang theo hoặc chuẩn bị gì trước cuộc hẹn không?",
       completed: "Xin cho biết các bước tiếp theo chúng ta đã trao đổi và khi nào tôi nên thực hiện.",
       schedule: "Quý vị có thể giúp tôi tìm thời gian hẹn khám không?",
@@ -765,9 +765,19 @@ function localizedQuestion(question: string, language: AppLanguage, specialty: s
   if (/anything i should bring or do before my appointment/.test(common)) return t.prep;
   if (/clarify the follow-up steps/.test(common)) return t.completed;
   if (/help me find an appointment time/.test(common)) return t.schedule;
-  if (/is needed|which item is required|what is still needed/.test(common)) return t.missing;
+  if (/is needed|which item is required|what is still needed/.test(common)) {
+    const item = question.match(/(?:said )?(.+?) is needed/i)?.[1];
+    if (item) {
+      const localizedItem = translateText(item, language);
+      if (language === "ja") return `${localizedItem}が必要とのことです。どのように提出すればよいか教えていただき、提出後に確認いただけますか？`;
+      if (language === "zh") return `据悉需要${localizedItem}。请告知我应如何提交，并在收到后予以确认。`;
+      if (language === "es") return `Me indicaron que se necesita ${localizedItem}. ¿Podrían decirme cómo enviarlo y confirmar cuando lo reciban?`;
+      return `Tôi được thông báo cần có ${localizedItem}. Xin cho biết cách gửi và xác nhận khi đã nhận được.`;
+    }
+    return t.missing;
+  }
   if (/ready to schedule/.test(common)) return t.schedule;
-  if (/could you confirm whether you sent my/.test(common)) return t.status + "を送付したか確認いただけますか？";
+  if (/could you confirm whether you sent my/.test(common)) return t.status;
   return translateText(question, language);
 }
 
@@ -779,7 +789,6 @@ export function localizedDraft(
   question: string,
 ) {
   const localizedSpecialty = language === "en" ? specialty : translateText(specialty, language);
-  const localizedRecipient = recipient === "you" ? (language === "en" ? "you" : translateText("you", language)) : recipient;
   const localizedPrompt = localizedQuestion(question, language, localizedSpecialty);
   if (language === "en") {
     if (kind === "Call script") {
