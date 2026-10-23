@@ -466,7 +466,6 @@ export function translateText(source: string, language: AppLanguage): string {
       pattern: /^Contact (.+) to ask about appointment times\.$/,
       translate: (m: RegExpMatchArray) => ({ ja: `${m[1]}に連絡して予約可能な日時を尋ねてください。`, zh: `联系${m[1]}询问可预约的时间。`, es: `Contacta con ${m[1]} para preguntar por los horarios disponibles.`, vi: `Liên hệ ${m[1]} để hỏi về thời gian hẹn còn trống.` }[language]),
     },
-  ];
     {
       pattern: /^Ask (.+) to provide (.+) to (.+)\.$/,
       translate: (m: RegExpMatchArray) => {
@@ -509,6 +508,8 @@ export function translateText(source: string, language: AppLanguage): string {
       pattern: /^I recorded that you received my (.+) referral\. Is it ready for review, and do you need any records or other information before it can proceed\?$/,
       translate: (m: RegExpMatchArray) => ({ ja: `${m[1]}の紹介状を受領したと記録しました。審査可能な状態ですか？進める前に必要な記録や情報はありますか？`, zh: `我记录了你们已收到我的${m[1]}转诊。现在可以审核了吗？继续前还需要哪些资料或信息？`, es: `Registré que recibieron mi referencia de ${m[1]}. ¿Está lista para revisión o necesitan documentos u otra información?`, vi: `Tôi đã ghi nhận bạn nhận được giấy giới thiệu ${m[1]} của tôi. Đã có thể xem xét chưa, hay cần thêm hồ sơ hoặc thông tin?` }[language]),
     },
+  ];
+
   for (const entry of dynamicText) {
     const match = clean.match(entry.pattern);
     if (match) return preserveWhitespace(source, entry.translate(match));
