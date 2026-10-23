@@ -664,7 +664,7 @@ function InlineDraftPanel({
   onContact,
   onClose,
 }: {
-  kind: "Call script" | "Portal message" | "Email";
+  kind: "Call script" | "Text message" | "Portal message" | "Email";
   draft: string;
   copied: boolean;
   onKindChange: (kind: "Call script" | "Portal message" | "Email") => void;
@@ -678,17 +678,17 @@ function InlineDraftPanel({
       <div className="section-title-row">
         <div>
           <p className="eyebrow">REVIEW BEFORE YOU SEND</p>
-          <h3>Prepare a call script or message</h3>
+          <h3>Call script, text or portal message</h3>
         </div>
         <IconButton label="Close draft" onClick={onClose}>
           <X size={18} />
         </IconButton>
       </div>
       <p className="modal-intro">
-        Edit this draft for your situation. Nothing is sent from here.
+        The Referral Agent prepares a draft from your latest referral updates. Review and edit it before use; nothing is sent from here.
       </p>
       <div className="segmented">
-        {(["Call script", "Portal message", "Email"] as const).map((option) => (
+        {(["Call script", "Text message", "Portal message", "Email"] as const).map((option) => (
           <button
             type="button"
             className={kind === option ? "selected" : ""}
@@ -931,14 +931,6 @@ export default function App() {
 
   function saveUpdate() {
     if (!referral || !updateTitle.trim()) return;
-    if (updateMilestone === "appointment-scheduled" && getHandoffState(referral) !== "ready-to-schedule") {
-      flash("Record an appointment only after the specialist confirms the referral is ready to schedule.");
-      return;
-    }
-    if (updateMilestone === "appointment-completed" && getHandoffState(referral) !== "appointment-scheduled") {
-      flash("Mark the appointment complete after you have recorded it as scheduled.");
-      return;
-    }
     if (
       updateMilestone === "ready-to-schedule" &&
       (updateSource !== "Specialist office" || !readyConfirmation)
@@ -992,7 +984,7 @@ export default function App() {
   }
 
   function startMessage(
-    kind: "Call script" | "Portal message" | "Email" = "Call script",
+    kind: "Call script" | "Text message" | "Portal message" | "Email" = "Call script",
     target: Referral | undefined = referral,
   ) {
     if (!target) return;
@@ -1188,7 +1180,7 @@ export default function App() {
             reminderDate={reminderDates[referral.id] || ""}
             reminderOpen={reminderEditorId === referral.id}
             reminderDraft={reminderDraft}
-            onPrimary={() => startMessage("Portal message", referral)}
+            onPrimary={() => startMessage("Text message", referral)}
             onOpenReminder={() => openReminder(referral)}
             onReminderDraftChange={setReminderDraft}
             onSaveReminder={() => saveReminder(referral)}
@@ -1344,9 +1336,9 @@ export default function App() {
                 </button>
                 <button
                   className="secondary-button"
-                  onClick={() => startMessage("Portal message")}
+                  onClick={() => startMessage("Text message")}
                 >
-                  <MessageCircle size={17} /> Draft a portal message
+                  <MessageCircle size={17} /> Draft a text or portal message
                 </button>
               </div>
             </section>
@@ -1488,8 +1480,8 @@ export default function App() {
                     <option value="awaiting-records">Awaiting records</option>
                     <option value="declined-by-specialist">Declined by specialist</option>
                     <option value="ready-to-schedule">Ready to schedule</option>
-                    <option value="appointment-scheduled" disabled={handoffState !== "ready-to-schedule"}>Appointment scheduled</option>
-                    <option value="appointment-completed" disabled={handoffState !== "appointment-scheduled"}>Appointment completed</option>
+                    <option value="appointment-scheduled">Appointment scheduled</option>
+                    <option value="appointment-completed">Appointment completed</option>
                   </select>
                 </label>
                 <label>
