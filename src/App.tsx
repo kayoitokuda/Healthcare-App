@@ -845,6 +845,7 @@ export default function App() {
     "Call script" | "Text message" | "Portal message" | "Email"
   >("Call script");
   const [messageDraft, setMessageDraft] = useState("");
+  const [messageDraftDirty, setMessageDraftDirty] = useState(false);
   const [copied, setCopied] = useState(false);
   const [newSpecialty, setNewSpecialty] = useState("");
   const [newFrom, setNewFrom] = useState("");
@@ -853,6 +854,16 @@ export default function App() {
   const [toast, setToast] = useState("");
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (inlineDraftId === null || messageDraftDirty) return;
+    const activeReferral = referrals.find((item) => item.id === inlineDraftId);
+    if (!activeReferral) return;
+    const insight = referralAgentInsight(activeReferral);
+    setMessageDraft(
+      localizedDraft(language, messageKind, insight.recipient, activeReferral.specialty, insight.question),
+    );
+  }, [language, inlineDraftId, messageKind, referrals, messageDraftDirty]);
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -993,6 +1004,7 @@ export default function App() {
     setMessageDraft(
       localizedDraft(language, kind, insight.recipient, target.specialty, insight.question),
     );
+    setMessageDraftDirty(false);
     setCopied(false);
     setInlineDraftId(target.id);
     setModal(null);
@@ -1191,7 +1203,10 @@ export default function App() {
               draft={messageDraft}
               copied={copied}
               onKindChange={(kind) => startMessage(kind, referral)}
-              onDraftChange={setMessageDraft}
+              onDraftChange={(draft) => {
+                setMessageDraft(draft);
+                setMessageDraftDirty(true);
+              }}
               onCopy={copyDraft}
               onContact={() => logContactAttempt(referral)}
               onClose={() => setInlineDraftId(null)}
