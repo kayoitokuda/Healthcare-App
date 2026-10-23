@@ -1,3 +1,4 @@
+import { LanguageToggle, localizedDraft, useAppLanguage } from "./i18n";
 import {
   useEffect,
   useRef,
@@ -519,6 +520,7 @@ function LandingPage({ onEnter }: { onEnter: () => void }) {
           <span>Referral Navigator</span>
         </button>
         <nav className="landing-nav" aria-label="Main navigation">
+          <LanguageToggle />
           <a href="#landing-how-it-works">How it works</a>
         </nav>
       </header>
@@ -816,6 +818,7 @@ function ReferralAgentCard({
 }
 
 export default function App() {
+  const { language } = useAppLanguage();
   const [referrals, setReferrals] = useState(initial);
   const [demoMode, setDemoMode] = useState(true);
   const [inlineDraftId, setInlineDraftId] = useState<number | null>(null);
@@ -993,9 +996,7 @@ export default function App() {
     const insight = referralAgentInsight(target);
     setMessageKind(kind);
     setMessageDraft(
-      kind === "Call script"
-        ? `Hello, my name is [your name]. I’m calling ${insight.recipient} about my ${target.specialty} referral. ${insight.question}`
-        : `Hello, I’m following up about my ${target.specialty} referral. ${insight.question} Thank you.`,
+      localizedDraft(language, kind, insight.recipient, target.specialty, insight.question),
     );
     setCopied(false);
     setInlineDraftId(target.id);
@@ -1122,6 +1123,7 @@ export default function App() {
             <span>Referral Navigator</span>
           </button>
           <div className="top-actions">
+            <LanguageToggle />
             <span
               className="privacy-chip"
               title="This preview keeps changes in memory. Refreshing clears them."
@@ -1734,6 +1736,7 @@ export default function App() {
           </button>
         </nav>
         <div className="top-actions">
+          <LanguageToggle />
           <span className="privacy-chip">
             <CircleHelp size={14} /> Demo · resets on refresh
           </span>
