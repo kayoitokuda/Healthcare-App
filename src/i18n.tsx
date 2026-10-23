@@ -80,9 +80,11 @@ const rows: Array<[string, string, string, string, string]> = [
   ["This tool can’t verify referral status, give medical advice, or determine insurance coverage. Confirm details with the relevant office or your health plan.", "このツールは紹介状況の確認、医療アドバイス、保険適用の判定を行いません。詳細は医療機関または保険会社に直接確認してください。", "此工具无法核实转诊状态、提供医疗建议或判定保险覆盖范围。请向相关诊所或保险计划确认详情。", "Esta herramienta no puede verificar el estado de la referencia, dar consejos médicos ni determinar la cobertura. Confirma los detalles con el consultorio o tu plan de salud.", "Công cụ này không thể xác minh trạng thái giới thiệu, tư vấn y tế hoặc xác định quyền lợi bảo hiểm. Hãy xác nhận với phòng khám hoặc chương trình bảo hiểm."],
   ["Referral Navigator · A personal referral companion", "Referral Navigator · 紹介状況を管理するツール", "Referral Navigator · 个人转诊助手", "Referral Navigator · Asistente personal de referencias", "Referral Navigator · Công cụ hỗ trợ theo dõi giới thiệu cá nhân"],
   ["REVIEW BEFORE YOU SEND", "送信前に確認", "发送前请审核", "REVISA ANTES DE ENVIAR", "XEM LẠI TRƯỚC KHI GỬI"],
-  ["Prepare a call script or message", "電話用スクリプトまたはメッセージを作成", "准备电话提纲或信息", "Prepara un guion de llamada o mensaje", "Soạn kịch bản gọi điện hoặc tin nhắn"],
-  ["Edit this draft for your situation. Nothing is sent from here.", "状況に合わせて下書きを編集してください。ここから送信されることはありません。", "请根据你的情况编辑草稿。此处不会发送任何内容。", "Adapta este borrador a tu situación. No se envía desde aquí.", "Chỉnh sửa bản nháp cho phù hợp. Nội dung sẽ không được gửi từ đây."],
+  ["Call script, text or portal message", "電話用スクリプト、テキスト、またはポータルメッセージ", "电话提纲、短信或患者门户信息", "Guion de llamada, mensaje de texto o mensaje del portal", "Kịch bản gọi điện, tin nhắn văn bản hoặc tin nhắn trên cổng thông tin"],
+  ["The Referral Agent prepares a draft from your latest referral updates. Review and edit it before use; nothing is sent from here.", "Referral Agent が最新の紹介状況に基づいて下書きを作成します。使用前に確認・編集してください。ここから送信されることはありません。", "转诊助手会根据你最新的转诊更新准备草稿。使用前请先审核和编辑；此处不会发送任何内容。", "El Agente de Referencias prepara un borrador con las actualizaciones más recientes. Revísalo y edítalo antes de usarlo; no se envía desde aquí.", "Referral Agent soạn bản nháp dựa trên cập nhật giới thiệu mới nhất. Hãy xem lại và chỉnh sửa trước khi dùng; nội dung sẽ không được gửi từ đây."],
   ["Call script", "電話用スクリプト", "电话提纲", "Guion de llamada", "Kịch bản gọi điện"],
+  ["Text message", "テキストメッセージ", "短信", "Mensaje de texto", "Tin nhắn văn bản"],
+  ["Text message draft", "テキストメッセージの下書き", "短信草稿", "Borrador de mensaje de texto", "Bản nháp tin nhắn văn bản"],
   ["Call script draft", "電話用スクリプトの下書き", "电话提纲草稿", "Borrador de guion de llamada", "Bản nháp kịch bản gọi điện"],
   ["Portal message draft", "ポータルメッセージの下書き", "患者门户信息草稿", "Borrador de mensaje del portal", "Bản nháp tin nhắn trên cổng thông tin"],
   ["Email draft", "メールの下書き", "电子邮件草稿", "Borrador de correo electrónico", "Bản nháp email"],
@@ -130,7 +132,7 @@ const rows: Array<[string, string, string, string, string]> = [
   ["Ask the referring office if it was sent", "紹介元に送付済みか確認する", "询问转诊诊所是否已发送", "Pregunta al consultorio que te refirió si la enviaron", "Hỏi nơi giới thiệu xem giấy đã được gửi chưa"],
   ["Ask the specialist office if it arrived", "専門医療機関に届いたか確認する", "询问专科诊所是否收到", "Pregunta al consultorio especialista si la recibió", "Hỏi phòng khám chuyên khoa xem đã nhận được chưa"],
   ["Prepare a call script", "電話用スクリプトを作成", "准备电话提纲", "Preparar un guion de llamada", "Soạn kịch bản gọi điện"],
-  ["Draft a portal message", "ポータルメッセージを作成", "起草患者门户信息", "Redactar un mensaje del portal", "Soạn tin nhắn trên cổng thông tin"],
+  ["Draft a text or portal message", "テキストまたはポータルメッセージを作成", "起草短信或患者门户信息", "Redactar un mensaje de texto o del portal", "Soạn tin nhắn văn bản hoặc tin nhắn trên cổng thông tin"],
   ["YOUR ACTIVITY", "あなたの記録", "你的活动记录", "TU ACTIVIDAD", "HOẠT ĐỘNG CỦA BẠN"],
   ["Referral updates", "紹介の更新", "转诊更新", "Actualizaciones de la referencia", "Cập nhật giới thiệu"],
   ["You entered this", "あなたが入力", "由你输入", "Lo ingresaste tú", "Bạn đã nhập"],
@@ -231,7 +233,7 @@ const rows: Array<[string, string, string, string, string]> = [
   ["About this tool", "このツールについて", "关于此工具", "Acerca de esta herramienta", "Giới thiệu công cụ"],
   ["Referral Navigator is your personal organizer. It doesn’t connect to clinic or insurance systems.", "Referral Navigator は個人用の整理ツールです。医療機関や保険のシステムには接続しません。", "Referral Navigator 是你的个人整理工具，不会连接诊所或保险系统。", "Referral Navigator es tu organizador personal. No se conecta a sistemas clínicos ni de seguros.", "Referral Navigator là công cụ sắp xếp cá nhân. Công cụ không kết nối hệ thống phòng khám hoặc bảo hiểm."],
   ["REVIEW BEFORE YOU SEND", "送信前に確認", "发送前请审核", "REVISA ANTES DE ENVIAR", "XEM LẠI TRƯỚC KHI GỬI"],
-  ["Prepare a call script or message", "電話用スクリプトまたはメッセージを作成", "准备电话提纲或信息", "Prepara un guion de llamada o mensaje", "Soạn kịch bản gọi điện hoặc tin nhắn"],
+  ["Call script, text or portal message", "電話用スクリプト、テキスト、またはポータルメッセージ", "电话提纲、短信或患者门户信息", "Guion de llamada, mensaje de texto o mensaje del portal", "Kịch bản gọi điện, tin nhắn văn bản hoặc tin nhắn trên cổng thông tin"],
   ["e.g. Cardiology", "例：循環器科", "例如：心脏科", "Ej.: Cardiología", "Ví dụ: Tim mạch"],
   ["Clinic or clinician name", "医療機関または担当者名", "诊所或临床医生姓名", "Nombre del consultorio o profesional", "Tên phòng khám hoặc bác sĩ"],
   ["If you know it", "わかる場合", "如已知", "Si lo sabes", "Nếu bạn biết"],
@@ -701,37 +703,126 @@ export function LanguageToggle() {
   );
 }
 
+function localizedQuestion(question: string, language: AppLanguage, specialty: string) {
+  if (language === "en") return question;
+  const common = question.toLowerCase();
+  const byLanguage: Record<Exclude<AppLanguage, "en">, Record<string, string>> = {
+    ja: {
+      notSent: `記録では、${specialty}の紹介状はまだ送付されていません。私から必要なことはありますか？また、`,
+      status: `${specialty}の紹介状を`,
+      sent: `${specialty}の紹介状を受け取りましたか？確認いただけますか？`,
+      received: `紹介状を受領したと記録しています。審査の準備はできていますか？`,
+      prep: "予約の前に持参または準備すべきものはありますか？",
+      completed: "先ほど相談した今後の手順と、いつ行えばよいかを教えていただけますか？",
+      schedule: "予約可能な日時を教えていただけますか？",
+      missing: "紹介状の審査に必要なものを教えていただけますか？必要書類の提出方法も確認したいです。",
+      decline: "紹介状が却下される可能性があると記録しました。必要な情報と、最終決定かどうかを教えていただけますか？",
+      declined: "紹介状が却下されたと記録しました。理由と、紹介元の医療機関に相談すべき次の手順を教えていただけますか？",
+    },
+    zh: {
+      notSent: `我记录的情况是，我的${specialty}转诊尚未发送。我需要提供什么吗？预计何时发送给`,
+      status: `${specialty}转诊`,
+      sent: `请确认是否收到了我的${specialty}转诊？`,
+      received: "我记录到你们已收到转诊。它可以开始审核了吗？",
+      prep: "预约前我需要携带或准备什么吗？",
+      completed: "请问我们讨论的后续步骤是什么，我应该何时完成？",
+      schedule: "可以帮我看看有哪些预约时间吗？",
+      missing: "我的转诊审核还需要哪些资料？请告知我应如何提交。",
+      decline: "我记录到转诊可能会被拒绝。需要哪些信息？目前是最终决定吗？",
+      declined: "我记录到转诊已被拒绝。请说明原因，以及我可以和转诊诊所讨论的后续步骤。",
+    },
+    es: {
+      notSent: `Anoté que aún no se ha enviado mi referencia de ${specialty}. ¿Necesitan algo de mi parte? ¿Cuándo prevén enviarla a `,
+      status: `mi referencia de ${specialty}`,
+      sent: `¿Podrían confirmar si recibieron mi referencia de ${specialty}?`,
+      received: "Anoté que recibieron mi referencia. ¿Está lista para revisión?",
+      prep: "¿Debo llevar o preparar algo antes de la cita?",
+      completed: "¿Podrían aclararme los pasos de seguimiento que hablamos y cuándo debo realizarlos?",
+      schedule: "¿Podrían ayudarme a encontrar una fecha para la cita?",
+      missing: "¿Podrían indicarme qué información falta para revisar mi referencia y cómo debo enviarla?",
+      decline: "Anoté que podrían rechazar mi referencia. ¿Qué información necesitan y ya tomaron una decisión final?",
+      declined: "Anoté que rechazaron mi referencia. ¿Podrían explicarme el motivo y los próximos pasos que debo consultar con el consultorio que me refirió?",
+    },
+    vi: {
+      notSent: `Tôi ghi nhận giấy giới thiệu đến khoa ${specialty} chưa được gửi. Tôi cần cung cấp gì không? Khi nào dự kiến gửi đến `,
+      status: `giấy giới thiệu đến khoa ${specialty}`,
+      sent: `Quý vị có thể xác nhận đã nhận giấy giới thiệu đến khoa ${specialty} của tôi chưa?`,
+      received: "Tôi ghi nhận quý vị đã nhận giấy giới thiệu. Hồ sơ đã sẵn sàng để xem xét chưa?",
+      prep: "Tôi cần mang theo hoặc chuẩn bị gì trước cuộc hẹn không?",
+      completed: "Xin cho biết các bước tiếp theo chúng ta đã trao đổi và khi nào tôi nên thực hiện.",
+      schedule: "Quý vị có thể giúp tôi tìm thời gian hẹn khám không?",
+      missing: "Hồ sơ giới thiệu của tôi còn thiếu thông tin gì để được xem xét? Xin cho biết cách gửi thông tin đó.",
+      decline: "Tôi ghi nhận giấy giới thiệu có thể bị từ chối. Cần bổ sung thông tin gì và đây đã là quyết định cuối cùng chưa?",
+      declined: "Tôi ghi nhận giấy giới thiệu đã bị từ chối. Xin giải thích lý do và các bước tiếp theo tôi nên trao đổi với nơi giới thiệu.",
+    },
+  };
+  const t = byLanguage[language];
+  if (/may be declined|might be declined|could be declined/.test(common)) return t.decline;
+  if (/referral was declined/.test(common)) return t.declined;
+  if (/has not been sent yet/.test(common)) return t.notSent + question.split(" to ").pop();
+  if (/could you confirm whether you received/.test(common)) return t.sent;
+  if (/i recorded that you received my/.test(common)) return t.received;
+  if (/anything i should bring or do before my appointment/.test(common)) return t.prep;
+  if (/clarify the follow-up steps/.test(common)) return t.completed;
+  if (/help me find an appointment time/.test(common)) return t.schedule;
+  if (/is needed|which item is required|what is still needed/.test(common)) return t.missing;
+  if (/ready to schedule/.test(common)) return t.schedule;
+  if (/could you confirm whether you sent my/.test(common)) return t.status + "を送付したか確認いただけますか？";
+  return translateText(question, language);
+}
+
 export function localizedDraft(
   language: AppLanguage,
-  kind: "Call script" | "Portal message" | "Email",
+  kind: "Call script" | "Text message" | "Portal message" | "Email",
   recipient: string,
   specialty: string,
   question: string,
- ) {
+) {
   const localizedSpecialty = language === "en" ? specialty : translateText(specialty, language);
+  const localizedRecipient = recipient === "you" ? (language === "en" ? "you" : translateText("you", language)) : recipient;
+  const localizedPrompt = localizedQuestion(question, language, localizedSpecialty);
   if (language === "en") {
-    return kind === "Call script"
-      ? `Hello, my name is [your name]. I’m calling ${recipient} about my ${localizedSpecialty} referral. ${question}`
-      : `Hello, I’m following up about my ${localizedSpecialty} referral. ${question} Thank you.`;
+    if (kind === "Call script") {
+      return `Hello, my name is [your name]. I’m calling ${recipient} about my ${localizedSpecialty} referral. ${question} Could you repeat the next step and let me know who I should speak with? Thank you.`;
+    }
+    if (kind === "Text message") {
+      return `Hi, this is [your name]. I’m following up with ${recipient} about my ${localizedSpecialty} referral. ${question} Thank you, [your name].`;
+    }
+    if (kind === "Portal message") {
+      return `Hello, I’m following up about my ${localizedSpecialty} referral. ${question} Please let me know if you need anything else from me. Thank you, [your name].`;
+    }
+    return `Hello, I’m writing to follow up on my ${localizedSpecialty} referral with ${recipient}. ${question} Please let me know if any additional information is needed. Thank you, [your name].`;
   }
 
-  const prompts = {
+  const prompts: Record<Exclude<AppLanguage, "en">, Record<string, string>> = {
     ja: {
-      call: `こんにちは。[お名前]です。${recipient}に、${localizedSpecialty}の紹介についてお電話しています。${translateText(question, language)}`,
-      message: `こんにちは。${localizedSpecialty}の紹介について確認のご連絡です。${translateText(question, language)}よろしくお願いいたします。`,
+      call: `こんにちは、[お名前]です。${recipient}に、${localizedSpecialty}の紹介状についてお電話しています。${localizedPrompt}次の手順をもう一度教えていただき、どなたに相談すればよいかお知らせください。ありがとうございます。`,
+      text: `こんにちは、[お名前]です。${recipient}に${localizedSpecialty}の紹介状について確認しています。${localizedPrompt}よろしくお願いいたします。[お名前]`,
+      portal: `こんにちは。${localizedSpecialty}の紹介状について確認のためご連絡しました。${localizedPrompt}ほかに必要な情報があればお知らせください。よろしくお願いいたします。[お名前]`,
+      email: `こんにちは。${recipient}宛てに、${localizedSpecialty}の紹介状についてお問い合わせします。${localizedPrompt}追加情報が必要な場合はお知らせください。よろしくお願いいたします。[お名前]`,
     },
     zh: {
-      call: `您好，我是[姓名]。我致电${recipient}，想咨询${localizedSpecialty}转诊的情况。${translateText(question, language)}`,
-      message: `您好，我想跟进${localizedSpecialty}转诊的情况。${translateText(question, language)}谢谢。`,
+      call: `您好，我是[姓名]。我致电${recipient}，想跟进我的${localizedSpecialty}转诊。${localizedPrompt}请您再说明一下下一步，并告诉我应该联系谁。谢谢。`,
+      text: `您好，我是[姓名]。我想跟进${recipient}处我的${localizedSpecialty}转诊。${localizedPrompt}谢谢！[姓名]`,
+      portal: `您好，我想跟进我的${localizedSpecialty}转诊。${localizedPrompt}如需我提供其他信息，请告知。谢谢！[姓名]`,
+      email: `您好，我写信想跟进${recipient}处我的${localizedSpecialty}转诊。${localizedPrompt}如需补充资料，请告知。谢谢！[姓名]`,
     },
     es: {
-      call: `Hola, me llamo [tu nombre]. Llamo a ${recipient} para consultar sobre mi referencia a ${localizedSpecialty}. ${translateText(question, language)}`,
-      message: `Hola, escribo para dar seguimiento a mi referencia a ${localizedSpecialty}. ${translateText(question, language)} Gracias.`,
+      call: `Hola, me llamo [tu nombre]. Llamo a ${recipient} para dar seguimiento a mi referencia de ${localizedSpecialty}. ${localizedPrompt}¿Podrían repetir el siguiente paso e indicarme con quién debo hablar? Gracias.`,
+      text: `Hola, soy [tu nombre]. Doy seguimiento con ${recipient} a mi referencia de ${localizedSpecialty}. ${localizedPrompt}Gracias. [Tu nombre]`,
+      portal: `Hola, escribo para dar seguimiento a mi referencia de ${localizedSpecialty}. ${localizedPrompt}Avísenme si necesitan algún otro dato. Gracias. [Tu nombre]`,
+      email: `Hola, escribo a ${recipient} para dar seguimiento a mi referencia de ${localizedSpecialty}. ${localizedPrompt}Por favor, avísenme si necesitan información adicional. Gracias. [Tu nombre]`,
     },
     vi: {
-      call: `Xin chào, tôi tên là [tên của bạn]. Tôi gọi cho ${recipient} để hỏi về giấy giới thiệu đến khoa ${localizedSpecialty}. ${translateText(question, language)}`,
-      message: `Xin chào, tôi liên hệ để hỏi về giấy giới thiệu đến khoa ${localizedSpecialty}. ${translateText(question, language)} Xin cảm ơn.`,
+      call: `Xin chào, tôi tên là [tên của bạn]. Tôi gọi cho ${recipient} để hỏi về giấy giới thiệu đến khoa ${localizedSpecialty} của tôi. ${localizedPrompt}Xin vui lòng nhắc lại bước tiếp theo và cho tôi biết nên trao đổi với ai. Cảm ơn.`,
+      text: `Xin chào, tôi là [tên của bạn]. Tôi liên hệ với ${recipient} để hỏi về giấy giới thiệu đến khoa ${localizedSpecialty}. ${localizedPrompt}Xin cảm ơn. [Tên của bạn]`,
+      portal: `Xin chào, tôi liên hệ để hỏi về giấy giới thiệu đến khoa ${localizedSpecialty}. ${localizedPrompt}Xin cho biết nếu cần tôi cung cấp thêm thông tin. Xin cảm ơn. [Tên của bạn]`,
+      email: `Xin chào, tôi viết thư để hỏi ${recipient} về giấy giới thiệu đến khoa ${localizedSpecialty}. ${localizedPrompt}Xin cho biết nếu cần thêm thông tin. Xin cảm ơn. [Tên của bạn]`,
     },
-  }[language];
-  return kind === "Call script" ? prompts.call : prompts.message;
+  };
+  const localized = prompts[language];
+  return kind === "Call script" ? localized.call
+    : kind === "Text message" ? localized.text
+      : kind === "Portal message" ? localized.portal
+        : localized.email;
 }
