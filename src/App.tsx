@@ -667,7 +667,7 @@ function InlineDraftPanel({
   kind: "Call script" | "Text message" | "Portal message" | "Email";
   draft: string;
   copied: boolean;
-  onKindChange: (kind: "Call script" | "Portal message" | "Email") => void;
+  onKindChange: (kind: "Call script" | "Text message" | "Portal message" | "Email") => void;
   onDraftChange: (draft: string) => void;
   onCopy: () => void;
   onContact: () => void;
@@ -842,7 +842,7 @@ export default function App() {
   const [appointmentDate, setAppointmentDate] = useState("");
   const [appointmentTime, setAppointmentTime] = useState("");
   const [messageKind, setMessageKind] = useState<
-    "Call script" | "Portal message" | "Email"
+    "Call script" | "Text message" | "Portal message" | "Email"
   >("Call script");
   const [messageDraft, setMessageDraft] = useState("");
   const [copied, setCopied] = useState(false);
