@@ -189,7 +189,7 @@ function isPossibleDecline(update: Update) {
 
 function isRecordBlocker(update: Update) {
   return update.milestone === "awaiting-records" ||
-    /missing|still need|needs? (?:the |a |an )?|waiting for|awaiting|cannot review|can't review|cannot complete|can't complete|declined? unless|may be declined|might be declined|could be declined|x-?ray.{0,35}(?:required|needed|included|missing)/i.test(update.detail);
+    /missing|still need|needs? (?:the |a |an )?|waiting for|awaiting|cannot review|can't review|cannot complete|can't complete|declined? unless|may be declined|might be declined|could be declined|(?:specialist|office|they).{0,40}declined|declined.{0,40}referral|x-?ray.{0,35}(?:required|needed|included|missing)/i.test(update.detail);
 }
 
 function missingItemFor(update: Update) {
@@ -217,7 +217,7 @@ function referralAgentInsight(referral: Referral): AgentInsight {
   const currentHandoff = latestHandoffUpdate(referral);
   const currentState = getHandoffState(referral);
 
-  if (currentState === "declined-by-specialist" && currentHandoff) {
+  if (currentState === "declined-by-specialist" && currentHandoff?.milestone === "declined-by-specialist") {
     const possible = currentHandoff.certainty === "possible";
     return {
       signal: possible ? "Possible hold-up" : "Specialist response needed",
@@ -237,8 +237,7 @@ function referralAgentInsight(referral: Referral): AgentInsight {
   if (blocker && (currentState === "awaiting-records" || currentState === "declined-by-specialist" || latestBlockerIndex >= latestHandoffIndex)) {
     const item = missingItemFor(blocker);
     const possibleDecline = isPossibleDecline(blocker);
-    const owner = blocker.recordsOwner ??
-      (blocker.source === "Specialist office" ? "Referring office" : "Not sure");
+    const owner = blocker.recordsOwner ?? "Not sure";
     const recipient = owner === "Referring office"
       ? referral.from
       : owner === "Specialist office"
@@ -253,10 +252,13 @@ function referralAgentInsight(referral: Referral): AgentInsight {
         : item
           ? `Ask ${recipient} to provide ${item} to ${owner === "Referring office" ? referral.to : referral.from}.`
           : `Ask ${recipient} what is needed and who should provide it.`;
+    const reportedBy = blocker.source === "You"
+      ? "My note says"
+      : `${blocker.source} said`;
     const question = owner === "Not sure"
-      ? `I recorded that ${item || "a record"} may be needed${possibleDecline ? " to prevent a possible decline" : ""}. Which item is required, and who should send it?`
+      ? `${reportedBy} ${item || "a record"} may be needed${possibleDecline ? " to prevent a possible decline" : ""}. Which item is required, and who should send it?`
       : item
-        ? `The specialist office said ${item} is needed${possibleDecline ? " and the referral may be declined without it" : ""}. Could you let me know how it should be provided and confirm once that is done?`
+        ? `${reportedBy} ${item} is needed${possibleDecline ? " and the referral may be declined without it" : ""}. Could you let me know how it should be provided and confirm once that is done?`
         : `Could you clarify what is still needed for my referral and who should provide it?`;
     return {
       signal: possibleDecline ? "Possible hold-up" : "Specialist response needed",
