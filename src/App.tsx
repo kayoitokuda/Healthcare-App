@@ -1493,11 +1493,17 @@ export default function App() {
                   </select>
                 </label>
                 <label>
-                  Notes
+                  {updateMilestone === "declined-by-specialist"
+                    ? "Reason the specialist gave (if stated)"
+                    : "Notes"}
                   <textarea
                     value={updateDetail}
                     onChange={(e) => setUpdateDetail(e.target.value)}
-                    placeholder="What did they tell you? Include a name or reference number if useful."
+                    placeholder={
+                      updateMilestone === "declined-by-specialist"
+                        ? "Use the specialist office’s words. Don’t guess at the reason."
+                        : "What did they tell you? Include a name or reference number if useful."
+                    }
                     rows={3}
                   />
                 </label>
