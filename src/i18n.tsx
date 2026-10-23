@@ -766,7 +766,7 @@ function localizedQuestion(question: string, language: AppLanguage, specialty: s
   if (/clarify the follow-up steps/.test(common)) return t.completed;
   if (/help me find an appointment time/.test(common)) return t.schedule;
   if (/is needed|which item is required|what is still needed/.test(common)) {
-    const item = question.match(/(?:said|recorded that)\\s+(.+?)\\s+is needed/i)?.[1] ?? question.match(/(.+?)\\s+is needed/i)?.[1]?.replace(/^.*(?:said|recorded that)\\s+/i, "");
+    const item = question.match(/(?:said|recorded that)\s+(.+?)\s+is needed/i)?.[1] ?? question.match(/(.+?)\s+is needed/i)?.[1]?.replace(/^.*(?:said|recorded that)\s+/i, "");
     if (item) {
       const localizedItem = translateText(item, language);
       if (language === "ja") return `${localizedItem}が必要とのことです。どのように提出すればよいか教えていただき、提出後に確認いただけますか？`;
