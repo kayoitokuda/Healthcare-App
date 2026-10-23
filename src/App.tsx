@@ -882,7 +882,6 @@ export default function App() {
     referrals.find((item) => item.id === selected) ?? referrals[0];
   const handoffState = referral ? getHandoffState(referral) : "status-not-confirmed";
   const currentHandoff = referral ? latestStatusUpdate(referral) : undefined;
-  const readyRecorded = handoffState === "ready-to-schedule";
   const status = handoffLabel(handoffState, currentHandoff);
   const agentInsight = referral ? referralAgentInsight(referral) : null;
   const latestCoverage = referral
