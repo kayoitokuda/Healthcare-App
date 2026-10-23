@@ -231,6 +231,34 @@ const rows: Array<[string, string, string, string, string]> = [
   ["e.g. Cardiology", "例：循環器科", "例如：心脏科", "Ej.: Cardiología", "Ví dụ: Tim mạch"],
   ["Clinic or clinician name", "医療機関または担当者名", "诊所或临床医生姓名", "Nombre del consultorio o profesional", "Tên phòng khám hoặc bác sĩ"],
   ["If you know it", "わかる場合", "如已知", "Si lo sabes", "Nếu bạn biết"],
+  ["Oral surgery", "口腔外科", "口腔外科", "Cirugía oral", "Phẫu thuật miệng"],
+  ["A clinician suggests specialist care", "担当医が専門医療を提案", "临床医生建议专科护理", "Un profesional recomienda atención especializada", "Bác sĩ đề xuất chăm sóc chuyên khoa"],
+  ["Referral sent", "紹介状を送付", "已发送转诊", "Referencia enviada", "Đã gửi giấy giới thiệu"],
+  ["Check with the specialist’s office", "専門医療機関に確認", "向专科诊所确认", "Consulta con el consultorio especialista", "Kiểm tra với phòng khám chuyên khoa"],
+  ["Receipt confirmed", "受領確認済み", "已确认收到", "Recepción confirmada", "Đã xác nhận tiếp nhận"],
+  ["Ask how to book your visit", "予約方法を確認", "询问如何预约", "Pregunta cómo programar tu cita", "Hỏi cách đặt lịch khám"],
+  ["Next step", "次のステップ", "下一步", "Siguiente paso", "Bước tiếp theo"],
+  ["Referral sending is not confirmed yet.", "紹介状の送付はまだ確認されていません。", "转诊是否发送尚未确认。", "Aún no se confirmó el envío de la referencia.", "Việc gửi giấy giới thiệu vẫn chưa được xác nhận."],
+  ["There is no referral-sent update in your tracker.", "記録に紹介状の送付に関する更新はありません。", "你的记录中没有转诊已发送的更新。", "No hay una actualización sobre el envío en tu registro.", "Danh sách chưa có cập nhật về việc gửi giấy giới thiệu."],
+  ["Your tracker does not include a sent confirmation.", "記録には送付確認がありません。", "你的记录中没有发送确认。", "Tu registro no incluye confirmación de envío.", "Danh sách chưa có xác nhận đã gửi."],
+  ["Receipt still needs confirmation.", "受領の確認が必要です。", "仍需确认是否收到。", "Aún hace falta confirmar la recepción.", "Vẫn cần xác nhận đã nhận."],
+  ["Your tracker says the referral was sent, but it does not include confirmation from the specialist office.", "紹介状は送付済みと記録されていますが、専門医療機関からの受領確認はありません。", "你的记录显示转诊已发送，但没有专科诊所的收件确认。", "Tu registro indica que se envió la referencia, pero no incluye confirmación del consultorio especialista.", "Danh sách ghi giấy đã gửi nhưng chưa có xác nhận từ phòng khám chuyên khoa."],
+  ["The referral-sent update is recorded, but no specialist-office receipt update is recorded.", "送付に関する更新は記録されていますが、専門医療機関の受領に関する更新はありません。", "已记录转诊发送，但尚未记录专科诊所收件。", "Se registró el envío, pero no la recepción por parte del consultorio especialista.", "Đã ghi nhận việc gửi nhưng chưa có cập nhật phòng khám chuyên khoa đã nhận."],
+  ["Ask what is needed before scheduling.", "予約前に必要なものを確認してください。", "询问预约前还需要什么。", "Pregunta qué hace falta antes de programar.", "Hỏi xem cần gì trước khi đặt lịch."],
+  ["You recorded that the specialist office received the referral.", "専門医療機関が紹介状を受領したと記録しました。", "你记录了专科诊所已收到转诊。", "Registraste que el consultorio especialista recibió la referencia.", "Bạn đã ghi nhận phòng khám chuyên khoa đã nhận giấy giới thiệu."],
+  ["Your latest recorded handoff milestone is receipt.", "最新の引き継ぎ状況は受領です。", "你最近记录的转诊环节是已收到。", "El último paso que registraste es la recepción.", "Bước bàn giao gần nhất bạn ghi nhận là đã tiếp nhận."],
+  ["Your tracker says the referral is ready for scheduling.", "記録では予約可能となっています。", "你的记录显示可以预约。", "Tu registro indica que ya se puede programar.", "Danh sách ghi rằng đã sẵn sàng đặt lịch."],
+  ["You recorded that the office said the referral is ready.", "医療機関から予約可能と聞いたことを記録しました。", "你记录了诊所告知转诊已可预约。", "Registraste que el consultorio indicó que ya está lista.", "Bạn đã ghi nhận phòng khám cho biết có thể đặt lịch."],
+  ["This is based on the ready-to-schedule update you recorded.", "あなたが記録した「予約可能」の更新に基づいています。", "此建议基于你记录的“可以预约”更新。", "Esto se basa en la actualización de que ya se puede programar.", "Điều này dựa trên cập nhật sẵn sàng đặt lịch mà bạn đã ghi."],
+  ["Check whether it was sent", "送付されたか確認", "确认是否已发送", "Confirma si la enviaron", "Kiểm tra giấy đã được gửi chưa"],
+  ["Confirm it arrived", "届いたか確認", "确认是否收到", "Confirma que llegó", "Xác nhận đã nhận"],
+  ["Review your latest update", "最新の更新を確認", "查看最近的更新", "Revisa tu actualización más reciente", "Xem cập nhật gần nhất"],
+  ["Open your referral tracker to see what you recorded and decide what comes next.", "紹介の記録を開いて入力内容を確認し、次のステップを決めましょう。", "打开转诊记录查看已记录的信息，并决定下一步。", "Abre tu registro para revisar lo que anotaste y decidir qué sigue.", "Mở danh sách để xem thông tin đã ghi và quyết định bước tiếp theo."],
+  ["Referral Agent recommendation", "Referral Agent の提案", "Referral Agent 建议", "Recomendación del Agente de Referencias", "Đề xuất của Referral Agent"],
+  ["Review your follow-up draft", "フォローアップの下書きを確認", "查看跟进草稿", "Revisa el borrador de seguimiento", "Xem lại bản nháp theo dõi"],
+  ["Close draft", "下書きを閉じる", "关闭草稿", "Cerrar borrador", "Đóng bản nháp"],
+  ["the requested item", "依頼された資料", "所需材料", "el documento solicitado", "tài liệu được yêu cầu"],
+  ["e.g. Called to ask if referral was sent", "例：紹介状が送付されたか電話で確認", "例如：致电询问是否已发送转诊", "Ej.: Llamé para preguntar si enviaron la referencia", "Ví dụ: Gọi hỏi giấy giới thiệu đã được gửi chưa"],
   ["submit", "送信", "提交", "Enviar", "Gửi"],
 ];
 
@@ -370,7 +398,8 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
       for (const record of records) {
         if (record.type === "characterData" && record.target instanceof Text) applyText(record.target);
         record.addedNodes.forEach((node) => {
-          if (node instanceof Element || node instanceof DocumentFragment) scan(node);
+          if (node instanceof Text) applyText(node);
+          else if (node instanceof Element || node instanceof DocumentFragment) scan(node);
         });
         if (record.type === "attributes" && record.target instanceof Element) applyAttributes(record.target);
       }
