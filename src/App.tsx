@@ -1,6 +1,5 @@
 import {
   useEffect,
-  useMemo,
   useRef,
   useState,
   type FormEvent,
@@ -30,7 +29,17 @@ import {
 } from "lucide-react";
 
 type Source = "You" | "Referring office" | "Specialist office" | "Health plan";
-type Milestone = "referral-sent" | "referral-received" | "ready-to-schedule";
+type Milestone =
+  | "referral-not-sent"
+  | "referral-sent"
+  | "referral-received"
+  | "awaiting-records"
+  | "declined-by-specialist"
+  | "ready-to-schedule";
+type CoverageUpdate = "authorization-required" | "out-of-network" | "coverage-confirmed";
+type UpdateCertainty = "confirmed" | "possible";
+type RecordsOwner = "Referring office" | "Specialist office" | "You" | "Not sure";
+type HandoffState = Milestone | "status-not-confirmed";
 type Update = {
   id: number;
   title: string;
@@ -38,6 +47,11 @@ type Update = {
   date: string;
   source: Source;
   milestone?: Milestone;
+  coverageUpdate?: CoverageUpdate;
+  certainty?: UpdateCertainty;
+  missingItem?: string;
+  recordsOwner?: RecordsOwner;
+  readyConfirmed?: boolean;
 };
 type Referral = {
   id: number;
@@ -87,11 +101,21 @@ const initial: Referral[] = [
       },
       {
         id: 4,
-        title: "Specialist office noted a missing item",
-        detail: "Peninsula Oral Surgery confirmed receipt and said they still need the latest dental X-ray before they can review it.",
+        title: "Specialist office confirmed receipt",
+        detail: "Peninsula Oral Surgery confirmed receipt and opened the referral for review.",
         date: "Sep 12, 2026",
         source: "Specialist office",
         milestone: "referral-received",
+      },
+      {
+        id: 5,
+        title: "Specialist office requested an X-ray",
+        detail: "Peninsula Oral Surgery said they still need the latest dental X-ray before they can review it.",
+        date: "Sep 12, 2026",
+        source: "Specialist office",
+        milestone: "awaiting-records",
+        missingItem: "latest dental X-ray",
+        recordsOwner: "Referring office",
       },
     ],
     done: [],
@@ -101,13 +125,14 @@ const initial: Referral[] = [
 
 const steps = [
   { title: "Recommendation", copy: "A clinician suggests specialist care" },
-  { title: "Referral sent", copy: "Check with the referring office" },
-  { title: "Receipt confirmed", copy: "Check with the specialist’s office" },
-  { title: "Ready to schedule", copy: "Ask how to book your visit" },
+  { title: "Referral sent", copy: "Confirm the referring office sent it" },
+  { title: "Receipt confirmed", copy: "The specialist office confirms arrival" },
+  { title: "Specialist review & records", copy: "Resolve requested information before review" },
+  { title: "Ready to schedule", copy: "Only after the specialist confirms review is complete" },
 ];
 
 type AgentInsight = {
-  signal: "Possible hold-up" | "Next step" | "Ready to schedule";
+  signal: "Possible hold-up" | "Next step" | "Specialist response needed" | "Ready to schedule";
   headline: string;
   detail: string;
   action: string;
@@ -116,142 +141,196 @@ type AgentInsight = {
   question: string;
 };
 
-function referralAgentInsight(referral: Referral): AgentInsight {
-  const possibleBlocker = [...referral.updates].reverse().find((update) =>
-    /missing|still need|needs? (?:the |a |an )?|waiting for|awaiting|cannot review|can't review|cannot complete|can't complete/i.test(
-      update.detail,
-    ),
-  );
+function latestHandoffUpdate(referral: Referral) {
+  return [...referral.updates].reverse().find((update) => update.milestone);
+}
 
-  if (possibleBlocker) {
-    const itemMatch =
-      possibleBlocker.detail.match(
-        /(?:still )?need(?:s)?\s+(?:the |a |an |my )?([^,.;]+)/i,
-      ) ||
-      possibleBlocker.detail.match(
-        /(?:missing|waiting for|awaiting)\s+(?:the |a |an |my )?([^,.;]+)/i,
-      );
-    const item = itemMatch?.[1]
-      ?.replace(/\s+(?:before|so they|so it|to review|for review).*$/i, "")
-      .trim();
-    const itemLabel = item || "the requested item";
-    const rationale =
-      possibleBlocker.source === "You"
-        ? "Your note mentions a possible blocker."
-        : `You recorded this detail from the ${possibleBlocker.source.toLowerCase()}.`;
+function getHandoffState(referral: Referral): HandoffState {
+  const updates = referral.updates;
+  const handoffIndex = lastMatchingIndex(updates, (update) => Boolean(update.milestone));
+  const blockerIndex = lastMatchingIndex(updates, isRecordBlocker);
+  if (blockerIndex > handoffIndex) {
+    const blocker = updates[blockerIndex];
+    return isPossibleDecline(blocker) && !missingItemFor(blocker)
+      ? "declined-by-specialist"
+      : "awaiting-records";
+  }
+  return latestHandoffUpdate(referral)?.milestone ?? "status-not-confirmed";
+}
+
+function latestStatusUpdate(referral: Referral) {
+  return [...referral.updates].reverse().find((update) => update.milestone || isRecordBlocker(update));
+}
+
+function handoffLabel(state: HandoffState, update?: Update) {
+  if (state === "status-not-confirmed") return "Status not confirmed";
+  if (state === "referral-not-sent") return "Not sent";
+  if (state === "referral-sent") return "Sent · awaiting receipt";
+  if (state === "referral-received") return "Received";
+  if (state === "awaiting-records") return "Awaiting records";
+  if (state === "declined-by-specialist") {
+    return update?.certainty === "possible" || (update ? isPossibleDecline(update) : false)
+      ? "Possible specialist decline"
+      : "Declined by specialist";
+  }
+  return "Ready to schedule";
+}
+
+function coverageLabel(update: CoverageUpdate) {
+  if (update === "authorization-required") return "Authorization required";
+  if (update === "out-of-network") return "Possible out-of-network issue";
+  return "Coverage confirmed";
+}
+
+function isPossibleDecline(update: Update) {
+  return update.certainty === "possible" ||
+    /may be declined|might be declined|could be declined|possible decline/i.test(update.detail);
+}
+
+function isRecordBlocker(update: Update) {
+  return update.milestone === "awaiting-records" ||
+    /missing|still need|needs? (?:the |a |an )?|waiting for|awaiting|cannot review|can't review|cannot complete|can't complete|declined? unless|may be declined|might be declined|could be declined|x-?ray.{0,35}(?:required|needed|included|missing)/i.test(update.detail);
+}
+
+function missingItemFor(update: Update) {
+  if (update.missingItem?.trim()) return update.missingItem.trim();
+  const match =
+    update.detail.match(/(?:still )?need(?:s)?\s+(?:the |a |an |my )?([^,.;]+)/i) ||
+    update.detail.match(/(?:missing|waiting for|awaiting)\s+(?:the |a |an |my )?([^,.;]+)/i) ||
+    update.detail.match(/unless\s+(?:the |a |an |my )?([^,.;]+)/i);
+  return match?.[1]
+    ?.replace(/\s+(?:before|so they|so it|to review|for review|is included|included|required).*$/i, "")
+    .trim();
+}
+
+function lastMatchingIndex(updates: Update[], predicate: (update: Update) => boolean) {
+  for (let i = updates.length - 1; i >= 0; i -= 1) {
+    if (predicate(updates[i])) return i;
+  }
+  return -1;
+}
+
+function referralAgentInsight(referral: Referral): AgentInsight {
+  const latestHandoffIndex = lastMatchingIndex(referral.updates, (update) => Boolean(update.milestone));
+  const latestBlockerIndex = lastMatchingIndex(referral.updates, isRecordBlocker);
+  const blocker = latestBlockerIndex >= 0 ? referral.updates[latestBlockerIndex] : undefined;
+  const currentHandoff = latestHandoffUpdate(referral);
+  const currentState = getHandoffState(referral);
+
+  if (currentState === "declined-by-specialist" && currentHandoff) {
+    const possible = currentHandoff.certainty === "possible";
     return {
-      signal: "Possible hold-up",
-      headline: item
-        ? `The ${itemLabel} may still be needed.`
-        : "A note mentions something needed before review.",
-      detail: possibleBlocker.detail,
-      action: `Ask ${referral.from} to send ${itemLabel} to ${referral.to}.`,
-      rationale,
-      recipient: referral.from,
-      question: item
-        ? `Could you send ${itemLabel} to ${referral.to}, and let me know when it has been sent?`
-        : `Could you check what is still needed for my referral to move forward?`,
+      signal: possible ? "Possible hold-up" : "Specialist response needed",
+      headline: possible ? "The specialist may decline this referral." : "The specialist office declined the referral.",
+      detail: currentHandoff.detail,
+      action: possible
+        ? `Ask ${referral.to} what is needed to avoid a decline and whether the decision is final.`
+        : `Ask ${referral.to} to clarify the reason and what options, if any, are available.`,
+      rationale: "This is based on the specialist-office update you recorded; the app cannot verify it.",
+      recipient: referral.to,
+      question: possible
+        ? `I recorded that my referral may be declined. What information is needed, and has a final decision been made?`
+        : `I recorded that my referral was declined. Could you explain the reason and any next steps I should discuss with my referring office?`,
     };
   }
 
-  const sent = referral.updates.some(
-    (update) => update.milestone === "referral-sent",
-  );
-  const receivedBySpecialist = referral.updates.some(
-    (update) =>
-      update.milestone === "referral-received" &&
-      update.source === "Specialist office",
-  );
-  const ready = referral.updates.some(
-    (update) => update.milestone === "ready-to-schedule",
-  );
+  if (blocker && (currentState === "awaiting-records" || currentState === "declined-by-specialist" || latestBlockerIndex >= latestHandoffIndex)) {
+    const item = missingItemFor(blocker);
+    const possibleDecline = isPossibleDecline(blocker);
+    const owner = blocker.recordsOwner ??
+      (blocker.source === "Specialist office" ? "Referring office" : "Not sure");
+    const recipient = owner === "Referring office"
+      ? referral.from
+      : owner === "Specialist office"
+        ? referral.to
+        : owner === "You"
+          ? "you"
+          : referral.to;
+    const action = owner === "Not sure"
+      ? `Ask ${referral.to} what is missing and which office should provide it.`
+      : owner === "You"
+        ? `Check whether you have a copy of ${item || "the requested record"} and ask ${referral.to} how to provide it.`
+        : item
+          ? `Ask ${recipient} to provide ${item} to ${owner === "Referring office" ? referral.to : referral.from}.`
+          : `Ask ${recipient} what is needed and who should provide it.`;
+    const question = owner === "Not sure"
+      ? `I recorded that ${item || "a record"} may be needed${possibleDecline ? " to prevent a possible decline" : ""}. Which item is required, and who should send it?`
+      : item
+        ? `The specialist office said ${item} is needed${possibleDecline ? " and the referral may be declined without it" : ""}. Could you let me know how it should be provided and confirm once that is done?`
+        : `Could you clarify what is still needed for my referral and who should provide it?`;
+    return {
+      signal: possibleDecline ? "Possible hold-up" : "Specialist response needed",
+      headline: possibleDecline
+        ? "The referral may be declined unless a record is provided."
+        : item ? `${item} may be needed before review.` : "A record may be needed before review.",
+      detail: blocker.detail,
+      action,
+      rationale: blocker.source === "You"
+        ? "Based on your latest note. The app has not verified this with an office."
+        : `Based on your note from the ${blocker.source.toLowerCase()}; confirm who owns the next step.`,
+      recipient,
+      question,
+    };
+  }
 
-  if (!sent) {
+  if (currentState === "referral-not-sent") {
     return {
       signal: "Next step",
-      headline: "Referral sending is not confirmed yet.",
-      detail: "There is no referral-sent update in your tracker.",
+      headline: "The referral has not been sent yet.",
+      detail: currentHandoff?.detail || "You recorded that the referring office has not sent it.",
+      action: `Ask ${referral.from} when it can be sent and whether anything is needed from you.`,
+      rationale: "Based on the not-sent update you recorded.",
+      recipient: referral.from,
+      question: `I recorded that my ${referral.specialty} referral has not been sent yet. Is anything needed from me, and when do you expect to send it to ${referral.to}?`,
+    };
+  }
+  if (currentState === "status-not-confirmed") {
+    return {
+      signal: "Next step",
+      headline: "Referral status is not confirmed yet.",
+      detail: "Your tracker does not yet say whether the referral was sent.",
       action: `Ask ${referral.from} whether the referral was sent to ${referral.to}.`,
-      rationale: "Your tracker does not include a sent confirmation.",
+      rationale: "Unknown status stays unknown; it is not treated as proof that the referral was not sent.",
       recipient: referral.from,
       question: `Could you confirm whether you sent my ${referral.specialty} referral to ${referral.to}? If not, is anything needed from me?`,
     };
   }
-  if (!receivedBySpecialist) {
+  if (currentState === "referral-sent") {
     return {
       signal: "Next step",
-      headline: "Receipt still needs confirmation.",
-      detail: "Your tracker says the referral was sent, but it does not include confirmation from the specialist office.",
+      headline: "The referral is sent; receipt is not confirmed.",
+      detail: "You recorded that the referring office sent it, but there is no specialist-office receipt update.",
       action: `Ask ${referral.to} whether the referral arrived.`,
-      rationale: "The referral-sent update is recorded, but no specialist-office receipt update is recorded.",
+      rationale: "The latest recorded handoff status is sent, with receipt still unconfirmed.",
       recipient: referral.to,
-      question: `Could you confirm whether you received my ${referral.specialty} referral from ${referral.from}, and whether anything else is needed?`,
+      question: `Could you confirm whether you received my ${referral.specialty} referral from ${referral.from}, and whether anything else is needed before review?`,
     };
   }
-  if (!ready) {
+  if (currentState === "referral-received") {
     return {
       signal: "Next step",
-      headline: "Ask what is needed before scheduling.",
-      detail: "You recorded that the specialist office received the referral.",
-      action: `Ask ${referral.to} what the next step is and how to schedule.`,
-      rationale: "Your latest recorded handoff milestone is receipt.",
+      headline: "Receipt is confirmed; review status is still open.",
+      detail: "The specialist office confirmed receipt. That does not confirm acceptance or scheduling readiness.",
+      action: `Ask ${referral.to} whether the referral is under review and whether any records or other steps are still needed.`,
+      rationale: "Receipt is distinct from specialist acceptance and from insurance authorization.",
       recipient: referral.to,
-      question: `I recorded that you received my ${referral.specialty} referral. What should I do next to move toward scheduling?`,
+      question: `I recorded that you received my ${referral.specialty} referral. Is it ready for review, and do you need any records or other information before it can proceed?`,
     };
   }
   return {
     signal: "Ready to schedule",
-    headline: "Your tracker says the referral is ready for scheduling.",
-    detail: "You recorded that the office said the referral is ready.",
+    headline: "The specialist confirmed the referral can proceed to scheduling.",
+    detail: "You recorded that the specialist can proceed and known records or review steps are complete. Check any insurance requirements separately.",
     action: `Contact ${referral.to} to ask about appointment times.`,
-    rationale: "This is based on the ready-to-schedule update you recorded.",
+    rationale: "This is based on a specialist-office confirmation you recorded.",
     recipient: referral.to,
     question: `I recorded that my referral is ready to schedule. Could you help me find an appointment time?`,
   };
 }
 
 function nextStepFor(referral: Referral) {
-  const agentInsight = referralAgentInsight(referral);
-  if (agentInsight.signal === "Possible hold-up") {
-    return { title: "Follow up on a possible hold-up", detail: agentInsight.action };
-  }
-  const sent = referral.updates.some(
-    (update) => update.milestone === "referral-sent",
-  );
-  const received = referral.updates.some(
-    (update) =>
-      update.milestone === "referral-received" &&
-      update.source === "Specialist office",
-  );
-  const ready = referral.updates.some(
-    (update) => update.milestone === "ready-to-schedule",
-  );
-
-  if (!sent) {
-    return {
-      title: "Check whether it was sent",
-      detail:
-        "Ask " + referral.from + " whether the referral was sent to " + referral.to + ".",
-    };
-  }
-  if (!received) {
-    return {
-      title: "Confirm it arrived",
-      detail:
-        "Ask " + referral.to + " whether they received the referral and need anything else.",
-    };
-  }
-  if (!ready) {
-    return {
-      title: "Ask how to schedule",
-      detail: "Contact " + referral.to + " to learn what you need before booking.",
-    };
-  }
-  return {
-    title: "Review your latest update",
-    detail:
-      "Open your referral tracker to see what you recorded and decide what comes next.",
-  };
+  const insight = referralAgentInsight(referral);
+  return { title: insight.headline, detail: insight.action };
 }
 
 function IconButton({
@@ -645,7 +724,7 @@ function ReferralAgentCard({
           <p className="eyebrow">REFERRAL AGENT · PROTOTYPE</p>
           <h2>{insight.headline}</h2>
         </div>
-        <span className={`agent-signal ${insight.signal === "Possible hold-up" ? "agent-signal-warn" : ""}`}>
+        <span className={`agent-signal ${insight.signal === "Possible hold-up" || insight.signal === "Specialist response needed" ? "agent-signal-warn" : ""}`}>
           {insight.signal}
         </span>
       </div>
@@ -715,6 +794,11 @@ export default function App() {
   const [updateDetail, setUpdateDetail] = useState("");
   const [updateSource, setUpdateSource] = useState<Source>("You");
   const [updateMilestone, setUpdateMilestone] = useState<Milestone | "">("");
+  const [updateCoverage, setUpdateCoverage] = useState<CoverageUpdate | "">("");
+  const [updateCertainty, setUpdateCertainty] = useState<UpdateCertainty>("confirmed");
+  const [updateMissingItem, setUpdateMissingItem] = useState("");
+  const [updateRecordsOwner, setUpdateRecordsOwner] = useState<RecordsOwner>("Not sure");
+  const [readyConfirmation, setReadyConfirmation] = useState(false);
   const [messageKind, setMessageKind] = useState<
     "Call script" | "Portal message" | "Email"
   >("Call script");
@@ -754,23 +838,14 @@ export default function App() {
 
   const referral =
     referrals.find((item) => item.id === selected) ?? referrals[0];
-  const sentRecorded =
-    referral?.updates.some((u) => u.milestone === "referral-sent") ?? false;
-  const receiptRecorded =
-    referral?.updates.some((u) => u.milestone === "referral-received") ?? false;
-  const confirmedReceived =
-    referral?.updates.some(
-      (u) =>
-        u.milestone === "referral-received" && u.source === "Specialist office",
-    ) ?? false;
-  const readyRecorded =
-    referral?.updates.some((u) => u.milestone === "ready-to-schedule") ?? false;
-  const status = useMemo(() => {
-    if (confirmedReceived) return "Specialist office confirmation recorded";
-    if (receiptRecorded) return "Receipt update recorded";
-    if (sentRecorded) return "Waiting for receipt";
-    return "Not confirmed yet";
-  }, [confirmedReceived, receiptRecorded, sentRecorded]);
+  const handoffState = referral ? getHandoffState(referral) : "status-not-confirmed";
+  const currentHandoff = referral ? latestStatusUpdate(referral) : undefined;
+  const readyRecorded = handoffState === "ready-to-schedule";
+  const status = handoffLabel(handoffState, currentHandoff);
+  const agentInsight = referral ? referralAgentInsight(referral) : null;
+  const latestCoverage = referral
+    ? [...referral.updates].reverse().find((update) => update.coverageUpdate)
+    : undefined;
   const receiptConfirmedCount = referrals.filter((item) =>
     item.updates.some(
       (update) =>
@@ -778,12 +853,11 @@ export default function App() {
         update.source === "Specialist office",
     ),
   ).length;
-  const readyToScheduleCount = referrals.filter((item) =>
-    item.updates.some((update) => update.milestone === "ready-to-schedule"),
+  const readyToScheduleCount = referrals.filter(
+    (item) => getHandoffState(item) === "ready-to-schedule",
   ).length;
   const followUpCount = referrals.filter(
-    (item) =>
-      !item.updates.some((update) => update.milestone === "ready-to-schedule"),
+    (item) => getHandoffState(item) !== "ready-to-schedule",
   ).length;
   const nextReferral = referrals[0];
   const nextStep = nextReferral ? nextStepFor(nextReferral) : null;
@@ -804,18 +878,36 @@ export default function App() {
     setUpdateDetail(detail);
     setUpdateSource(source);
     setUpdateMilestone("");
+    setUpdateCoverage("");
+    setUpdateCertainty("confirmed");
+    setUpdateMissingItem("");
+    setUpdateRecordsOwner("Not sure");
+    setReadyConfirmation(false);
     setModal("update");
   }
 
   function saveUpdate() {
     if (!referral || !updateTitle.trim()) return;
-    const update = {
+    if (
+      updateMilestone === "ready-to-schedule" &&
+      (updateSource !== "Specialist office" || !readyConfirmation)
+    ) {
+      flash("Record Ready to schedule only after the specialist confirms it can proceed and required records or review are complete.");
+      return;
+    }
+    const update: Update = {
       id: Date.now(),
       title: updateTitle.trim(),
       detail: updateDetail.trim() || "No additional notes.",
       date: today,
       source: updateSource,
       ...(updateMilestone ? { milestone: updateMilestone } : {}),
+      ...(updateCoverage ? { coverageUpdate: updateCoverage } : {}),
+      ...(updateMilestone === "declined-by-specialist" ? { certainty: updateCertainty } : {}),
+      ...(updateMilestone === "awaiting-records" && updateMissingItem.trim()
+        ? { missingItem: updateMissingItem.trim(), recordsOwner: updateRecordsOwner }
+        : {}),
+      ...(updateMilestone === "ready-to-schedule" ? { readyConfirmed: true } : {}),
     };
     setReferrals((all) =>
       all.map((r) =>
@@ -860,10 +952,8 @@ export default function App() {
   }
 
   function logContactAttempt(target: Referral) {
-    const sent = target.updates.some(
-      (update) => update.milestone === "referral-sent",
-    );
-    const office = sent ? target.to : target.from;
+    const insight = referralAgentInsight(target);
+    const office = insight.recipient === "you" ? "the office" : insight.recipient;
     const update: Update = {
       id: Date.now(),
       title: `You contacted ${office}`,
@@ -1020,7 +1110,7 @@ export default function App() {
               </p>
             </div>
             <span
-              className={`status-pill ${confirmedReceived ? "status-green" : "status-amber"}`}
+              className={`status-pill ${handoffState === "ready-to-schedule" ? "status-green" : "status-amber"}`}
             >
               <span className="status-dot" />
               {status}
@@ -1072,15 +1162,39 @@ export default function App() {
             </div>
             <div className="journey">
               {steps.map((step, i) => {
+                const sentOrLater = [
+                  "referral-sent",
+                  "referral-received",
+                  "awaiting-records",
+                  "declined-by-specialist",
+                  "ready-to-schedule",
+                ].includes(handoffState);
+                const receivedOrLater = [
+                  "referral-received",
+                  "awaiting-records",
+                  "declined-by-specialist",
+                  "ready-to-schedule",
+                ].includes(handoffState);
+                const reviewComplete = handoffState === "ready-to-schedule";
                 const done =
                   i === 0 ||
-                  (i === 1 && sentRecorded) ||
-                  (i === 2 && receiptRecorded) ||
-                  (i === 3 && readyRecorded);
+                  (i === 1 && sentOrLater) ||
+                  (i === 2 && receivedOrLater) ||
+                  (i === 3 && reviewComplete) ||
+                  (i === 4 && readyRecorded);
                 const active =
-                  (!sentRecorded && i === 1) ||
-                  (sentRecorded && !receiptRecorded && i === 2) ||
-                  (receiptRecorded && !readyRecorded && i === 3);
+                  (i === 1 && ["status-not-confirmed", "referral-not-sent"].includes(handoffState)) ||
+                  (i === 2 && handoffState === "referral-sent") ||
+                  (i === 3 && ["referral-received", "awaiting-records", "declined-by-specialist"].includes(handoffState));
+                const stateLabel =
+                  i === 4
+                    ? readyRecorded ? "Confirmed" : "Only after confirmation"
+                    : i === 3 && handoffState === "awaiting-records"
+                      ? "Awaiting records"
+                      : i === 3 && handoffState === "declined-by-specialist"
+                        ? "Specialist decline"
+                        : done ? "Recorded" : i === 1 && handoffState === "referral-not-sent"
+                          ? "Not sent" : "Not confirmed";
                 return (
                   <div
                     className={`journey-step ${done ? "is-done" : ""} ${active ? "is-active" : ""}`}
@@ -1092,9 +1206,7 @@ export default function App() {
                     <div className="journey-copy">
                       <div className="journey-label">
                         {step.title}
-                        <span>
-                          {done ? "Recorded" : i < 3 ? "Not confirmed" : "Next"}
-                        </span>
+                        <span>{stateLabel}</span>
                       </div>
                       <p>{step.copy}</p>
                     </div>
@@ -1109,33 +1221,22 @@ export default function App() {
               <div className="section-title-row">
                 <div>
                   <p className="eyebrow">YOUR NEXT STEP</p>
-                  <h2>
-                    {readyRecorded
-                      ? "Schedule your appointment"
-                      : confirmedReceived
-                        ? "Ask how to schedule"
-                        : receiptRecorded
-                          ? "Confirm it with the specialist"
-                          : sentRecorded
-                            ? "Check that it arrived"
-                            : "Check whether it was sent"}
-                  </h2>
+                  <h2>{agentInsight?.headline ?? "Check your referral status"}</h2>
                 </div>
                 <span className="round-icon">
                   <ClipboardList size={19} />
                 </span>
               </div>
-              <p className="body-copy">
-                {readyRecorded
-                  ? `You recorded that the referral is ready for scheduling. Contact ${referral.to} to book your visit.`
-                  : confirmedReceived
-                    ? "You recorded that the specialist office confirmed receipt. Ask what to do next to schedule."
-                    : receiptRecorded
-                      ? `You recorded that the referral arrived. Check with ${referral.to} to confirm whether anything else is needed before scheduling.`
-                      : sentRecorded
-                        ? `You recorded that ${referral.from} sent it. Contact ${referral.to} to ask if it arrived.`
-                        : `Contact ${referral.from} and ask if the referral has been sent to ${referral.to}.`}
-              </p>
+              <p className="body-copy">{agentInsight?.action ?? "Review the updates you have recorded."}</p>
+              {latestCoverage?.coverageUpdate && (
+                <p className="notice coverage-note">
+                  <ShieldCheck size={16} />
+                  <span>
+                    <strong>Insurance update: {coverageLabel(latestCoverage.coverageUpdate)}.</strong>{" "}
+                    {latestCoverage.detail} Specialist review and insurance authorization are tracked separately.
+                  </span>
+                </p>
+              )}
               <div className="action-list">
                 <button
                   className={`check-row ${referral.done.includes("ask-sent") ? "checked" : ""}`}
@@ -1194,6 +1295,15 @@ export default function App() {
                         <span>{update.date}</span>
                       </div>
                       <p>{update.detail}</p>
+                      {update.milestone && (
+                        <span className="source-tag">{handoffLabel(update.milestone, update)}</span>
+                      )}
+                      {update.coverageUpdate && (
+                        <span className="source-tag source-tag-office">Insurance · {coverageLabel(update.coverageUpdate)}</span>
+                      )}
+                      {update.certainty === "possible" && (
+                        <span className="source-tag">Possible, not confirmed</span>
+                      )}
                       <span
                         className={`source-tag ${update.source !== "You" ? "source-tag-office" : ""}`}
                       >
@@ -1287,16 +1397,87 @@ export default function App() {
                   What part of the handoff is this about?
                   <select
                     value={updateMilestone}
-                    onChange={(e) =>
-                      setUpdateMilestone(e.target.value as Milestone | "")
-                    }
+                    onChange={(e) => {
+                      const value = e.target.value as Milestone | "";
+                      setUpdateMilestone(value);
+                      if (value) setUpdateCoverage("");
+                    }}
                   >
-                    <option value="">General update</option>
+                    <option value="">Status not confirmed / general note</option>
+                    <option value="referral-not-sent">Not sent</option>
                     <option value="referral-sent">Referral sent</option>
                     <option value="referral-received">Referral received</option>
+                    <option value="awaiting-records">Awaiting records</option>
+                    <option value="declined-by-specialist">Declined by specialist</option>
                     <option value="ready-to-schedule">Ready to schedule</option>
                   </select>
                 </label>
+                <label>
+                  Insurance update (tracked separately)
+                  <select
+                    value={updateCoverage}
+                    onChange={(e) => {
+                      const value = e.target.value as CoverageUpdate | "";
+                      setUpdateCoverage(value);
+                      if (value) {
+                        setUpdateMilestone("");
+                        setUpdateSource("Health plan");
+                      }
+                    }}
+                  >
+                    <option value="">No insurance update</option>
+                    <option value="authorization-required">Authorization required</option>
+                    <option value="out-of-network">Possible out-of-network issue</option>
+                    <option value="coverage-confirmed">Coverage confirmed</option>
+                  </select>
+                  <small>Insurance status does not change specialist acceptance or handoff status.</small>
+                </label>
+                {updateMilestone === "awaiting-records" && (
+                  <>
+                    <label>
+                      What record is needed? (if known)
+                      <input
+                        value={updateMissingItem}
+                        onChange={(e) => setUpdateMissingItem(e.target.value)}
+                        placeholder="e.g. latest dental X-ray"
+                      />
+                    </label>
+                    <label>
+                      Who is expected to provide it?
+                      <select
+                        value={updateRecordsOwner}
+                        onChange={(e) => setUpdateRecordsOwner(e.target.value as RecordsOwner)}
+                      >
+                        <option>Not sure</option>
+                        <option>Referring office</option>
+                        <option>Specialist office</option>
+                        <option>You</option>
+                      </select>
+                    </label>
+                  </>
+                )}
+                {updateMilestone === "declined-by-specialist" && (
+                  <label>
+                    How certain is this update?
+                    <select
+                      value={updateCertainty}
+                      onChange={(e) => setUpdateCertainty(e.target.value as UpdateCertainty)}
+                    >
+                      <option value="confirmed">Specialist office confirmed decline</option>
+                      <option value="possible">Possible / not final</option>
+                    </select>
+                  </label>
+                )}
+                {updateMilestone === "ready-to-schedule" && (
+                  <label className="ready-confirmation">
+                    <input
+                      type="checkbox"
+                      checked={readyConfirmation}
+                      onChange={(e) => setReadyConfirmation(e.target.checked)}
+                    />
+                    <span>The specialist office confirmed it can proceed and any requested records or review steps are complete.</span>
+                  </label>
+                )}
                 <label>
                   Who provided this update?
                   <select
@@ -1325,7 +1506,7 @@ export default function App() {
                 </p>
                 <button
                   className="primary-button full"
-                  disabled={!updateTitle.trim()}
+                  disabled={!updateTitle.trim() || (updateMilestone === "ready-to-schedule" && (!readyConfirmation || updateSource !== "Specialist office"))}
                   onClick={saveUpdate}
                 >
                   Save update
@@ -1595,17 +1776,6 @@ export default function App() {
             <div className="referral-list-layout">
               <div className="referral-grid">
                 {referrals.map((r) => {
-                  const receipt = r.updates.some(
-                    (u) => u.milestone === "referral-received",
-                  );
-                  const officeConfirmed = r.updates.some(
-                    (u) =>
-                      u.milestone === "referral-received" &&
-                      u.source === "Specialist office",
-                  );
-                  const sent = r.updates.some(
-                    (u) => u.milestone === "referral-sent",
-                  );
                   return (
                     <article className="referral-card" key={r.id}>
                       <div className="card-top">
@@ -1613,16 +1783,10 @@ export default function App() {
                           <Stethoscope size={19} />
                         </span>
                         <span
-                          className={`status-pill ${officeConfirmed ? "status-green" : "status-amber"}`}
+                          className={`status-pill ${getHandoffState(r) === "ready-to-schedule" ? "status-green" : "status-amber"}`}
                         >
                           <span className="status-dot" />
-                          {officeConfirmed
-                            ? "Specialist confirmation recorded"
-                            : receipt
-                              ? "Receipt update recorded"
-                              : sent
-                                ? "Waiting for receipt"
-                                : "Not confirmed yet"}
+                          {handoffLabel(getHandoffState(r), latestStatusUpdate(r))}
                         </span>
                       </div>
                       <h3>{r.specialty}</h3>
@@ -1643,13 +1807,19 @@ export default function App() {
                       <div className="card-note">
                         <CircleHelp size={16} />
                         <span>
-                          {officeConfirmed
-                            ? "You recorded that the specialist office confirmed receipt."
-                            : receipt
-                              ? "You recorded a receipt update. Check the source in your timeline."
-                              : sent
-                                ? "You recorded that the referring office sent it. Receipt is still unknown."
-                                : "Referral sending and receipt haven’t been confirmed yet."}
+                          {getHandoffState(r) === "awaiting-records"
+                            ? "A record is needed before specialist review can continue."
+                            : getHandoffState(r) === "declined-by-specialist"
+                              ? "Review the specialist-office update and confirm whether the decision is final."
+                              : getHandoffState(r) === "ready-to-schedule"
+                                ? "The specialist confirmed it can proceed to scheduling."
+                                : getHandoffState(r) === "referral-received"
+                                  ? "Receipt is recorded; specialist review and scheduling readiness are still separate."
+                                  : getHandoffState(r) === "referral-sent"
+                                    ? "The referring office reported sending it; specialist receipt is not confirmed."
+                                    : getHandoffState(r) === "referral-not-sent"
+                                      ? "You recorded that the referral has not been sent yet."
+                                      : "Referral status has not been confirmed."}
                         </span>
                       </div>
                       <button
