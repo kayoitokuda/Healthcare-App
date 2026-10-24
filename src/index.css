@@ -3124,3 +3124,31 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
   .auth-card { padding: 26px 21px; }
   .account-signout { min-height: 34px; padding: 0 9px; }
 }
+
+.landing-nav .landing-signin {
+  min-height: 38px;
+  padding: 0 15px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  color: var(--ink);
+  background: var(--white);
+  font-size: 12px;
+  font-weight: 650;
+  cursor: pointer;
+}
+.landing-nav .landing-signin:hover {
+  border-color: var(--teal);
+  color: var(--teal-dark);
+  background: var(--mint);
+}
+.auth-back {
+  margin: 20px 0 0;
+  padding: 0;
+  border: 0;
+  color: var(--muted);
+  background: transparent;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.auth-back:hover { color: var(--teal-dark); }
