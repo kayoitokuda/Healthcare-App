@@ -4020,17 +4020,23 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
   }
 }
 
-/* Keep numbered process steps in sequence when all cards fit on desktop. */
+/* Keep desktop steps ordered while adding a restrained horizontal glide. */
+@keyframes landing-steps-desktop-glide {
+  from { transform: translateX(0); }
+  to { transform: translateX(-14px); }
+}
 @media (min-width: 761px) {
   .landing-steps {
     position: relative;
-    left: max(24px, calc((100vw - 1218px) / 2));
-    overflow: visible;
+    left: 0;
+    width: min(1246px, 100%);
+    max-width: 1246px;
+    padding: 0 14px;
+    overflow: hidden;
   }
   .landing-steps-track {
     width: 100%;
-    animation: none;
-    transform: none;
+    animation: landing-steps-desktop-glide 12s ease-in-out infinite alternate;
   }
   .landing-steps-group {
     display: grid;
@@ -4042,6 +4048,12 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
   }
   .landing-steps-group[aria-hidden="true"] {
     display: none;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .landing-steps-track {
+    animation: none;
+    transform: none;
   }
 }
 
