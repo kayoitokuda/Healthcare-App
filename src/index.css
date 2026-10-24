@@ -3879,3 +3879,25 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
     animation-timing-function: ease-in-out;
   }
 }
+
+
+/* Restore the updated Figma desktop hero proportions and type scale. */
+@media (min-width: 1200px) {
+  .landing-hero {
+    height: 711px;
+  }
+  .landing-hero-copy {
+    gap: 26px;
+    padding-left: 59px;
+  }
+  .landing-label {
+    margin-bottom: -8px;
+  }
+  .landing-hero h1 {
+    font-size: 45px;
+    line-height: 52px;
+  }
+  .landing-how {
+    padding-top: 78px;
+  }
+}
