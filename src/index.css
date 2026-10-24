@@ -1737,6 +1737,7 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
   margin: 0;
 }
 .landing-actions .primary-button {
+  gap: 12px;
   min-height: 62px;
   padding: 0 36px;
   border-radius: 8px;
@@ -1893,7 +1894,7 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 }
 .landing-how {
   scroll-margin-top: 28px;
-  padding: 66px 24px 0;
+  padding: 91px 24px 0;
   background: #fff;
 }
 .landing-section-heading {
@@ -1904,7 +1905,7 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 .landing-section-heading .eyebrow {
   margin: 0 0 10px;
   color: #707580;
-  font-size: 15px;
+  font-size: 20px;
   font-weight: 700;
   letter-spacing: .02em;
 }
@@ -1923,7 +1924,7 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
   font-size: 16px;
   line-height: 1.5;
 }
-.landing-steps {
+ .landing-steps {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 14px;
@@ -1932,8 +1933,12 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 }
 .landing-step {
   position: relative;
-  min-height: 151px;
-  padding: 16px 18px;
+  display: flex;
+  min-height: 180px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 11px;
+  padding: 26px 18px;
   border: 1px solid #e5e4df;
   border-radius: 10px;
   background: #fff;
@@ -1950,18 +1955,19 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
   color: #405bcb;
 }
 .landing-step h3 {
-  margin: 11px 0 6px;
+  margin: 0;
   color: #222632;
   font-family: "Source Serif 4", Georgia, "Times New Roman", serif;
   font-size: 21px;
   font-weight: 700;
 }
 .landing-step p {
-  max-width: 330px;
+  width: 100%;
+  min-height: 56px;
   margin: 0;
   color: #707580;
   font-size: 15px;
-  line-height: 1.45;
+  line-height: 1.35;
 }
 .landing-boundary {
   display: flex;
@@ -1969,11 +1975,11 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
   align-items: center;
   gap: 15px;
   width: min(1143px, calc(100% - 48px));
-  margin: 28px auto 0;
+  margin: 43px auto 0;
   padding: 16px 20px;
   border: 1px solid #dee0f0;
   border-radius: 10px;
-  background: #f2f2fb;
+  background: linear-gradient(115deg, #f6f6fb 0%, #e7eafd 52%, #cbd3ff 100%);
 }
 .landing-boundary-icon {
   display: grid;
@@ -1986,15 +1992,16 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 .landing-boundary > div {
   flex: 1;
 }
-.landing-boundary strong {
+ .landing-boundary strong {
   color: #222632;
-  font-size: 14px;
+  font-size: 17px;
+  font-weight: 400;
 }
 .landing-boundary p {
-  margin: 4px 0 0;
-  color: #4f5666;
-  font-size: 13px;
-  line-height: 1.45;
+  margin: 0;
+  color: #222632;
+  font-size: 17px;
+  line-height: 1.35;
 }
 .landing-footer {
   width: min(1143px, calc(100% - 48px));
@@ -2779,10 +2786,12 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
   .landing-boundary strong {
     color: #303545;
     font-size: 14px;
+    font-weight: 400;
   }
   .landing-boundary p {
+    margin: 0;
     color: #4e5666;
-    font-size: 13px;
+    font-size: 14px;
   }
   .landing-boundary .text-button {
     font-size: 13px;
