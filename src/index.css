@@ -3766,3 +3766,47 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
     transform: none;
   }
 }
+
+
+/* Carry the landing page's indigo and warm-neutral accents through dashboard panels. */
+.dashboard-shell .demo-banner {
+  border-color: #e0e3f0;
+  background: #f4f5fb;
+}
+.dashboard-shell .demo-banner-copy strong {
+  color: #35416e;
+}
+.dashboard-shell .demo-banner-copy span {
+  color: #656d87;
+}
+.dashboard-shell .agent-icon {
+  background: #eef0fa;
+  color: #405bcb;
+}
+.dashboard-shell .agent-card-heading .eyebrow {
+  color: #58679e;
+}
+.dashboard-shell .agent-suggestion {
+  border-color: #e1e5f0;
+  background: #f6f7fc;
+}
+.dashboard-shell .agent-suggestion > span {
+  color: #58679e;
+}
+.dashboard-shell .agent-suggestion strong {
+  color: #34394f;
+}
+.dashboard-shell .agent-suggestion small {
+  color: #65708a;
+}
+.dashboard-shell .agent-explanation {
+  color: #58679e;
+}
+.dashboard-shell .agent-explanation p,
+.dashboard-shell .agent-boundary {
+  color: #65708a;
+}
+.dashboard-shell .agent-reminder-editor {
+  border-color: #e1e5f0;
+  background: #fafbfe;
+}
