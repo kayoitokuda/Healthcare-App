@@ -265,7 +265,13 @@ function Modal({
   );
 }
 
-function LandingPage({ onEnter }: { onEnter: () => void }) {
+function LandingPage({
+  onSignIn,
+  onGetStarted,
+}: {
+  onSignIn: () => void;
+  onGetStarted: () => void;
+}) {
   return (
     <div className="landing-page">
       <header className="landing-header">
@@ -282,6 +288,9 @@ function LandingPage({ onEnter }: { onEnter: () => void }) {
         </button>
         <nav className="landing-nav" aria-label="Main navigation">
           <a href="#landing-how-it-works">How it works</a>
+          <button type="button" className="landing-signin" onClick={onSignIn}>
+            Sign in
+          </button>
         </nav>
       </header>
 
@@ -298,8 +307,11 @@ function LandingPage({ onEnter }: { onEnter: () => void }) {
               and prepare to follow up with the right office.
             </p>
             <div className="landing-actions">
-              <button className="primary-button" onClick={onEnter}>
-                Explore the sample tracker <ArrowRight size={16} />
+              <button className="primary-button" onClick={onGetStarted}>
+                Create an account <ArrowRight size={16} />
+              </button>
+              <button className="secondary-button" onClick={onSignIn}>
+                Sign in
               </button>
             </div>
             <p className="landing-reassurance">
@@ -493,7 +505,6 @@ function ReferralNavigatorApp() {
   const [syncError, setSyncError] = useState("");
   const [demoMode, setDemoMode] = useState(false);
   const [inlineDraftId, setInlineDraftId] = useState<number | null>(null);
-  const [hasEnteredDashboard, setHasEnteredDashboard] = useState(false);
   const [selected, setSelected] = useState<number | null>(null);
   const [modal, setModal] = useState<
     "new" | "update" | "notes" | "help" | null
@@ -786,9 +797,6 @@ function ReferralNavigatorApp() {
         Loading your referrals…
       </main>
     );
-
-  if (!hasEnteredDashboard)
-    return <LandingPage onEnter={() => setHasEnteredDashboard(true)} />;
 
   if (selected !== null && referral)
     return (
@@ -1726,10 +1734,28 @@ function NotesForm({
 
 function AuthenticatedApp() {
   const { loading, user } = useAuth();
+  const [authMode, setAuthMode] = useState<"sign-in" | "sign-up" | null>(null);
+
   if (loading) {
     return <main className="auth-loading" role="status">Checking your session…</main>;
   }
-  if (!user) return <SignIn />;
+  if (!user) {
+    if (authMode === null) {
+      return (
+        <LandingPage
+          onSignIn={() => setAuthMode("sign-in")}
+          onGetStarted={() => setAuthMode("sign-up")}
+        />
+      );
+    }
+    return (
+      <SignIn
+        key={authMode}
+        initialMode={authMode}
+        onBack={() => setAuthMode(null)}
+      />
+    );
+  }
   return <ReferralNavigatorApp key={user.id} />;
 }
 
