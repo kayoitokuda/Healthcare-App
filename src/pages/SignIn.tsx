@@ -2,9 +2,15 @@ import { useState, type FormEvent } from "react";
 import { HeartHandshake, ShieldCheck } from "lucide-react";
 import { useAuth } from "../auth/AuthContext";
 
-export default function SignIn() {
+export default function SignIn({
+  initialMode = "sign-in",
+  onBack,
+}: {
+  initialMode?: "sign-in" | "sign-up";
+  onBack?: () => void;
+}) {
   const { signIn, signUp, configured } = useAuth();
-  const [mode, setMode] = useState<"sign-in" | "sign-up">("sign-in");
+  const [mode, setMode] = useState<"sign-in" | "sign-up">(initialMode);
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -49,6 +55,11 @@ export default function SignIn() {
           <span className="auth-brand-mark"><HeartHandshake size={21} /></span>
           <span>Referral Navigator</span>
         </a>
+        {onBack && (
+          <button className="auth-back" type="button" onClick={onBack}>
+            ← Back to home
+          </button>
+        )}
         <p className="auth-eyebrow">YOUR REFERRAL, ORGANIZED</p>
         <h1 id="auth-title">{mode === "sign-in" ? "Welcome back" : "Create your account"}</h1>
         <p className="auth-intro">
