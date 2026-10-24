@@ -288,8 +288,8 @@ function LandingPage({
           </span>
           <span>Referral Navigator</span>
         </button>
-        <LanguageToggle />
         <nav className="landing-nav" aria-label="Main navigation">
+          <LanguageToggle />
           <a href="#landing-how-it-works">How it works</a>
           <button type="button" className="landing-signin" onClick={onSignIn}>
             Sign in
