@@ -1950,11 +1950,32 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
   line-height: 1.5;
 }
  .landing-steps {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 14px;
   width: min(1218px, 100%);
   margin: 40px auto 0;
+  overflow: hidden;
+}
+.landing-steps-track {
+  display: flex;
+  width: 200%;
+  animation: landing-steps-carousel 30s linear infinite;
+}
+.landing-steps-group {
+  display: grid;
+  flex: 0 0 50%;
+  min-width: 0;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+}
+.landing-steps:hover .landing-steps-track,
+.landing-steps:focus-within .landing-steps-track {
+  animation-play-state: paused;
+}
+.landing-steps:focus-visible {
+  outline: 2px solid #405bcb;
+  outline-offset: 4px;
+}
+@keyframes landing-steps-carousel {
+  to { transform: translateX(-50%); }
 }
 .landing-step {
   position: relative;
@@ -2101,12 +2122,23 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
     font-size: 15px;
   }
   .landing-steps {
-    grid-template-columns: 1fr;
-    gap: 10px;
+    --carousel-card-width: min(393px, calc(100vw - 40px));
+    width: 100%;
     margin-top: 26px;
   }
+  .landing-steps-track {
+    width: max-content;
+  }
+  .landing-steps-group {
+    display: flex;
+    flex: 0 0 auto;
+    width: calc(var(--carousel-card-width) + var(--carousel-card-width) + var(--carousel-card-width) + 28px);
+    gap: 14px;
+  }
   .landing-step {
+    width: var(--carousel-card-width);
     min-height: 0;
+    flex: 0 0 var(--carousel-card-width);
     padding: 16px;
   }
   .landing-step h3 {
@@ -2193,6 +2225,34 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
   }
   .landing-footer {
     font-size: 12px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .landing-steps {
+    overflow: visible;
+  }
+  .landing-steps-track {
+    width: 100%;
+    animation: none;
+  }
+  .landing-steps-group {
+    display: grid;
+    width: 100%;
+    flex: 0 0 100%;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .landing-steps-group[aria-hidden="true"] {
+    display: none;
+  }
+}
+@media (max-width: 760px) and (prefers-reduced-motion: reduce) {
+  .landing-steps-group {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .landing-step {
+    width: 100%;
+    flex-basis: auto;
   }
 }
 .dashboard-shell {
