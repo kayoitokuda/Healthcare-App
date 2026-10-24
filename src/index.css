@@ -3523,10 +3523,10 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
     transform: translateX(calc(0px - var(--carousel-card-width) - 16px - var(--carousel-card-width) - 16px));
   }
   77%, 100% {
-    transform: translateX(calc(0px - var(--carousel-card-width) - 16px - var(--carousel-card-width) - 16px - var(--carousel-card-width) - 32px));
+    transform: translateX(calc(0px - var(--carousel-card-width) - 16px - var(--carousel-card-width) - 16px - var(--carousel-card-width)));
   }
 }
-@media (max-width: 760px) {
+@media (max-width: 760px) and (prefers-reduced-motion: no-preference) {
   .landing-steps {
     --carousel-card-width: 100vw;
   }
