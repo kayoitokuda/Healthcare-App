@@ -24,12 +24,14 @@ import {
   Phone,
   Plus,
   ShieldCheck,
+  Settings,
   Stethoscope,
   X,
 } from "lucide-react";
 import { AuthProvider, useAuth } from "./auth/AuthContext";
 import SignIn from "./pages/SignIn";
 import { supabase } from "./lib/supabase";
+import { LanguageProvider, LanguageToggle, useAppLanguage, type AppLanguage } from "./i18n";
 
 type Source = "You" | "Referring office" | "Specialist office" | "Health plan";
 type Milestone = "referral-sent" | "referral-received" | "ready-to-schedule";
@@ -286,6 +288,7 @@ function LandingPage({
           </span>
           <span>Referral Navigator</span>
         </button>
+        <LanguageToggle />
         <nav className="landing-nav" aria-label="Main navigation">
           <a href="#landing-how-it-works">How it works</a>
           <button type="button" className="landing-signin" onClick={onSignIn}>
@@ -499,6 +502,8 @@ function InlineDraftPanel({
 
 function ReferralNavigatorApp() {
   const { user, signOut } = useAuth();
+  const { setLanguage } = useAppLanguage();
+  const [languageSaveState, setLanguageSaveState] = useState("");
   const ownerId = user?.id ?? null;
   const [referrals, setReferrals] = useState<Referral[]>(initial);
   const [dataReady, setDataReady] = useState(false);
@@ -507,7 +512,7 @@ function ReferralNavigatorApp() {
   const [inlineDraftId, setInlineDraftId] = useState<number | null>(null);
   const [selected, setSelected] = useState<number | null>(null);
   const [modal, setModal] = useState<
-    "new" | "update" | "notes" | "help" | null
+    "new" | "update" | "notes" | "help" | "settings" | null
   >(null);
   const [updateTitle, setUpdateTitle] = useState("");
   const [updateDetail, setUpdateDetail] = useState("");
@@ -639,6 +644,17 @@ function ReferralNavigatorApp() {
     )
     .sort((a, b) => b.update.id - a.update.id)
     .slice(0, 4);
+
+  async function savePreferredLanguage(language: AppLanguage) {
+    setLanguage(language);
+    setLanguageSaveState("Saving your preference…");
+    if (!supabase) {
+      setLanguageSaveState("Saved in this browser only.");
+      return;
+    }
+    const { error } = await supabase.auth.updateUser({ data: { preferred_language: language } });
+    setLanguageSaveState(error ? `Could not save: ${error.message}` : "Default language saved to your account.");
+  }
 
   function flash(message: string) {
     setToast(message);
@@ -820,6 +836,7 @@ function ReferralNavigatorApp() {
             >
               <CircleHelp size={14} /> Saved to your account
             </span>
+<button type="button" className="account-signout" onClick={() => setModal("settings")}><Settings size={15} /> Settings</button>
             <button type="button" className="account-signout" onClick={() => void signOut()}>
               Sign out
             </button>
@@ -1292,6 +1309,7 @@ function ReferralNavigatorApp() {
           <span className="privacy-chip" title="Your referral updates are saved to your account.">
             <CircleHelp size={14} /> Saved to your account
           </span>
+          <button type="button" className="account-signout" onClick={() => setModal("settings")}><Settings size={15} /> Settings</button>
           <button type="button" className="account-signout" onClick={() => void signOut()}>
             Sign out
           </button>
@@ -1598,10 +1616,20 @@ function ReferralNavigatorApp() {
       </main>
       {modal && (
         <Modal
-          title={modal === "new" ? "Add a referral" : "A little guidance"}
+          title={modal === "settings" ? "Settings" : modal === "new" ? "Add a referral" : "A little guidance"}
           onClose={() => setModal(null)}
         >
-          {modal === "new" ? (
+          {modal === "settings" ? (
+            <div className="form-body settings-body">
+              <p className="modal-intro">Choose the language used throughout Referral Navigator. This default is saved to your account.</p>
+              <label className="settings-language-field">
+                Default language
+                <LanguageToggle onChange={(language) => void savePreferredLanguage(language)} />
+              </label>
+              {languageSaveState && <p className="settings-save-state" role="status">{languageSaveState}</p>}
+              <button className="primary-button full" onClick={() => setModal(null)}>Done</button>
+            </div>
+          ) : modal === "new" ? (
             <form className="form-body" onSubmit={createReferral}>
               <p className="modal-intro">
                 Add what you know after a clinician recommends specialist care.
@@ -1734,7 +1762,15 @@ function NotesForm({
 
 function AuthenticatedApp() {
   const { loading, user } = useAuth();
+  const { setLanguage } = useAppLanguage();
   const [authMode, setAuthMode] = useState<"sign-in" | "sign-up" | null>(null);
+
+  useEffect(() => {
+    const preferred = user?.user_metadata?.preferred_language;
+    if (preferred === "en" || preferred === "ja" || preferred === "zh" || preferred === "es" || preferred === "vi") {
+      setLanguage(preferred);
+    }
+  }, [user?.id, setLanguage]);
 
   if (loading) {
     return <main className="auth-loading" role="status">Checking your session…</main>;
@@ -1761,8 +1797,10 @@ function AuthenticatedApp() {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <AuthenticatedApp />
-    </AuthProvider>
+    <LanguageProvider>
+      <AuthProvider>
+        <AuthenticatedApp />
+      </AuthProvider>
+    </LanguageProvider>
   );
 }
