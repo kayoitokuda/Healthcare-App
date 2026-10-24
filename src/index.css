@@ -3818,3 +3818,11 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 .dashboard-shell .outline-button {
   border-radius: 8px;
 }
+
+
+/* Preserve the card gap where the mobile steps carousel repeats from step 3 to step 1. */
+@media (max-width: 760px) and (prefers-reduced-motion: no-preference) {
+  .landing-steps-group {
+    margin-right: 16px;
+  }
+}
