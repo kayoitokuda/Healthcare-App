@@ -1627,7 +1627,7 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 68px;
+  height: 77px;
   padding: 0 max(24px, calc((100vw - 1205px) / 2));
   background: #fff;
 }
