@@ -4020,12 +4020,8 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
   }
 }
 
-/* Keep desktop steps ordered while adding a restrained horizontal glide. */
-@keyframes landing-steps-desktop-glide {
-  from { transform: translateX(0); }
-  to { transform: translateX(-24px); }
-}
-@media (min-width: 761px) {
+/* Keep desktop steps ordered at rest and advance one card at a time. */
+@media (min-width: 761px) and (prefers-reduced-motion: no-preference) {
   .landing-steps {
     position: relative;
     left: max(0px, calc((100vw - 1218px) / 2 - 16px));
@@ -4035,19 +4031,23 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
     overflow: hidden;
   }
   .landing-steps-track {
-    width: 100%;
-    animation: landing-steps-desktop-glide 12s ease-in-out infinite alternate;
+    width: 200%;
+    --desktop-carousel-step: calc((50% + 20px) / 3);
+    animation-name: landing-steps-desktop-carousel;
+    animation-duration: 24s;
+    animation-timing-function: ease-in-out;
   }
   .landing-steps-group {
     display: grid;
-    width: 100%;
-    flex: 0 0 100%;
-    margin-right: 0;
+    width: 50%;
+    flex: 0 0 50%;
+    margin-right: 16px;
+    padding-right: 0;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 20px;
   }
   .landing-steps-group[aria-hidden="true"] {
-    display: none;
+    display: grid;
   }
 }
 @media (prefers-reduced-motion: reduce) {
