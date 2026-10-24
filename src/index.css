@@ -3557,3 +3557,212 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
     animation-timing-function: linear;
   }
 }
+
+
+/* Dashboard visual language aligned with the landing page. */
+.dashboard-shell .welcome,
+.dashboard-shell .referral-card,
+.dashboard-shell .dashboard-lower-card,
+.dashboard-shell .referral-agent-card,
+.dashboard-shell .first-step-card {
+  border-radius: 10px;
+}
+.dashboard-shell .welcome h1,
+.dashboard-shell .dashboard-section .list-title h2,
+.dashboard-shell .lower-card-heading h2,
+.dashboard-shell .referral-card h3,
+.dashboard-shell .agent-card-heading h2,
+.dashboard-shell .dashboard-next-step h2,
+.dashboard-shell .first-step-card h3 {
+  font-family: "Source Serif 4", Georgia, "Times New Roman", serif;
+}
+.dashboard-shell .welcome h1 {
+  font-size: 32px;
+  letter-spacing: -0.8px;
+  line-height: 1.12;
+}
+.dashboard-shell .dashboard-section .list-title h2 {
+  font-size: 22px;
+  letter-spacing: -0.35px;
+}
+.dashboard-shell .lower-card-heading h2 {
+  font-size: 18px;
+  letter-spacing: -0.25px;
+}
+.dashboard-shell .referral-card h3 {
+  font-size: 18px;
+  letter-spacing: -0.25px;
+}
+.dashboard-shell .agent-card-heading h2,
+.dashboard-shell .dashboard-next-step h2 {
+  font-family: "Source Serif 4", Georgia, "Times New Roman", serif;
+  font-size: 21px;
+  letter-spacing: -0.3px;
+}
+.dashboard-shell .first-step-card h3 {
+  font-size: 17px;
+  letter-spacing: -0.2px;
+}
+.dashboard-shell .welcome > div:first-child > p:last-child {
+  font-size: 14px;
+  line-height: 1.5;
+}
+.dashboard-shell .dashboard-section .list-title p {
+  font-size: 12px;
+  line-height: 1.5;
+}
+.dashboard-shell .summary-card {
+  border-radius: 10px;
+}
+.dashboard-shell .summary-coral {
+  border-color: #e5e3dd;
+  background: #f7f6f2;
+  color: #484856;
+}
+.dashboard-shell .summary-gold {
+  border-color: #efe0b7;
+  background: #fff8e6;
+  color: #65501d;
+}
+.dashboard-shell .summary-pink {
+  border-color: #e3e4f0;
+  background: #f3f2fb;
+  color: #4c4d72;
+}
+.dashboard-shell .summary-blue {
+  border-color: #d9def1;
+  background: #edf0fb;
+  color: #3d4e82;
+}
+.dashboard-shell .summary-card-top span {
+  font-size: 9px;
+  letter-spacing: 0.5px;
+}
+.dashboard-shell .summary-card > p {
+  font-size: 10px;
+  line-height: 1.45;
+}
+.dashboard-shell .referral-card,
+.dashboard-shell .dashboard-lower-card,
+.dashboard-shell .referral-agent-card {
+  border-color: #e5e3dd;
+}
+.dashboard-shell .dashboard-nav button,
+.dashboard-shell .referral-card,
+.dashboard-shell .dashboard-lower-card,
+.dashboard-shell .recent-update-row,
+.dashboard-shell .primary-button,
+.dashboard-shell .secondary-button,
+.dashboard-shell .outline-button,
+.dashboard-shell .add-button,
+.dashboard-shell .card-link,
+.dashboard-shell .text-button {
+  transition:
+    background-color 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    color 180ms ease,
+    transform 180ms ease;
+}
+.dashboard-shell .dashboard-nav button:hover {
+  transform: translateX(2px);
+}
+.dashboard-shell .referral-card {
+  box-shadow: 0 2px 8px rgba(34, 38, 50, 0.025);
+}
+.dashboard-shell .referral-card:hover,
+.dashboard-shell .referral-card:focus-within {
+  border-color: #d5daf0;
+  box-shadow: 0 8px 20px rgba(34, 38, 50, 0.07);
+  transform: translateY(-2px);
+}
+.dashboard-shell .dashboard-lower-card:hover,
+.dashboard-shell .dashboard-lower-card:focus-within,
+.dashboard-shell .recent-update-row:hover,
+.dashboard-shell .recent-update-row:focus-visible {
+  border-color: #d9def1;
+  box-shadow: 0 5px 14px rgba(34, 38, 50, 0.05);
+}
+.dashboard-shell .primary-button:hover,
+.dashboard-shell .add-button:hover {
+  box-shadow: 0 6px 14px rgba(50, 75, 178, 0.17);
+  transform: translateY(-1px);
+}
+.dashboard-shell .secondary-button:hover,
+.dashboard-shell .outline-button:hover {
+  border-color: #c7cee8;
+  background: #f8f9fd;
+  transform: translateY(-1px);
+}
+.dashboard-shell .card-link,
+.dashboard-shell .text-button {
+  gap: 6px;
+}
+.dashboard-shell .card-link svg,
+.dashboard-shell .text-button svg {
+  transition: transform 180ms ease;
+}
+.dashboard-shell .card-link:hover svg,
+.dashboard-shell .text-button:hover svg {
+  transform: translateX(3px);
+}
+.dashboard-shell button:focus-visible,
+.dashboard-shell select:focus-visible,
+.dashboard-shell input:focus-visible,
+.dashboard-shell textarea:focus-visible {
+  outline-color: #405bcb;
+}
+@media (max-width: 760px) {
+  .dashboard-shell .welcome h1 {
+    font-size: 26px;
+  }
+  .dashboard-shell .dashboard-section .list-title h2 {
+    font-size: 20px;
+  }
+  .dashboard-shell .lower-card-heading h2 {
+    font-size: 17px;
+  }
+  .dashboard-shell .referral-card h3 {
+    font-size: 17px;
+  }
+  .dashboard-shell .agent-card-heading h2,
+  .dashboard-shell .dashboard-next-step h2 {
+    font-size: 19px;
+  }
+  .dashboard-shell .summary-card-top span {
+    font-size: 11px;
+  }
+  .dashboard-shell .summary-card > p {
+    font-size: 12px;
+  }
+  .dashboard-shell .dashboard-section .list-title p {
+    font-size: 13px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-shell .dashboard-nav button,
+  .dashboard-shell .referral-card,
+  .dashboard-shell .dashboard-lower-card,
+  .dashboard-shell .recent-update-row,
+  .dashboard-shell .primary-button,
+  .dashboard-shell .secondary-button,
+  .dashboard-shell .outline-button,
+  .dashboard-shell .add-button,
+  .dashboard-shell .card-link,
+  .dashboard-shell .text-button,
+  .dashboard-shell .card-link svg,
+  .dashboard-shell .text-button svg {
+    transition: none;
+  }
+  .dashboard-shell .dashboard-nav button:hover,
+  .dashboard-shell .referral-card:hover,
+  .dashboard-shell .referral-card:focus-within,
+  .dashboard-shell .dashboard-lower-card:hover,
+  .dashboard-shell .dashboard-lower-card:focus-within,
+  .dashboard-shell .primary-button:hover,
+  .dashboard-shell .add-button:hover,
+  .dashboard-shell .secondary-button:hover,
+  .dashboard-shell .outline-button:hover {
+    transform: none;
+  }
+}
