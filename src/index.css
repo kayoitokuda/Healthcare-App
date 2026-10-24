@@ -3501,3 +3501,36 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
     display: none;
   }
 }
+
+
+/* Keep each carousel stop aligned to complete cards; slide between them briefly. */
+@keyframes landing-steps-carousel {
+  0%, 44% {
+    transform: translateX(0);
+  }
+  50%, 100% {
+    transform: translateX(-50%);
+  }
+}
+@keyframes landing-steps-mobile-carousel {
+  0%, 24% {
+    transform: translateX(0);
+  }
+  27%, 49% {
+    transform: translateX(calc(0px - var(--carousel-card-width) - 16px));
+  }
+  52%, 74% {
+    transform: translateX(calc(0px - var(--carousel-card-width) - 16px - var(--carousel-card-width) - 16px));
+  }
+  77%, 100% {
+    transform: translateX(calc(0px - var(--carousel-card-width) - 16px - var(--carousel-card-width) - 16px - var(--carousel-card-width) - 32px));
+  }
+}
+@media (max-width: 760px) {
+  .landing-steps {
+    --carousel-card-width: 100vw;
+  }
+  .landing-steps-track {
+    animation-name: landing-steps-mobile-carousel;
+  }
+}
