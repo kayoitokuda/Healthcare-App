@@ -4028,7 +4028,7 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 @media (min-width: 761px) {
   .landing-steps {
     position: relative;
-    left: 0;
+    left: max(10px, calc((100vw - 1218px) / 2));
     width: min(1246px, 100%);
     max-width: 1246px;
     padding: 0 14px;
