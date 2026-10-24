@@ -3850,3 +3850,32 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
   border-radius: 18px;
   background: rgba(255, 255, 255, 0.5);
 }
+
+
+/* Keep the three desktop cards fully aligned at each carousel stop. */
+@keyframes landing-steps-desktop-carousel {
+  0%, 20% {
+    transform: translateX(0);
+  }
+  25%, 45% {
+    transform: translateX(calc(0px - var(--desktop-carousel-step)));
+  }
+  50%, 70% {
+    transform: translateX(calc(0px - var(--desktop-carousel-step) - var(--desktop-carousel-step)));
+  }
+  75%, 100% {
+    transform: translateX(calc(-50% - 16px));
+  }
+}
+@media (min-width: 761px) and (prefers-reduced-motion: no-preference) {
+  .landing-steps-group {
+    padding-right: 0;
+    margin-right: 16px;
+  }
+  .landing-steps-track {
+    --desktop-carousel-step: calc((50% + 16px) / 3);
+    animation-name: landing-steps-desktop-carousel;
+    animation-duration: 24s;
+    animation-timing-function: ease-in-out;
+  }
+}
