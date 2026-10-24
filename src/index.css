@@ -3901,3 +3901,72 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
     padding-top: 78px;
   }
 }
+
+
+/* Match the Figma referral preview card proportions and detail scale. */
+@media (min-width: 1200px) {
+  .landing-preview-card {
+    width: min(544px, 100%);
+    min-height: 488px;
+    gap: 14px;
+    padding: 28px;
+    border-radius: 12px;
+    box-shadow: 7px 14px 28px rgba(0, 0, 0, 0.11);
+  }
+  .landing-preview-top {
+    height: 33px;
+  }
+  .landing-card-eyebrow {
+    font-size: 14px;
+  }
+  .landing-preview .status-pill {
+    gap: 8px;
+    padding: 5px 11px;
+    font-size: 13px;
+  }
+  .landing-preview .status-dot {
+    width: 11px;
+    height: 11px;
+  }
+  .landing-preview h2 {
+    font-size: 26px;
+  }
+  .landing-route {
+    font-size: 14px;
+    line-height: 19px;
+  }
+  .landing-progress {
+    height: 160px;
+    gap: 9px;
+  }
+  .landing-progress::before {
+    top: 23px;
+    left: 12px;
+    height: 113px;
+  }
+  .landing-progress-step {
+    min-height: 47px;
+    gap: 14px;
+  }
+  .landing-progress-marker {
+    width: 26px;
+    height: 26px;
+    border-radius: 13px;
+    font-size: 13px;
+  }
+  .landing-progress-step strong {
+    font-size: 14px;
+    line-height: 23.5px;
+  }
+  .landing-progress-step small {
+    font-size: 12px;
+    line-height: 16px;
+  }
+  .landing-preview-note {
+    min-height: 52px;
+    gap: 9px;
+    padding: 0 14px;
+    border-radius: 8px;
+    font-size: 13px;
+  }
+}
