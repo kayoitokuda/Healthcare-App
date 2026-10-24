@@ -1,8 +1,7 @@
 -- Referral Navigator starter schema.
--- This stores one patient-owned referral payload per row so the current prototype
--- can persist its existing referral shape while the data model is validated.
--- Keep real patient information out of this project until the required HIPAA
--- agreements and security configuration are in place.
+-- Referrals are stored as patient-owned JSON payloads while the prototype's
+-- data model is validated. Do not use real patient information until all
+-- required HIPAA agreements and security controls are in place.
 
 create table if not exists public.profiles (
   id uuid primary key references auth.users (id) on delete cascade,
@@ -15,9 +14,11 @@ create table if not exists public.profiles (
 create table if not exists public.referrals (
   id uuid primary key default gen_random_uuid(),
   owner_id uuid not null references auth.users (id) on delete cascade,
+  referral_key text not null,
   data jsonb not null check (jsonb_typeof(data) = 'object'),
   created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
+  updated_at timestamptz not null default now(),
+  constraint referrals_owner_key_unique unique (owner_id, referral_key)
 );
 
 create index if not exists referrals_owner_created_at_idx
