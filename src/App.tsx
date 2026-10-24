@@ -637,11 +637,9 @@ function LandingPage({ onEnter }: { onEnter: () => void }) {
             <ShieldCheck size={20} />
           </span>
           <div>
-            <strong>Your tracker is yours to update.</strong>
             <p>
-              This tool can’t verify referral status, give medical advice, or
-              determine insurance coverage. Confirm details with the relevant
-              office or your health plan.
+              <strong>Your tracker is yours to update.</strong>{" "}
+              This tool can’t verify referral status, give medical advice, or determine insurance coverage.
             </p>
           </div>
         </section>
