@@ -3385,6 +3385,7 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 }
 
 
+
 /* Landing page polish: full-bleed step rail, balanced language control, and centered callout. */
 .landing-steps {
   width: 100vw;
@@ -3441,6 +3442,7 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
     margin-top: 26px;
   }
   .landing-steps-group {
+    --carousel-card-width: 100vw;
     display: flex;
     width: calc(var(--carousel-card-width) + var(--carousel-card-width) + var(--carousel-card-width) + 32px);
     gap: 16px;
@@ -3481,18 +3483,21 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
     flex: 0 0 100%;
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
-  @media (max-width: 760px) {
-    .landing-steps-group,
-    .landing-steps-group[aria-hidden="true"] {
-      grid-template-columns: 1fr;
-      gap: 10px;
-    }
-    .landing-step {
-      width: 100%;
-      flex-basis: auto;
-    }
-    .landing-steps-group[aria-hidden="true"] {
-      display: none;
-    }
+  .landing-steps-group[aria-hidden="true"] {
+    display: grid;
+  }
+}
+@media (max-width: 760px) and (prefers-reduced-motion: reduce) {
+  .landing-steps-group,
+  .landing-steps-group[aria-hidden="true"] {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .landing-step {
+    width: 100%;
+    flex-basis: auto;
+  }
+  .landing-steps-group[aria-hidden="true"] {
+    display: none;
   }
 }
