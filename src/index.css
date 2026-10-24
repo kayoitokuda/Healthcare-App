@@ -3536,3 +3536,24 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
     animation-name: landing-steps-mobile-carousel;
   }
 }
+
+
+/* Keep the desktop rail continuously moving; mobile advances one full card at a time. */
+@keyframes landing-steps-carousel {
+  to {
+    transform: translateX(-50%);
+  }
+}
+@media (min-width: 761px) and (prefers-reduced-motion: no-preference) {
+  .landing-steps-track {
+    animation-duration: 30s;
+    animation-timing-function: linear;
+  }
+}
+@media (max-width: 760px) and (prefers-reduced-motion: no-preference) {
+  .landing-steps-track {
+    animation-name: landing-steps-mobile-carousel;
+    animation-duration: 18s;
+    animation-timing-function: linear;
+  }
+}
