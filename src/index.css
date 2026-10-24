@@ -4023,6 +4023,8 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 /* Keep numbered process steps in sequence when all cards fit on desktop. */
 @media (min-width: 761px) {
   .landing-steps {
+    position: relative;
+    left: max(24px, calc((100vw - 1218px) / 2));
     overflow: visible;
   }
   .landing-steps-track {
