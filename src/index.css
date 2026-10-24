@@ -3945,3 +3945,11 @@ html {
 .settings-language-field { display: grid; gap: 8px; color: var(--ink); font-weight: 700; }
 .settings-language-field .language-toggle { width: fit-content; }
 .settings-save-state { margin: -4px 0 0; color: var(--muted); font-size: 13px; }
+
+
+/* Keep landing actions and language control grouped in the header. */
+@media (max-width: 520px) {
+  .landing-header { gap: 8px; padding-right: 12px; padding-left: 12px; }
+  .landing-nav { gap: 8px; }
+  .landing-nav .language-toggle select { min-width: 82px; padding-right: 18px; padding-left: 6px; }
+}
