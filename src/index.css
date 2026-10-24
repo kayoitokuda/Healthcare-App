@@ -4019,3 +4019,26 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
     padding: 20px 129px;
   }
 }
+
+/* Keep numbered process steps in sequence when all cards fit on desktop. */
+@media (min-width: 761px) {
+  .landing-steps {
+    overflow: visible;
+  }
+  .landing-steps-track {
+    width: 100%;
+    animation: none;
+    transform: none;
+  }
+  .landing-steps-group {
+    display: grid;
+    width: 100%;
+    flex: 0 0 100%;
+    margin-right: 0;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px;
+  }
+  .landing-steps-group[aria-hidden="true"] {
+    display: none;
+  }
+}
