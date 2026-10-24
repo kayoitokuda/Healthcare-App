@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 
 export type AppLanguage = "en" | "ja" | "zh" | "es" | "vi";
 
@@ -668,14 +668,14 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     return () => observer.disconnect();
   }, [language]);
 
-  const setLanguage = (next: AppLanguage) => {
+  const setLanguage = useCallback((next: AppLanguage) => {
     setLanguageState(next);
     try {
       localStorage.setItem("referral-navigator-language", next);
     } catch {
       // Language choice still applies for this session.
     }
-  };
+  }, []);
 
   return <LanguageContext.Provider value={{ language, setLanguage }}>{children}</LanguageContext.Provider>;
 }
