@@ -3965,7 +3965,7 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
   .landing-preview-note {
     min-height: 52px;
     gap: 9px;
-    padding: 0 14px;
+    padding: 0 24px;
     border-radius: 8px;
     font-size: 13px;
   }
@@ -4023,14 +4023,14 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 /* Keep desktop steps ordered while adding a restrained horizontal glide. */
 @keyframes landing-steps-desktop-glide {
   from { transform: translateX(0); }
-  to { transform: translateX(-14px); }
+  to { transform: translateX(-24px); }
 }
 @media (min-width: 761px) {
   .landing-steps {
     position: relative;
-    left: max(10px, calc((100vw - 1218px) / 2));
-    width: min(1246px, 100%);
-    max-width: 1246px;
+    left: max(0px, calc((100vw - 1218px) / 2 - 16px));
+    width: min(1266px, 100%);
+    max-width: 1266px;
     padding: 0 14px;
     overflow: hidden;
   }
