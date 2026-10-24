@@ -3970,3 +3970,49 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
     font-size: 13px;
   }
 }
+
+/* Align the landing page with the current Figma frame. */
+.landing-page,
+.landing-how {
+  background: #f7f6f2;
+}
+@media (min-width: 1200px) {
+  .landing-hero {
+    margin-top: 40px;
+  }
+  .landing-how {
+    padding-top: 78px;
+    background: #f7f6f2;
+  }
+  .landing-section-heading {
+    width: min(1218px, 100%);
+    max-width: 1218px;
+    padding-left: 23px;
+    text-align: left;
+  }
+  .landing-steps {
+    width: min(1218px, 100%);
+    max-width: 1218px;
+    margin-top: 32px;
+  }
+  .landing-step {
+    min-height: 171px;
+    border-width: 2px;
+  }
+  .landing-boundary {
+    width: min(1218px, calc(100% - 48px));
+    min-height: 84px;
+    justify-content: center;
+    margin-top: 50px;
+    padding: 10px 16px;
+  }
+  .landing-boundary > div {
+    flex: 0 1 auto;
+  }
+  .landing-footer {
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 20px 129px;
+  }
+}
