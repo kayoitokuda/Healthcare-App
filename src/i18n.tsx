@@ -81,6 +81,7 @@ const rows: Array<[string, string, string, string, string]> = [
   ["This preview isn’t connected to Supabase yet. Check its Vercel environment variables.", "このプレビューはまだ Supabase に接続されていません。Vercel の環境変数を確認してください。", "此预览尚未连接到 Supabase。请检查 Vercel 环境变量。", "Esta vista previa aún no está conectada a Supabase. Revisa las variables de entorno de Vercel.", "Bản xem trước này chưa kết nối với Supabase. Hãy kiểm tra các biến môi trường trên Vercel."],
   ["Something went wrong. Please try again.", "問題が発生しました。もう一度お試しください。", "出了点问题，请重试。", "Algo salió mal. Inténtalo de nuevo.", "Đã xảy ra lỗi. Vui lòng thử lại."],
   ["Check your email for a confirmation link, then return here to sign in.", "確認リンクをメールで確認し、この画面に戻ってサインインしてください。", "请查看邮件中的确认链接，然后返回此处登录。", "Busca el enlace de confirmación en tu correo y vuelve aquí para iniciar sesión.", "Hãy kiểm tra email để mở liên kết xác nhận, sau đó quay lại đây để đăng nhập."],
+  ["Name", "お名前", "姓名", "Nombre", "Họ tên"],
   ["Password", "パスワード", "密码", "Contraseña", "Mật khẩu"],
   ["Use at least 8 characters.", "8 文字以上で入力してください。", "请至少输入 8 个字符。", "Usa al menos 8 caracteres.", "Sử dụng ít nhất 8 ký tự."],
   ["Please wait…", "お待ちください…", "请稍候…", "Espera…", "Vui lòng chờ…"],
