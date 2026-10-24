@@ -1,24 +1,29 @@
 # Supabase setup
 
-This branch adds the first database schema for Referral Navigator. The current React app still uses fictional, in-memory prototype data; this migration does not import that data or make it persist yet.
+The app now has email/password sign-up and sign-in, a session gate, and referral reads/writes scoped to the signed-in user. Referral records are stored as JSON payloads while the prototype data model is being validated.
 
-## Configure the project
+## Supabase project setup
 
-1. In the Supabase dashboard, open the project SQL Editor and run [the starter migration](supabase/migrations/20261024000000_initial_schema.sql).
-2. In the app repository, create a local `.env.local` file using the names in `.env.example`. Use the project URL and publishable key from Supabase.
-3. Add the same variables to the Vercel project's Development and Preview environments. Add Production only when you are ready to use the production app.
-4. In Supabase Auth settings, set the site URL and allowed redirect URLs for local development and the Vercel preview/deployment domains.
-5. Choose the sign-in method and verify email delivery before inviting testers.
+1. Open the SQL Editor for the Referral Navigator project and run [the starter migration](supabase/migrations/20261024000000_initial_schema.sql). It creates the profile/referral tables, turns on Row Level Security, and adds owner-only policies.
+2. In the repository, create a local `.env.local` from `.env.example`. Set `VITE_SUPABASE_URL` to the project's URL and `VITE_SUPABASE_PUBLISHABLE_KEY` to the publishable key. Do not add a secret/service-role key to the browser app.
+3. Run `npm install` after pulling this branch. This installs `@supabase/supabase-js` and updates the lockfile for the new dependency.
+4. In Supabase Auth settings, set the Site URL and add redirect URLs for local development and the Vercel preview/deployment domains. Enable email/password sign-in and confirm the email-delivery settings.
+5. In Vercel Project Settings → Environment Variables, add `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` for Development and Preview. Add Production when you're ready to use the authenticated app there, then redeploy.
 
-## Data access
+## Run locally
 
-The starter schema contains a profile row linked to each auth user and a referrals table with a JSON payload shaped for the current prototype. Row Level Security is enabled and policies scope every profile and referral operation to the signed-in user's ID. The app should use only the publishable key in the browser; never put a Supabase secret/service-role key in Vite variables or frontend code.
+```bash
+npm install
+cp .env.example .env.local
+npm run dev
+```
 
-The current sample referrals describe fictional patients and clinics. Keep them as prototype fixtures; don't load real patient data into the free project. Supabase states HIPAA use requires a signed BAA and a HIPAA-configured project, and its HIPAA capability is not part of the Free plan.
+Fill in the two Supabase values in `.env.local` before signing up. When Supabase variables are absent, the app continues to show its fictional, in-memory prototype. When configured, sign-in is required and a new account starts with an empty referrals list.
 
-## Next application changes
+To make fictional sample referrals available for manual demos, set `VITE_ENABLE_DEMO_DATA=true`. A signed-in user can then explicitly load the sample records from the empty state. Leave it false in production.
 
-- Add Supabase Auth UI and session handling.
-- Replace the in-memory referrals context with reads and writes to `public.referrals`.
-- Add a clear empty state and a development-only way to load synthetic sample data.
-- Test access with two accounts to confirm each account can only see its own rows.
+## Data access and privacy
+
+The schema stores a profile per auth user and referral payloads in `public.referrals`. Each referral row includes the owning auth user ID; RLS policies restrict reads, inserts, updates, and deletes to that same user. The app uses only the publishable key in the browser.
+
+The sample records describe fictional patients and clinics. Keep them as test fixtures. Supabase states that use with real patient information requires a signed BAA and HIPAA project configuration; HIPAA support is not included in the Free plan.
