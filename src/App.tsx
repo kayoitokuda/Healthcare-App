@@ -601,34 +601,72 @@ function LandingPage({ onEnter }: { onEnter: () => void }) {
               follow up at your own pace.
             </p>
           </div>
-          <div className="landing-steps">
-            <article className="landing-step">
-              <span>01</span>
-              <ClipboardList size={20} />
-              <h3>Save what you know</h3>
-              <p>
-                Note the specialist, referring office, and what your clinician
-                recommended.
-              </p>
-            </article>
-            <article className="landing-step">
-              <span>02</span>
-              <MessageCircle size={20} />
-              <h3>Follow up with confidence</h3>
-              <p>
-                See a practical next step and prepare a call script or message
-                to review.
-              </p>
-            </article>
-            <article className="landing-step">
-              <span>03</span>
-              <CheckCircle2 size={20} />
-              <h3>Record what you hear</h3>
-              <p>
-                Add the response and label whether it came from you or an
-                office.
-              </p>
-            </article>
+          <div
+            className="landing-steps"
+            role="region"
+            aria-label="How it works steps"
+            tabIndex={0}
+          >
+            <div className="landing-steps-track">
+              <div className="landing-steps-group">
+                <article className="landing-step">
+                  <span>01</span>
+                  <ClipboardList size={20} />
+                  <h3>Save what you know</h3>
+                  <p>
+                    Note the specialist, referring office, and what your clinician
+                    recommended.
+                  </p>
+                </article>
+                <article className="landing-step">
+                  <span>02</span>
+                  <MessageCircle size={20} />
+                  <h3>Follow up with confidence</h3>
+                  <p>
+                    See a practical next step and prepare a call script or message
+                    to review.
+                  </p>
+                </article>
+                <article className="landing-step">
+                  <span>03</span>
+                  <CheckCircle2 size={20} />
+                  <h3>Record what you hear</h3>
+                  <p>
+                    Add the response and label whether it came from you or an
+                    office.
+                  </p>
+                </article>
+              </div>
+              <div className="landing-steps-group" aria-hidden="true">
+                <article className="landing-step">
+                  <span>01</span>
+                  <ClipboardList size={20} />
+                  <h3>Save what you know</h3>
+                  <p>
+                    Note the specialist, referring office, and what your clinician
+                    recommended.
+                  </p>
+                </article>
+                <article className="landing-step">
+                  <span>02</span>
+                  <MessageCircle size={20} />
+                  <h3>Follow up with confidence</h3>
+                  <p>
+                    See a practical next step and prepare a call script or message
+                    to review.
+                  </p>
+                </article>
+                <article className="landing-step">
+                  <span>03</span>
+                  <CheckCircle2 size={20} />
+                  <h3>Record what you hear</h3>
+                  <p>
+                    Add the response and label whether it came from you or an
+                    office.
+                  </p>
+                </article>
+              </div>
+            </div>
           </div>
         </section>
 
