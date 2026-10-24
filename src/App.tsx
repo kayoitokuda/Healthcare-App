@@ -515,7 +515,7 @@ function LandingPage({ onEnter }: { onEnter: () => void }) {
           onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
         >
           <span className="brand-mark">
-            <HeartHandshake size={20} />
+            <HeartHandshake size={23} />
           </span>
           <span>Referral Navigator</span>
         </button>
@@ -529,13 +529,13 @@ function LandingPage({ onEnter }: { onEnter: () => void }) {
         <section className="landing-hero">
           <div className="landing-hero-copy">
             <span className="landing-label">
-              <ShieldCheck size={14} /> A patient-owned referral companion
+              <ShieldCheck size={16} /> A patient-owned referral companion
             </span>
             <p className="eyebrow">FROM RECOMMENDATION TO NEXT STEP</p>
             <h1>Keep your specialist referral moving.</h1>
             <p className="landing-lede">
-              The Referral Agent uses updates you enter to flag possible holdups,
-              suggest a next step, and prepare a message for you to review.
+              One place to organize what you know, track what’s still unclear,
+              and prepare to follow up with the right office.
             </p>
             <div className="landing-actions">
               <button className="primary-button" onClick={onEnter}>
@@ -549,45 +549,45 @@ function LandingPage({ onEnter }: { onEnter: () => void }) {
           </div>
 
           <div className="landing-preview" aria-label="Example referral progress">
-            <div className="landing-preview-top">
-              <span className="landing-preview-icon">
-                <Stethoscope size={18} />
-              </span>
-              <span className="status-pill status-amber">
-                <span className="status-dot" />
-                Still checking
-              </span>
-            </div>
-            <p className="landing-card-eyebrow">YOUR REFERRAL</p>
-            <h2>Cardiology</h2>
-            <p className="landing-route">Primary care <span>→</span> Heart clinic</p>
-            <div className="landing-progress">
-              <div className="landing-progress-step is-complete">
-                <span className="landing-progress-marker"><Check size={14} /></span>
-                <div>
-                  <strong>Recommendation</strong>
-                  <small>You added this</small>
+            <div className="landing-preview-card">
+              <div className="landing-preview-top">
+                <p className="landing-card-eyebrow">YOUR REFERRAL</p>
+                <span className="status-pill status-amber">
+                  <span className="status-dot" />
+                  Still checking
+                </span>
+              </div>
+              <h2>Cardiology</h2>
+              <p className="landing-route">
+                Primary care <span aria-hidden="true">→</span> Heart clinic
+              </p>
+              <div className="landing-progress">
+                <div className="landing-progress-step is-complete">
+                  <span className="landing-progress-marker"><Check size={14} /></span>
+                  <div>
+                    <strong>Recommendation</strong>
+                    <small>You added this</small>
+                  </div>
+                </div>
+                <div className="landing-progress-step is-current">
+                  <span className="landing-progress-marker">2</span>
+                  <div>
+                    <strong>Referral sent?</strong>
+                    <small>Ask the referring office</small>
+                  </div>
+                </div>
+                <div className="landing-progress-step">
+                  <span className="landing-progress-marker">3</span>
+                  <div>
+                    <strong>Received?</strong>
+                    <small>Confirm with the specialist</small>
+                  </div>
                 </div>
               </div>
-              <div className="landing-progress-step is-current">
-                <span className="landing-progress-marker">2</span>
-                <div>
-                  <strong>Referral sent?</strong>
-                  <small>Ask the referring office</small>
-                </div>
+              <div className="landing-preview-note">
+                <MessageCircle size={16} />
+                <span>Next up: ask whether the referral was sent</span>
               </div>
-              <div className="landing-progress-step">
-                <span className="landing-progress-marker">3</span>
-                <div>
-                  <strong>Received?</strong>
-                  <small>Confirm with the specialist</small>
-                </div>
-              </div>
-            </div>
-            <div className="landing-preview-note">
-              <MessageCircle size={16} />
-              <span>Next up: ask whether the referral was sent</span>
-              <ArrowRight size={15} />
             </div>
           </div>
         </section>
@@ -595,7 +595,7 @@ function LandingPage({ onEnter }: { onEnter: () => void }) {
         <section className="landing-how" id="landing-how-it-works">
           <div className="landing-section-heading">
             <p className="eyebrow">A CLEARER HANDOFF</p>
-            <h2>Know what’s confirmed—and what to ask next.</h2>
+            <h2>Know what’s confirmed, and what to ask next.</h2>
             <p>
               Referral Navigator helps you keep the details straight while you
               follow up at your own pace.
@@ -634,7 +634,7 @@ function LandingPage({ onEnter }: { onEnter: () => void }) {
 
         <section className="landing-boundary">
           <span className="landing-boundary-icon">
-            <ShieldCheck size={19} />
+            <ShieldCheck size={20} />
           </span>
           <div>
             <strong>Your tracker is yours to update.</strong>
@@ -644,7 +644,6 @@ function LandingPage({ onEnter }: { onEnter: () => void }) {
               office or your health plan.
             </p>
           </div>
-          
         </section>
       </main>
       <footer className="landing-footer">
@@ -653,7 +652,6 @@ function LandingPage({ onEnter }: { onEnter: () => void }) {
     </div>
   );
 }
-
 function InlineDraftPanel({
   kind,
   draft,
