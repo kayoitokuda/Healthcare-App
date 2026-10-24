@@ -3826,3 +3826,11 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
     margin-right: 16px;
   }
 }
+
+
+/* Keep a visible gutter where the desktop steps carousel repeats from step 3 to step 1. */
+@media (min-width: 761px) and (prefers-reduced-motion: no-preference) {
+  .landing-steps-group {
+    padding-right: 14px;
+  }
+}
