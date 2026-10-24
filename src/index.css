@@ -4042,3 +4042,68 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
     display: none;
   }
 }
+
+/* Restrained tactile feedback and smooth in-page navigation on the landing page. */
+html {
+  scroll-behavior: smooth;
+}
+.landing-page .landing-actions .primary-button,
+.landing-page .landing-nav a,
+.landing-page .brand-home {
+  transition:
+    transform 160ms ease,
+    box-shadow 180ms ease,
+    border-color 180ms ease,
+    background-color 180ms ease,
+    color 180ms ease;
+}
+.landing-page .landing-actions .primary-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 7px 16px rgba(64, 91, 203, 0.2);
+}
+.landing-page .landing-actions .primary-button:active {
+  transform: translateY(1px) scale(0.985);
+  box-shadow: 0 2px 6px rgba(64, 91, 203, 0.16);
+  transition-duration: 80ms;
+}
+.landing-page .landing-actions .primary-button svg {
+  transition: transform 160ms ease;
+}
+.landing-page .landing-actions .primary-button:hover svg {
+  transform: translateX(3px);
+}
+.landing-page .landing-nav a:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(34, 38, 50, 0.08);
+}
+.landing-page .landing-nav a:active {
+  transform: translateY(0) scale(0.985);
+  background-color: #f7f6f2;
+  transition-duration: 80ms;
+}
+.landing-page .brand-home:hover {
+  transform: translateY(-1px);
+}
+.landing-page button:focus-visible,
+.landing-page a:focus-visible {
+  outline-color: #405bcb;
+}
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  .landing-page .landing-actions .primary-button,
+  .landing-page .landing-nav a,
+  .landing-page .brand-home,
+  .landing-page .landing-actions .primary-button svg {
+    transition: none;
+  }
+  .landing-page .landing-actions .primary-button:hover,
+  .landing-page .landing-actions .primary-button:active,
+  .landing-page .landing-nav a:hover,
+  .landing-page .landing-nav a:active,
+  .landing-page .brand-home:hover {
+    transform: none;
+    box-shadow: none;
+  }
+}
