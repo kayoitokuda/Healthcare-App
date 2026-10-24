@@ -3873,7 +3873,7 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
     margin-right: 16px;
   }
   .landing-steps-track {
-    --desktop-carousel-step: calc((50% + 16px) / 3);
+    --desktop-carousel-step: calc((50% + 20px) / 3);
     animation-name: landing-steps-desktop-carousel;
     animation-duration: 24s;
     animation-timing-function: ease-in-out;
@@ -3994,6 +3994,9 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
     width: min(1218px, 100%);
     max-width: 1218px;
     margin-top: 32px;
+  }
+  .landing-steps-group {
+    gap: 20px;
   }
   .landing-step {
     min-height: 171px;
