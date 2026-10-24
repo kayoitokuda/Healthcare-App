@@ -3810,3 +3810,11 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
   border-color: #e1e5f0;
   background: #fafbfe;
 }
+
+
+.dashboard-shell .primary-button,
+.dashboard-shell .add-button,
+.dashboard-shell .secondary-button,
+.dashboard-shell .outline-button {
+  border-radius: 8px;
+}
