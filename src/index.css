@@ -5241,3 +5241,30 @@ html {
     font-size: 14px;
   }
 }
+
+/* Handoff checkpoints are independent; the care path may continue or branch. */
+.journey-card > .handoff-intro{margin:-4px 0 18px;max-width:760px;color:#4e5666;font-size:16px;line-height:1.55}
+.journey-card .journey{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.journey-card .journey::before{display:none}
+.journey-card .journey-step{min-height:136px;align-items:flex-start;gap:12px;padding:16px;border:1px solid #d4d9e4;border-radius:14px;background:#fff;text-align:left}
+.journey-card .journey-step.is-active{border-color:#a87b08;background:#fffaf0;box-shadow:0 0 0 2px rgb(168 123 8 / 12%)}
+.journey-card .journey-step.is-done{border-color:#9dbcae;background:#f4faf6}
+.journey-card .journey-marker{flex:0 0 34px;width:34px;height:34px}
+.journey-card .journey-copy{align-items:flex-start;text-align:left}
+.journey-card .journey-label{align-items:flex-start;gap:6px}
+.journey-card .journey-label>span{font-size:14px}
+.journey-continuation{margin-top:20px;padding:20px;border:1px solid #d4d9e4;border-radius:14px;background:#f8f9fc}
+.continuation-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+.continuation-heading h3{margin:0;color:#242837;font-size:20px;line-height:1.35}
+.continuation-heading p{max-width:740px;margin:6px 0 0;color:#4e5666;font-size:16px;line-height:1.5}
+.continuation-count{display:grid;min-width:34px;height:34px;place-items:center;border-radius:50%;color:#35483f;background:#e2efe8;font-size:16px;font-weight:700}
+.care-step-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:16px 0 0;padding:0;list-style:none}
+.care-step-item{display:grid;gap:5px;padding:14px;border:1px solid #d4d9e4;border-radius:10px;background:#fff}
+.care-step-item strong{color:#242837;font-size:17px;line-height:1.4}
+.care-step-item p{margin:0;color:#4e5666;font-size:15px;line-height:1.5}
+.care-step-date,.care-step-source,.care-step-more{color:#4e5666;font-size:14px;line-height:1.45}
+.care-step-source{color:#536f60;font-weight:600}
+.care-step-empty{margin:14px 0 0;padding:14px;border:1px dashed #aeb6c5;border-radius:10px;color:#4e5666;background:#fff;font-size:16px;line-height:1.5}
+.care-step-more{grid-column:1/-1;padding:8px 2px 0}
+@media(max-width:760px){.journey-card .journey{grid-template-columns:repeat(2,minmax(0,1fr))}.care-step-list{grid-template-columns:1fr}}
+@media(max-width:520px){.journey-card .journey{grid-template-columns:1fr}.journey-card .journey-step{min-height:auto}.journey-continuation{padding:16px}}
