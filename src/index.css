@@ -5268,3 +5268,128 @@ html {
 .care-step-more{grid-column:1/-1;padding:8px 2px 0}
 @media(max-width:760px){.journey-card .journey{grid-template-columns:repeat(2,minmax(0,1fr))}.care-step-list{grid-template-columns:1fr}}
 @media(max-width:520px){.journey-card .journey{grid-template-columns:1fr}.journey-card .journey-step{min-height:auto}.journey-continuation{padding:16px}}
+
+
+/* Dashboard type refinement: align hierarchy and remove leftover tiny legacy sizes. */
+.dashboard-shell {
+  --type-page: clamp(32px, 2.8vw, 36px);
+  --type-section: 22px;
+  --type-card: 19px;
+  --type-body: 16px;
+  --type-support: 14px;
+  --type-meta: 13px;
+}
+.dashboard-shell .eyebrow,
+.dashboard-shell .menu-eyebrow {
+  font-size: 13px;
+  line-height: 1.35;
+  letter-spacing: 0.075em;
+  color: #4e5666;
+}
+.dashboard-shell .sidebar-nav-label {
+  font-size: 12px;
+  line-height: 1.35;
+  letter-spacing: 0.06em;
+}
+.dashboard-shell .welcome h1,
+.dashboard-shell .detail-heading h1 {
+  font-size: var(--type-page);
+  line-height: 1.18;
+}
+.dashboard-shell .dashboard-section .list-title h2,
+.dashboard-shell .section-title-row h2,
+.dashboard-shell .tools-intro h2 {
+  font-size: var(--type-section);
+  line-height: 1.3;
+}
+.dashboard-shell .lower-card-heading h2 {
+  font-size: 19px;
+  line-height: 1.35;
+}
+.dashboard-shell .referral-card h3,
+.dashboard-shell .first-step-card h3,
+.dashboard-shell .inline-draft .section-title-row h3 {
+  font-size: var(--type-card);
+  line-height: 1.35;
+}
+.dashboard-shell .agent-card-heading h2,
+.dashboard-shell .dashboard-next-step h2 {
+  font-size: 22px;
+  line-height: 1.3;
+}
+.dashboard-shell .dashboard-section .list-title p,
+.dashboard-shell .welcome > div:first-child > p:last-child,
+.dashboard-shell .summary-card > p,
+.dashboard-shell .first-step-card > p:not(.eyebrow),
+.dashboard-shell .notice p,
+.dashboard-shell .subheading,
+.dashboard-shell .body-copy,
+.dashboard-shell .timeline-intro,
+.dashboard-shell .entry-body > p,
+.dashboard-shell .tools-intro > p:last-child,
+.dashboard-shell .dashboard-next-step > p {
+  font-size: var(--type-body);
+  line-height: 1.55;
+}
+.dashboard-shell .summary-card-top span {
+  font-size: 12px;
+  line-height: 1.35;
+  letter-spacing: 0.045em;
+}
+.dashboard-shell .dashboard-section .add-button,
+.dashboard-shell .dashboard-nav button,
+.dashboard-shell .tool-links button {
+  font-size: 16px;
+  line-height: 1.4;
+}
+.dashboard-shell :is(.status-pill, .source-chip, .source-tag, .card-meta span, .entry-top > span, .sidebar-count, .guide-foot, .lower-card-empty, .journey-label span, .journey-step-copy, .care-step-date, .care-step-source, .section-count, .count-chip, .privacy-chip, .recent-update-copy small, .toolkit-copy small, .toolkit-copy em) {
+  font-size: var(--type-meta);
+  line-height: 1.45;
+}
+.dashboard-shell .referral-card .status-pill {
+  white-space: normal;
+}
+.dashboard-shell .recent-update-copy strong {
+  overflow: visible;
+  font-size: 15px;
+  line-height: 1.4;
+  text-overflow: clip;
+  white-space: normal;
+}
+.dashboard-shell .recent-update-copy small {
+  color: #4e5666;
+}
+.dashboard-shell .quick-log-options button,
+.dashboard-shell .segmented button {
+  font-size: 15px;
+  line-height: 1.4;
+}
+.dashboard-shell .form-body label,
+.dashboard-shell .form-body input,
+.dashboard-shell .form-body select,
+.dashboard-shell .form-body textarea,
+.dashboard-shell .inline-draft .draft-area {
+  font-size: 16px;
+  line-height: 1.5;
+}
+@media (max-width: 760px) {
+  .dashboard-shell {
+    --type-section: 21px;
+    --type-card: 18px;
+  }
+  .dashboard-shell .welcome h1,
+  .dashboard-shell .detail-heading h1 {
+    font-size: clamp(30px, 7.5vw, 34px);
+  }
+  .dashboard-shell .eyebrow,
+  .dashboard-shell .menu-eyebrow {
+    font-size: 13px;
+  }
+  .dashboard-shell .dashboard-section .list-title {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
+  .dashboard-shell .dashboard-section .add-button {
+    min-height: 48px;
+  }
+}
