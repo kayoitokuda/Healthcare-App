@@ -31,7 +31,7 @@ import {
 import { AuthProvider, useAuth } from "./auth/AuthContext";
 import SignIn from "./pages/SignIn";
 import { supabase } from "./lib/supabase";
-import { LanguageProvider, LanguageToggle, useAppLanguage, type AppLanguage } from "./i18n";
+import { LanguageProvider, LanguageToggle, localizedDraft, translateText, useAppLanguage, type AppLanguage } from "./i18n";
 
 type Source = "You" | "Referring office" | "Specialist office" | "Health plan";
 type Milestone = "referral-sent" | "referral-received" | "ready-to-schedule";
@@ -42,7 +42,13 @@ type Update = {
   date: string;
   source: Source;
   milestone?: Milestone;
+  milestones?: Milestone[];
+  eventDate?: string;
 };
+function hasMilestone(update: Update, milestone: Milestone) {
+  return update.milestone === milestone || update.milestones?.includes(milestone) === true;
+}
+
 type Referral = {
   id: number;
   specialty: string;
@@ -96,15 +102,15 @@ const steps = [
 
 function nextStepFor(referral: Referral) {
   const sent = referral.updates.some(
-    (update) => update.milestone === "referral-sent",
+    (update) => hasMilestone(update, "referral-sent"),
   );
   const received = referral.updates.some(
     (update) =>
-      update.milestone === "referral-received" &&
+      hasMilestone(update, "referral-received") &&
       update.source === "Specialist office",
   );
   const ready = referral.updates.some(
-    (update) => update.milestone === "ready-to-schedule",
+    (update) => hasMilestone(update, "ready-to-schedule"),
   );
 
   if (!sent) {
@@ -530,7 +536,7 @@ function InlineDraftPanel({
 
 function ReferralNavigatorApp() {
   const { user, signOut } = useAuth();
-  const { setLanguage } = useAppLanguage();
+  const { language, setLanguage } = useAppLanguage();
   const [languageSaveState, setLanguageSaveState] = useState("");
   const ownerId = user?.id ?? null;
   const [referrals, setReferrals] = useState<Referral[]>(initial);
@@ -545,7 +551,8 @@ function ReferralNavigatorApp() {
   const [updateTitle, setUpdateTitle] = useState("");
   const [updateDetail, setUpdateDetail] = useState("");
   const [updateSource, setUpdateSource] = useState<Source>("You");
-  const [updateMilestone, setUpdateMilestone] = useState<Milestone | "">("");
+  const [updateMilestones, setUpdateMilestones] = useState<Milestone[]>([]);
+  const [updateEventDate, setUpdateEventDate] = useState("");
   const [messageKind, setMessageKind] = useState<
     "Call script" | "Portal message" | "Email"
   >("Call script");
@@ -634,16 +641,16 @@ function ReferralNavigatorApp() {
   const referral =
     referrals.find((item) => item.id === selected) ?? referrals[0];
   const sentRecorded =
-    referral?.updates.some((u) => u.milestone === "referral-sent") ?? false;
+    referral?.updates.some((u) => hasMilestone(u, "referral-sent")) ?? false;
   const receiptRecorded =
-    referral?.updates.some((u) => u.milestone === "referral-received") ?? false;
+    referral?.updates.some((u) => hasMilestone(u, "referral-received")) ?? false;
   const confirmedReceived =
     referral?.updates.some(
       (u) =>
-        u.milestone === "referral-received" && u.source === "Specialist office",
+        hasMilestone(u, "referral-received") && u.source === "Specialist office",
     ) ?? false;
   const readyRecorded =
-    referral?.updates.some((u) => u.milestone === "ready-to-schedule") ?? false;
+    referral?.updates.some((u) => hasMilestone(u, "ready-to-schedule")) ?? false;
   const status = useMemo(() => {
     if (confirmedReceived) return "Specialist office confirmation recorded";
     if (receiptRecorded) return "Receipt update recorded";
@@ -653,16 +660,16 @@ function ReferralNavigatorApp() {
   const receiptConfirmedCount = referrals.filter((item) =>
     item.updates.some(
       (update) =>
-        update.milestone === "referral-received" &&
+        hasMilestone(update, "referral-received") &&
         update.source === "Specialist office",
     ),
   ).length;
   const readyToScheduleCount = referrals.filter((item) =>
-    item.updates.some((update) => update.milestone === "ready-to-schedule"),
+    item.updates.some((update) => hasMilestone(update, "ready-to-schedule")),
   ).length;
   const followUpCount = referrals.filter(
     (item) =>
-      !item.updates.some((update) => update.milestone === "ready-to-schedule"),
+      !item.updates.some((update) => hasMilestone(update, "ready-to-schedule")),
   ).length;
   const nextReferral = referrals[0];
   const nextStep = nextReferral ? nextStepFor(nextReferral) : null;
@@ -693,7 +700,8 @@ function ReferralNavigatorApp() {
     setUpdateTitle(title);
     setUpdateDetail(detail);
     setUpdateSource(source);
-    setUpdateMilestone("");
+    setUpdateMilestones([]);
+    setUpdateEventDate("");
     setModal("update");
   }
 
@@ -704,8 +712,9 @@ function ReferralNavigatorApp() {
       title: updateTitle.trim(),
       detail: updateDetail.trim() || "No additional notes.",
       date: today,
+      ...(updateEventDate ? { eventDate: new Date(`${updateEventDate}T12:00:00`).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) } : {}),
       source: updateSource,
-      ...(updateMilestone ? { milestone: updateMilestone } : {}),
+      ...(updateMilestones.length ? { milestones: updateMilestones } : {}),
     };
     setReferrals((all) =>
       all.map((r) =>
@@ -738,11 +747,18 @@ function ReferralNavigatorApp() {
   ) {
     if (!target) return;
     setMessageKind(kind);
-    setMessageDraft(
-      kind === "Call script"
-        ? `Hello, my name is [your name]. I’m calling about a ${target.specialty} referral recommended by ${target.from}. Could you tell me whether it has been sent to ${target.to}? If it has, when was it sent? If not, is anything needed from me?`
-        : `Hello, I’m following up on my ${target.specialty} referral. ${target.from} recommended this on ${target.date}. Could you let me know whether it has been sent to ${target.to}, and whether you need anything else from me? Thank you.`,
-    );
+    const sent = target.updates.some((update) => hasMilestone(update, "referral-sent"));
+    const received = target.updates.some((update) => hasMilestone(update, "referral-received") && update.source === "Specialist office");
+    const ready = target.updates.some((update) => hasMilestone(update, "ready-to-schedule"));
+    const recipient = sent ? target.to : target.from;
+    const question = ready
+      ? "Could you help me find an appointment time?"
+      : received
+        ? "What do I need before scheduling an appointment?"
+        : sent
+          ? `Could you confirm whether you received my ${target.specialty} referral?`
+          : `Could you confirm whether you sent my ${target.specialty} referral?`;
+    setMessageDraft(localizedDraft(language, kind, recipient, target.specialty, question));
     setCopied(false);
     setInlineDraftId(target.id);
     setModal(null);
@@ -750,7 +766,7 @@ function ReferralNavigatorApp() {
 
   function logContactAttempt(target: Referral) {
     const sent = target.updates.some(
-      (update) => update.milestone === "referral-sent",
+      (update) => hasMilestone(update, "referral-sent"),
     );
     const office = sent ? target.to : target.from;
     const update: Update = {
@@ -769,6 +785,7 @@ function ReferralNavigatorApp() {
       ),
     );
     setInlineDraftId(null);
+    window.requestAnimationFrame(() => document.querySelector(".timeline-card")?.scrollIntoView({ behavior: "smooth", block: "center" }));
     flash("Contact attempt added to your activity. Referral status is unchanged.");
   }
 
@@ -1053,7 +1070,11 @@ function ReferralNavigatorApp() {
                     <div className="entry-body">
                       <div className="entry-top">
                         <strong>{update.title}</strong>
-                        <span>{update.date}</span>
+                        <span>
+                          {update.eventDate ? <>
+                            <span>Happened</span> {update.eventDate} · <span>Recorded</span> {update.date}
+                          </> : update.date}
+                        </span>
                       </div>
                       <p>{update.detail}</p>
                       <span
@@ -1158,22 +1179,33 @@ function ReferralNavigatorApp() {
                     placeholder="e.g. Called to ask if referral was sent"
                   />
                 </label>
+                <div className="quick-log-label">Select any referral steps you know have happened</div>
+                <div className="quick-log-options" aria-label="Select confirmed referral steps">
+                  {([
+                    ["referral-sent", "Referral sent"],
+                    ["referral-received", "Referral received"],
+                    ["ready-to-schedule", "Ready to schedule"],
+                  ] as const).map(([value, label]) => (
+                    <button
+                      type="button"
+                      aria-pressed={updateMilestones.includes(value)}
+                      className={updateMilestones.includes(value) ? "selected" : ""}
+                      key={value}
+                      onClick={() => {
+                        const next = updateMilestones.includes(value)
+                          ? updateMilestones.filter((item) => item !== value)
+                          : [...updateMilestones, value];
+                        setUpdateMilestones(next);
+                        setUpdateTitle(next.length > 1 ? translateText("Referral progress update", language) : next.length === 1 ? translateText(label, language) : "");
+                      }}
+                    >
+                      {updateMilestones.includes(value) && <Check size={14} />}{label}
+                    </button>
+                  ))}
+                </div>
+                {updateMilestones.length > 1 && <p className="quick-log-hint">Use these together only when the same source confirmed each step. Record separate updates if different offices confirmed them.</p>}
                 <label>
-                  What part of the handoff is this about?
-                  <select
-                    value={updateMilestone}
-                    onChange={(e) =>
-                      setUpdateMilestone(e.target.value as Milestone | "")
-                    }
-                  >
-                    <option value="">General update</option>
-                    <option value="referral-sent">Referral sent</option>
-                    <option value="referral-received">Referral received</option>
-                    <option value="ready-to-schedule">Ready to schedule</option>
-                  </select>
-                </label>
-                <label>
-                  Who provided this update?
+                  Who told you about these steps?
                   <select
                     value={updateSource}
                     onChange={(e) => setUpdateSource(e.target.value as Source)}
@@ -1183,6 +1215,10 @@ function ReferralNavigatorApp() {
                     <option>Specialist office</option>
                     <option>Health plan</option>
                   </select>
+                </label>
+                <label>
+                  <span>When did this happen? <span className="optional-label">Optional</span></span>
+                  <input type="date" value={updateEventDate} onChange={(e) => setUpdateEventDate(e.target.value)} />
                 </label>
                 <label>
                   Notes
@@ -1462,15 +1498,15 @@ function ReferralNavigatorApp() {
               <div className="referral-grid">
                 {referrals.map((r) => {
                   const receipt = r.updates.some(
-                    (u) => u.milestone === "referral-received",
+                    (u) => hasMilestone(u, "referral-received"),
                   );
                   const officeConfirmed = r.updates.some(
                     (u) =>
-                      u.milestone === "referral-received" &&
+                      hasMilestone(u, "referral-received") &&
                       u.source === "Specialist office",
                   );
                   const sent = r.updates.some(
-                    (u) => u.milestone === "referral-sent",
+                    (u) => hasMilestone(u, "referral-sent"),
                   );
                   return (
                     <article className="referral-card" key={r.id}>
