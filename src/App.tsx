@@ -10,6 +10,7 @@ import {
 import {
   ArrowLeft,
   ArrowRight,
+  Building2,
   CalendarDays,
   Check,
   CheckCircle2,
@@ -34,7 +35,8 @@ import { supabase } from "./lib/supabase";
 import { LanguageProvider, LanguageToggle, localizedDraft, translateText, useAppLanguage, type AppLanguage } from "./i18n";
 
 type Source = "You" | "Referring office" | "Specialist office" | "Health plan";
-type Milestone = "referral-sent" | "referral-received" | "ready-to-schedule";
+type Milestone = "referral-sent" | "referral-received" | "ready-to-schedule" | "appointment-scheduled";
+type ReferralEventType = "records-requested" | "records-sent" | "follow-up-recommended" | "visit-completed";
 type Update = {
   id: number;
   title: string;
@@ -44,6 +46,7 @@ type Update = {
   milestone?: Milestone;
   milestones?: Milestone[];
   eventDate?: string;
+  eventType?: ReferralEventType;
 };
 function hasMilestone(update: Update, milestone: Milestone) {
   return update.milestone === milestone || update.milestones?.includes(milestone) === true;
@@ -98,48 +101,72 @@ const steps: Array<{ title: string; copy: string; milestone?: Milestone }> = [
   { title: "Referral sent", copy: "Check with the referring office", milestone: "referral-sent" },
   { title: "Receipt confirmed", copy: "Check with the specialist’s office", milestone: "referral-received" },
   { title: "Ready to schedule", copy: "Ask how to book your visit", milestone: "ready-to-schedule" },
+  { title: "Appointment scheduled", copy: "Your referral led to a booked visit", milestone: "appointment-scheduled" },
 ];
 
 function nextStepFor(referral: Referral) {
-  const sent = referral.updates.some(
-    (update) => hasMilestone(update, "referral-sent"),
-  );
+  const sent = referral.updates.some((update) => hasMilestone(update, "referral-sent"));
   const received = referral.updates.some(
-    (update) =>
-      hasMilestone(update, "referral-received") &&
-      update.source === "Specialist office",
+    (update) => hasMilestone(update, "referral-received") && update.source === "Specialist office",
   );
-  const ready = referral.updates.some(
-    (update) => hasMilestone(update, "ready-to-schedule"),
-  );
+  const ready = referral.updates.some((update) => hasMilestone(update, "ready-to-schedule"));
+  const appointmentScheduled = referral.updates.some((update) => hasMilestone(update, "appointment-scheduled"));
+  const latestEvent = [...referral.updates].sort((a, b) => b.id - a.id)[0];
+
+  if (latestEvent?.eventType === "records-requested") {
+    return {
+      title: "Send the requested records",
+      detail: "Confirm how to send the requested records."
+    };
+  }
+  if (latestEvent?.eventType === "records-sent") {
+    return {
+      title: "Confirm the records arrived",
+      detail: "Ask the specialist office whether the requested records were received."
+    };
+  }
+  if (latestEvent?.eventType === "follow-up-recommended") {
+    return {
+      title: "Plan your follow-up visit",
+      detail: "Contact the specialist office to ask how to schedule the follow-up visit."
+    };
+  }
+  if (latestEvent?.eventType === "visit-completed") {
+    return {
+      title: "Record any next steps from your visit",
+      detail: "Record the next steps your clinician shared. Referral Navigator won’t interpret them.",
+    };
+  }
 
   if (!sent) {
     return {
       title: "Check whether it was sent",
-      detail:
-        "Ask " + referral.from + " whether the referral was sent to " + referral.to + ".",
+      detail: "Ask the referring office whether the referral was sent to the specialist."
     };
   }
   if (!received) {
     return {
       title: "Confirm it arrived",
-      detail:
-        "Ask " + referral.to + " whether they received the referral and need anything else.",
+      detail: "Ask the specialist office whether they received the referral and need anything else."
     };
   }
   if (!ready) {
     return {
       title: "Ask how to schedule",
-      detail: "Contact " + referral.to + " to learn what you need before booking.",
+      detail: "Contact the specialist office to learn what you need before booking."
+    };
+  }
+  if (!appointmentScheduled) {
+    return {
+      title: "Schedule your appointment",
+      detail: "Contact the specialist office to choose a visit time. You can keep recording updates after you schedule."
     };
   }
   return {
-    title: "Review your latest update",
-    detail:
-      "Open your referral tracker to see what you recorded and decide what comes next.",
+    title: "Prepare for your visit",
+    detail: "The specialist may still ask for records, imaging, or other details. Record any new requests in your activity timeline.",
   };
 }
-
 function IconButton({
   label,
   onClick,
@@ -553,6 +580,7 @@ function ReferralNavigatorApp() {
   const [updateSource, setUpdateSource] = useState<Source>("You");
   const [updateMilestones, setUpdateMilestones] = useState<Milestone[]>([]);
   const [updateEventDate, setUpdateEventDate] = useState("");
+  const [updateEventType, setUpdateEventType] = useState<ReferralEventType | null>(null);
   const [messageKind, setMessageKind] = useState<
     "Call script" | "Portal message" | "Email"
   >("Call script");
@@ -651,6 +679,12 @@ function ReferralNavigatorApp() {
     ) ?? false;
   const readyRecorded =
     referral?.updates.some((u) => hasMilestone(u, "ready-to-schedule")) ?? false;
+  const appointmentRecorded =
+    referral?.updates.some((u) => hasMilestone(u, "appointment-scheduled")) ?? false;
+  const currentNextStep = referral ? nextStepFor(referral) : null;
+  const latestReferralEvent = referral
+    ? [...referral.updates].sort((a, b) => b.id - a.id)[0]
+    : undefined;
   const status = useMemo(() => {
     if (confirmedReceived) return "Specialist office confirmation recorded";
     if (receiptRecorded) return "Receipt update recorded";
@@ -702,6 +736,7 @@ function ReferralNavigatorApp() {
     setUpdateSource(source);
     setUpdateMilestones([]);
     setUpdateEventDate("");
+    setUpdateEventType(null);
     setModal("update");
   }
 
@@ -710,12 +745,24 @@ function ReferralNavigatorApp() {
       "referral-sent": "Referral sent",
       "referral-received": "Referral received",
       "ready-to-schedule": "Ready to schedule",
+      "appointment-scheduled": "Appointment scheduled",
     };
     setUpdateTitle(translateText(titles[milestone], language));
     setUpdateDetail("");
     setUpdateSource("You");
     setUpdateMilestones([milestone]);
     setUpdateEventDate("");
+    setUpdateEventType(null);
+    setModal("update");
+  }
+
+  function addQuickEvent(eventType: ReferralEventType, title: string) {
+    setUpdateTitle(translateText(title, language));
+    setUpdateDetail("");
+    setUpdateSource("You");
+    setUpdateMilestones([]);
+    setUpdateEventDate("");
+    setUpdateEventType(eventType);
     setModal("update");
   }
 
@@ -729,6 +776,7 @@ function ReferralNavigatorApp() {
       ...(updateEventDate ? { eventDate: new Date(`${updateEventDate}T12:00:00`).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) } : {}),
       source: updateSource,
       ...(updateMilestones.length ? { milestones: updateMilestones } : {}),
+      ...(updateEventType ? { eventType: updateEventType } : {}),
     };
     setReferrals((all) =>
       all.map((r) =>
@@ -755,6 +803,18 @@ function ReferralNavigatorApp() {
     );
   }
 
+  function startToolkitDraft(recipient: string, question: string, target: Referral) {
+    setSelected(target.id);
+    setMessageKind("Call script");
+    const localizedRecipient = recipient === "your health plan" && language !== "en"
+      ? translateText(recipient, language)
+      : recipient;
+    setMessageDraft(localizedDraft(language, "Call script", localizedRecipient, target.specialty, question));
+    setCopied(false);
+    setInlineDraftId(target.id);
+    setModal(null);
+  }
+
   function startMessage(
     kind: "Call script" | "Portal message" | "Email" = "Call script",
     target: Referral | undefined = referral,
@@ -764,14 +824,26 @@ function ReferralNavigatorApp() {
     const sent = target.updates.some((update) => hasMilestone(update, "referral-sent"));
     const received = target.updates.some((update) => hasMilestone(update, "referral-received") && update.source === "Specialist office");
     const ready = target.updates.some((update) => hasMilestone(update, "ready-to-schedule"));
-    const recipient = sent ? target.to : target.from;
-    const question = ready
-      ? "Could you help me find an appointment time?"
-      : received
-        ? "What do I need before scheduling an appointment?"
-        : sent
-          ? `Could you confirm whether you received my ${target.specialty} referral?`
-          : `Could you confirm whether you sent my ${target.specialty} referral?`;
+    const appointmentScheduled = target.updates.some((update) => hasMilestone(update, "appointment-scheduled"));
+    const latestEvent = [...target.updates].sort((a, b) => b.id - a.id)[0];
+    const recipient = latestEvent?.eventType ? target.to : sent ? target.to : target.from;
+    const question = latestEvent?.eventType === "records-requested"
+      ? "Could you tell me how to send the requested records?"
+      : latestEvent?.eventType === "records-sent"
+        ? "Could you confirm whether you received the requested records?"
+        : latestEvent?.eventType === "follow-up-recommended"
+          ? "Could you help me schedule a follow-up visit?"
+          : latestEvent?.eventType === "visit-completed"
+            ? "Could you clarify the next steps we discussed?"
+            : appointmentScheduled
+              ? "What should I bring or prepare before the appointment?"
+              : ready
+                ? "Could you help me find an appointment time?"
+                : received
+                  ? "What do I need before scheduling an appointment?"
+                  : sent
+                    ? `Could you confirm whether you received my ${target.specialty} referral?`
+                    : `Could you confirm whether you sent my ${target.specialty} referral?`;
     setMessageDraft(localizedDraft(language, kind, recipient, target.specialty, question));
     setCopied(false);
     setInlineDraftId(target.id);
@@ -875,7 +947,7 @@ function ReferralNavigatorApp() {
 
   if (selected !== null && referral)
     return (
-      <div className="app-shell">
+      <div className="app-shell dashboard-shell">
         <header className="topbar">
           <button
             type="button"
@@ -883,19 +955,49 @@ function ReferralNavigatorApp() {
             aria-label="Referral Navigator home"
             onClick={() => setSelected(null)}
           >
-            <span className="brand-mark">
-              <HeartHandshake size={20} />
-            </span>
+            <span className="brand-mark"><HeartHandshake size={20} /></span>
             <span>Referral Navigator</span>
           </button>
-          <div className="top-actions">
-            <span
-              className="privacy-chip"
-              title="Your referral updates are saved to your account."
+          <nav className="nav dashboard-nav" aria-label="Dashboard navigation">
+            <p className="sidebar-nav-label">YOUR SPACE</p>
+            <button
+              onClick={() => {
+                setSelected(null);
+                window.requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: "smooth" }));
+              }}
             >
+              <Home size={17} /> Overview
+            </button>
+            <button
+              className="nav-active"
+              aria-current="page"
+              onClick={() => {
+                setSelected(null);
+                window.requestAnimationFrame(() => document.getElementById("dashboard-referrals")?.scrollIntoView({ behavior: "smooth" }));
+              }}
+            >
+              <ClipboardList size={17} /> My referrals
+              <span className="sidebar-count">{referrals.length}</span>
+            </button>
+            <button
+              onClick={() => {
+                setSelected(null);
+                window.requestAnimationFrame(() => document.getElementById("dashboard-next-step")?.scrollIntoView({ behavior: "smooth" }));
+              }}
+            >
+              <MessageCircle size={17} /> Next steps
+            </button>
+            <button
+              onClick={() => setModal("help")}
+            >
+              <CircleHelp size={17} /> How it works
+            </button>
+          </nav>
+          <div className="top-actions">
+            <span className="privacy-chip" title="Your referral updates are saved to your account.">
               <CircleHelp size={14} /> Saved to your account
             </span>
-<button type="button" className="account-signout" onClick={() => setModal("settings")}><Settings size={15} /> Settings</button>
+            <button type="button" className="account-signout" onClick={() => setModal("settings")}><Settings size={15} /> Settings</button>
             <button type="button" className="account-signout" onClick={() => void signOut()}>
               Sign out
             </button>
@@ -903,28 +1005,19 @@ function ReferralNavigatorApp() {
               open={menuOpen}
               menuRef={menuRef}
               onToggle={() => setMenuOpen((open) => !open)}
-              onHome={() => {
-                setSelected(null);
-                setMenuOpen(false);
-              }}
-              onAddReferral={() => {
-                setMenuOpen(false);
-                openNewReferral();
-              }}
-              onHelp={() => {
-                setMenuOpen(false);
-                setModal("help");
-              }}
+              onHome={() => { setSelected(null); setMenuOpen(false); }}
+              onAddReferral={() => { setMenuOpen(false); openNewReferral(); }}
+              onHelp={() => { setMenuOpen(false); setModal("help"); }}
               referralCount={referrals.length}
             />
           </div>
         </header>
-        {syncError && (
-          <div className="storage-warning" role="alert">
-            We couldn’t sync your referrals. {syncError}
-          </div>
-        )}
         <main className="detail-wrap">
+          {syncError && (
+            <div className="storage-warning" role="alert">
+              We couldn’t sync your referrals. {syncError}
+            </div>
+          )}
           <button className="back-link" onClick={() => setSelected(null)}>
             <ArrowLeft size={17} /> All referrals
           </button>
@@ -969,11 +1062,13 @@ function ReferralNavigatorApp() {
                   i === 0 ||
                   (i === 1 && sentRecorded) ||
                   (i === 2 && receiptRecorded) ||
-                  (i === 3 && readyRecorded);
+                  (i === 3 && readyRecorded) ||
+                  (i === 4 && appointmentRecorded);
                 const active =
                   (!sentRecorded && i === 1) ||
                   (sentRecorded && !receiptRecorded && i === 2) ||
-                  (receiptRecorded && !readyRecorded && i === 3);
+                  (receiptRecorded && !readyRecorded && i === 3) ||
+                  (readyRecorded && !appointmentRecorded && i === 4);
                 return (
                   <button
                     type="button"
@@ -1004,54 +1099,81 @@ function ReferralNavigatorApp() {
               <div className="section-title-row">
                 <div>
                   <p className="eyebrow">YOUR NEXT STEP</p>
-                  <h2>
-                    {readyRecorded
-                      ? "Schedule your appointment"
-                      : confirmedReceived
-                        ? "Ask how to schedule"
-                        : receiptRecorded
-                          ? "Confirm it with the specialist"
-                          : sentRecorded
-                            ? "Check that it arrived"
-                            : "Check whether it was sent"}
-                  </h2>
+                  <h2>{translateText(currentNextStep?.title ?? "Check whether it was sent", language)}</h2>
                 </div>
                 <span className="round-icon">
                   <ClipboardList size={19} />
                 </span>
               </div>
-              <p className="body-copy">
-                {readyRecorded
-                  ? `You recorded that the referral is ready for scheduling. Contact ${referral.to} to book your visit.`
-                  : confirmedReceived
-                    ? "You recorded that the specialist office confirmed receipt. Ask what to do next to schedule."
-                    : receiptRecorded
-                      ? `You recorded that the referral arrived. Check with ${referral.to} to confirm whether anything else is needed before scheduling.`
-                      : sentRecorded
-                        ? `You recorded that ${referral.from} sent it. Contact ${referral.to} to ask if it arrived.`
-                        : `Contact ${referral.from} and ask if the referral has been sent to ${referral.to}.`}
-              </p>
+              <p className="body-copy">{translateText(currentNextStep?.detail ?? "", language)}</p>
               <div className="action-list">
-                <button
-                  className={`check-row ${referral.done.includes("ask-sent") ? "checked" : ""}`}
-                  onClick={() => toggleDone("ask-sent")}
-                >
-                  <span className="checkbox">
-                    {referral.done.includes("ask-sent") && <Check size={13} />}
-                  </span>
-                  <span>Ask the referring office if it was sent</span>
-                </button>
-                <button
-                  className={`check-row ${referral.done.includes("ask-received") ? "checked" : ""}`}
-                  onClick={() => toggleDone("ask-received")}
-                >
-                  <span className="checkbox">
-                    {referral.done.includes("ask-received") && (
-                      <Check size={13} />
-                    )}
-                  </span>
-                  <span>Ask the specialist office if it arrived</span>
-                </button>
+                {latestReferralEvent?.eventType === "records-requested" ? (
+                  <>
+                    <button className={`check-row ${referral.done.includes("confirm-record-method") ? "checked" : ""}`} onClick={() => toggleDone("confirm-record-method")}>
+                      <span className="checkbox">{referral.done.includes("confirm-record-method") && <Check size={13} />}</span>
+                      <span>{translateText("Confirm how to send the requested records", language)}</span>
+                    </button>
+                    <button className={`check-row ${referral.done.includes("record-records-sent") ? "checked" : ""}`} onClick={() => toggleDone("record-records-sent")}>
+                      <span className="checkbox">{referral.done.includes("record-records-sent") && <Check size={13} />}</span>
+                      <span>{translateText("Record when the requested records are sent", language)}</span>
+                    </button>
+                  </>
+                ) : latestReferralEvent?.eventType === "records-sent" ? (
+                  <>
+                    <button className={`check-row ${referral.done.includes("confirm-records") ? "checked" : ""}`} onClick={() => toggleDone("confirm-records")}>
+                      <span className="checkbox">{referral.done.includes("confirm-records") && <Check size={13} />}</span>
+                      <span>{translateText("Confirm the records arrived", language)}</span>
+                    </button>
+                    <button className={`check-row ${referral.done.includes("record-response") ? "checked" : ""}`} onClick={() => toggleDone("record-response")}>
+                      <span className="checkbox">{referral.done.includes("record-response") && <Check size={13} />}</span>
+                      <span>{translateText("Record the office’s response", language)}</span>
+                    </button>
+                  </>
+                ) : latestReferralEvent?.eventType === "follow-up-recommended" ? (
+                  <>
+                    <button className={`check-row ${referral.done.includes("schedule-follow-up") ? "checked" : ""}`} onClick={() => toggleDone("schedule-follow-up")}>
+                      <span className="checkbox">{referral.done.includes("schedule-follow-up") && <Check size={13} />}</span>
+                      <span>{translateText("Ask how to schedule your follow-up", language)}</span>
+                    </button>
+                    <button className={`check-row ${referral.done.includes("record-follow-up") ? "checked" : ""}`} onClick={() => toggleDone("record-follow-up")}>
+                      <span className="checkbox">{referral.done.includes("record-follow-up") && <Check size={13} />}</span>
+                      <span>{translateText("Add the follow-up date to your timeline", language)}</span>
+                    </button>
+                  </>
+                ) : latestReferralEvent?.eventType === "visit-completed" ? (
+                  <>
+                    <button className={`check-row ${referral.done.includes("review-visit-notes") ? "checked" : ""}`} onClick={() => toggleDone("review-visit-notes")}>
+                      <span className="checkbox">{referral.done.includes("review-visit-notes") && <Check size={13} />}</span>
+                      <span>{translateText("Review your visit notes", language)}</span>
+                    </button>
+                    <button className={`check-row ${referral.done.includes("record-visit-next-steps") ? "checked" : ""}`} onClick={() => toggleDone("record-visit-next-steps")}>
+                      <span className="checkbox">{referral.done.includes("record-visit-next-steps") && <Check size={13} />}</span>
+                      <span>{translateText("Record any next steps from your visit", language)}</span>
+                    </button>
+                  </>
+                ) : appointmentRecorded ? (
+                  <>
+                    <button className={`check-row ${referral.done.includes("check-records") ? "checked" : ""}`} onClick={() => toggleDone("check-records")}>
+                      <span className="checkbox">{referral.done.includes("check-records") && <Check size={13} />}</span>
+                      <span>{translateText("Ask whether records or imaging are needed", language)}</span>
+                    </button>
+                    <button className={`check-row ${referral.done.includes("prepare-visit") ? "checked" : ""}`} onClick={() => toggleDone("prepare-visit")}>
+                      <span className="checkbox">{referral.done.includes("prepare-visit") && <Check size={13} />}</span>
+                      <span>{translateText("Prepare questions for your visit", language)}</span>
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button className={`check-row ${referral.done.includes("ask-sent") ? "checked" : ""}`} onClick={() => toggleDone("ask-sent")}>
+                      <span className="checkbox">{referral.done.includes("ask-sent") && <Check size={13} />}</span>
+                      <span>Ask the referring office if it was sent</span>
+                    </button>
+                    <button className={`check-row ${referral.done.includes("ask-received") ? "checked" : ""}`} onClick={() => toggleDone("ask-received")}>
+                      <span className="checkbox">{referral.done.includes("ask-received") && <Check size={13} />}</span>
+                      <span>Ask the specialist office if it arrived</span>
+                    </button>
+                  </>
+                )}
               </div>
               <div className="button-stack">
                 <button
@@ -1060,25 +1182,52 @@ function ReferralNavigatorApp() {
                 >
                   <Phone size={17} /> Prepare a call script
                 </button>
+                {inlineDraftId === referral.id && messageKind === "Call script" && (
+                  <InlineDraftPanel
+                    kind={messageKind}
+                    draft={messageDraft}
+                    copied={copied}
+                    onKindChange={(kind) => startMessage(kind, referral)}
+                    onDraftChange={setMessageDraft}
+                    onCopy={copyDraft}
+                    onContact={() => logContactAttempt(referral)}
+                    onClose={() => setInlineDraftId(null)}
+                  />
+                )}
                 <button
                   className="secondary-button"
                   onClick={() => startMessage("Portal message")}
                 >
                   <MessageCircle size={17} /> Draft a portal message
                 </button>
+                {inlineDraftId === referral.id && messageKind !== "Call script" && (
+                  <InlineDraftPanel
+                    kind={messageKind}
+                    draft={messageDraft}
+                    copied={copied}
+                    onKindChange={(kind) => startMessage(kind, referral)}
+                    onDraftChange={setMessageDraft}
+                    onCopy={copyDraft}
+                    onContact={() => logContactAttempt(referral)}
+                    onClose={() => setInlineDraftId(null)}
+                  />
+                )}
               </div>
             </section>
 
             <section className="section-card timeline-card">
               <div className="section-title-row">
                 <div>
-                  <p className="eyebrow">YOUR ACTIVITY</p>
-                  <h2>Referral updates</h2>
+                  <p className="eyebrow">{translateText("YOUR ACTIVITY", language)}</p>
+                  <h2>{translateText("Activity timeline", language)}</h2>
                 </div>
                 <span className="count-chip">{referral.updates.length}</span>
               </div>
+              <p className="timeline-intro">
+                {translateText("This history continues after scheduling. Record requests, documents sent, and follow-ups as they happen.", language)}
+              </p>
               <div className="timeline-list">
-                {[...referral.updates].reverse().map((update) => (
+                {[...referral.updates].map((update) => (
                   <article className="timeline-entry" key={update.id}>
                     <span
                       className={`source-dot ${update.source !== "You" ? "office-source" : ""}`}
@@ -1108,23 +1257,12 @@ function ReferralNavigatorApp() {
                 className="outline-button full"
                 onClick={() => addUpdate()}
               >
-                <Plus size={16} /> Record a response or update
+                <Plus size={16} /> Record an event
               </button>
             </section>
           </div>
 
-          {inlineDraftId === referral.id && (
-            <InlineDraftPanel
-              kind={messageKind}
-              draft={messageDraft}
-              copied={copied}
-              onKindChange={(kind) => startMessage(kind, referral)}
-              onDraftChange={setMessageDraft}
-              onCopy={copyDraft}
-              onContact={() => logContactAttempt(referral)}
-              onClose={() => setInlineDraftId(null)}
-            />
-          )}
+
 
           <section className="section-card tools-card">
             <div className="tools-intro">
@@ -1195,12 +1333,13 @@ function ReferralNavigatorApp() {
                     placeholder="e.g. Called to ask if referral was sent"
                   />
                 </label>
-                <div className="quick-log-label">Select any referral steps you know have happened</div>
+                <div className="quick-log-label">{translateText("Select any referral steps you know have happened", language)}</div>
                 <div className="quick-log-options" aria-label="Select confirmed referral steps">
                   {([
                     ["referral-sent", "Referral sent"],
                     ["referral-received", "Referral received"],
                     ["ready-to-schedule", "Ready to schedule"],
+                    ["appointment-scheduled", "Appointment scheduled"],
                   ] as const).map(([value, label]) => (
                     <button
                       type="button"
@@ -1212,24 +1351,44 @@ function ReferralNavigatorApp() {
                           ? updateMilestones.filter((item) => item !== value)
                           : [...updateMilestones, value];
                         setUpdateMilestones(next);
+                        setUpdateEventType(null);
                         setUpdateTitle(next.length > 1 ? translateText("Referral progress update", language) : next.length === 1 ? translateText(label, language) : "");
                       }}
                     >
-                      {updateMilestones.includes(value) && <Check size={14} />}{label}
+                      {updateMilestones.includes(value) && <Check size={14} />}{translateText(label, language)}
                     </button>
                   ))}
                 </div>
-                {updateMilestones.length > 1 && <p className="quick-log-hint">Use these together only when the same source confirmed each step. Record separate updates if different offices confirmed them.</p>}
+                <div className="quick-log-label">{translateText("Common events", language)}</div>
+                <div className="quick-log-options" aria-label={translateText("Common events", language)}>
+                  {([
+                    ["records-requested", "Records requested"],
+                    ["records-sent", "Records sent"],
+                    ["follow-up-recommended", "Follow-up visit recommended"],
+                    ["visit-completed", "Visit completed"],
+                  ] as const).map(([eventType, title]) => (
+                    <button
+                      type="button"
+                      aria-pressed={updateEventType === eventType}
+                      className={updateEventType === eventType ? "selected" : ""}
+                      key={eventType}
+                      onClick={() => addQuickEvent(eventType, title)}
+                    >
+                      {translateText(title, language)}
+                    </button>
+                  ))}
+                </div>
+                {updateMilestones.length > 1 && <p className="quick-log-hint">{translateText("Use these together only when the same source confirmed each step. Record separate updates if different offices confirmed them.", language)}</p>}
                 <label>
-                  Who told you about these steps?
+                  {translateText("Who did this update come from?", language)}
                   <select
                     value={updateSource}
                     onChange={(e) => setUpdateSource(e.target.value as Source)}
                   >
-                    <option>You</option>
-                    <option>Referring office</option>
-                    <option>Specialist office</option>
-                    <option>Health plan</option>
+                    <option>{translateText("You", language)}</option>
+                    <option>{translateText("Referring office", language)}</option>
+                    <option>{translateText("Specialist office", language)}</option>
+                    <option>{translateText("Health plan", language)}</option>
                   </select>
                 </label>
                 <label>
@@ -1241,7 +1400,7 @@ function ReferralNavigatorApp() {
                   <textarea
                     value={updateDetail}
                     onChange={(e) => setUpdateDetail(e.target.value)}
-                    placeholder="What did they tell you? Include a name or reference number if useful."
+                    placeholder={translateText("Add details, names, or reference numbers if useful.", language)}
                     rows={3}
                   />
                 </label>
@@ -1655,22 +1814,47 @@ function ReferralNavigatorApp() {
               <p className="lower-card-empty">Your saved updates will appear here.</p>
             )}
           </article>
-          <article className="dashboard-lower-card reminders-card">
+          <article className="dashboard-lower-card reminders-card toolkit-card">
             <div className="lower-card-heading">
               <div>
-                <p className="eyebrow">KEEP IN MIND</p>
-                <h2>Questions to take with you</h2>
+                <p className="eyebrow">{translateText("REFERRAL TOOLKIT", language)}</p>
+                <h2>{translateText("Who can help with the next step?", language)}</h2>
               </div>
-              <span className="reminder-icon"><ShieldCheck size={17} /></span>
+              <span className="reminder-icon"><ClipboardList size={17} /></span>
             </div>
-            <ul>
-              <li>Ask the referring office whether and when the referral was sent.</li>
-              <li>Check with the specialist office that it arrived.</li>
-              <li>Ask your health plan about network and authorization requirements.</li>
-            </ul>
-            <button className="text-button" onClick={() => setModal("help")}>
-              Review the steps <ArrowRight size={15} />
-            </button>
+            {referral ? (
+              <div className="toolkit-items">
+                <button className="toolkit-item" onClick={() => startToolkitDraft(referral.from, "Could you confirm whether you sent my referral and when it was sent?", referral)}>
+                  <span className="toolkit-icon"><Building2 size={17} /></span>
+                  <span className="toolkit-copy">
+                    <strong>{translateText("Referring office", language)}</strong>
+                    <small>{translateText("Ask when the referral was sent and where it went.", language)}</small>
+                    <em>{translateText("Prepare a call script", language)} <ArrowRight size={13} /></em>
+                  </span>
+                </button>
+                <button className="toolkit-item" onClick={() => startToolkitDraft(referral.to, "Could you confirm whether you received my referral and tell me if anything else is needed before scheduling?", referral)}>
+                  <span className="toolkit-icon"><Stethoscope size={17} /></span>
+                  <span className="toolkit-copy">
+                    <strong>{translateText("Specialist office", language)}</strong>
+                    <small>{translateText("Confirm it arrived and ask what to do before scheduling.", language)}</small>
+                    <em>{translateText("Prepare a call script", language)} <ArrowRight size={13} /></em>
+                  </span>
+                </button>
+                <button className="toolkit-item" onClick={() => startToolkitDraft("your health plan", "Is this specialist in my network, and does this visit need a referral or prior authorization?", referral)}>
+                  <span className="toolkit-icon"><ShieldCheck size={17} /></span>
+                  <span className="toolkit-copy">
+                    <strong>{translateText("Health plan", language)}</strong>
+                    <small>{translateText("Check network status and referral or authorization requirements.", language)}</small>
+                    <em>{translateText("Prepare a call script", language)} <ArrowRight size={13} /></em>
+                  </span>
+                </button>
+              </div>
+            ) : (
+              <p className="lower-card-empty">{translateText("Add a referral to see questions tailored to your next step.", language)}</p>
+            )}
+            <p className="toolkit-note">
+              <ShieldCheck size={14} /> {translateText("These are questions to verify with each office or your health plan. Coverage and referral status are not checked automatically.", language)}
+            </p>
           </article>
         </section>
         <section className="bottom-callout">
