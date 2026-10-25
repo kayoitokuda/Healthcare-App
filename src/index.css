@@ -4478,3 +4478,94 @@ html {
 .landing-steps {
   display: block;
 }
+
+
+/* Shared logo treatment across landing, dashboard, and authentication. */
+.brand,
+.auth-brand,
+.landing-header .brand,
+.dashboard-shell > .topbar .brand {
+  align-items: center;
+  gap: 10px;
+  color: #202331;
+  font-family: "Source Serif Pro", Georgia, serif;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+.brand-mark,
+.auth-brand-mark,
+.landing-header .brand-mark,
+.dashboard-shell > .topbar .brand-mark {
+  width: 34px;
+  height: 34px;
+  flex: none;
+  border-radius: 8px;
+  color: #29314c;
+  background: linear-gradient(165deg, #f4c847 8%, #fff5cf 62%);
+  box-shadow: inset 0 0 9px #e5ad21;
+}
+.auth-brand-mark {
+  display: grid;
+  place-items: center;
+}
+
+/* Let the hero wash fill the full height of the preview column. */
+.landing-preview-panel {
+  align-self: stretch;
+}
+
+/* Keep the steps as a stable three-card row on desktop and stack them on mobile. */
+@media (max-width: 760px) {
+  .landing-steps {
+    display: block;
+    width: 100%;
+    max-width: none;
+    margin: 24px 0 0;
+    padding: 0;
+    left: auto;
+    overflow: visible;
+  }
+  .landing-steps-track {
+    width: 100%;
+    animation: none;
+    transform: none;
+  }
+  .landing-steps-group,
+  .landing-steps-group[aria-hidden="true"] {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    transform: none;
+  }
+  .landing-steps-group[aria-hidden="true"] {
+    display: none;
+  }
+  .landing-step {
+    width: 100%;
+    min-width: 0;
+    flex-basis: auto;
+  }
+  .landing-header .brand,
+  .dashboard-shell > .topbar .brand {
+    font-size: 17px;
+  }
+}
+@media (max-width: 520px) {
+  .landing-header .brand {
+    gap: 10px;
+    font-size: 17px;
+  }
+  .landing-header .brand-mark {
+    width: 34px;
+    height: 34px;
+  }
+}
+.landing-actions .primary-button,
+.landing-actions .secondary-button {
+  min-height: 48px;
+  box-sizing: border-box;
+}
