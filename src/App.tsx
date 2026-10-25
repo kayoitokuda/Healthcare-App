@@ -1828,7 +1828,7 @@ function ReferralNavigatorApp() {
                   <span className="toolkit-icon"><Building2 size={17} /></span>
                   <span className="toolkit-copy">
                     <strong>{translateText("Referring office", language)}</strong>
-                    <small>{translateText("Ask when the referral was sent and where it went.", language)}</small>
+                    <small>{translateText("Find contact details on your visit summary; ask when and where it was sent.", language)}</small>
                     <em>{translateText("Prepare a call script", language)} <ArrowRight size={13} /></em>
                   </span>
                 </button>
@@ -1836,7 +1836,7 @@ function ReferralNavigatorApp() {
                   <span className="toolkit-icon"><Stethoscope size={17} /></span>
                   <span className="toolkit-copy">
                     <strong>{translateText("Specialist office", language)}</strong>
-                    <small>{translateText("Confirm it arrived and ask what to do before scheduling.", language)}</small>
+                    <small>{translateText("Use the referral paperwork or clinic directory to confirm receipt and scheduling steps.", language)}</small>
                     <em>{translateText("Prepare a call script", language)} <ArrowRight size={13} /></em>
                   </span>
                 </button>
@@ -1844,7 +1844,7 @@ function ReferralNavigatorApp() {
                   <span className="toolkit-icon"><ShieldCheck size={17} /></span>
                   <span className="toolkit-copy">
                     <strong>{translateText("Health plan", language)}</strong>
-                    <small>{translateText("Check network status and referral or authorization requirements.", language)}</small>
+                    <small>{translateText("Use member services on your insurance card or plan portal to check network and authorization.", language)}</small>
                     <em>{translateText("Prepare a call script", language)} <ArrowRight size={13} /></em>
                   </span>
                 </button>
