@@ -290,7 +290,18 @@ function LandingPage({
         </button>
         <nav className="landing-nav" aria-label="Main navigation">
           <LanguageToggle />
-          <a href="#landing-how-it-works">How it works</a>
+          <a
+            href="#landing-how-it-works"
+            onClick={(event) => {
+              event.preventDefault();
+              const section = document.getElementById("landing-how-it-works");
+              if (!section) return;
+              window.history.replaceState(null, "", "#landing-how-it-works");
+              section.scrollIntoView({ behavior: "smooth", block: "start" });
+            }}
+          >
+            How it works
+          </a>
           <button type="button" className="landing-signin" onClick={onSignIn}>
             Sign in
           </button>
