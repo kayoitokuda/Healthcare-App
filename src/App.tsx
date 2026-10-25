@@ -617,6 +617,7 @@ function InlineDraftPanel({
   kind,
   draft,
   copied,
+  contextual = false,
   onKindChange,
   onDraftChange,
   onCopy,
@@ -626,6 +627,7 @@ function InlineDraftPanel({
   kind: "Call script" | "Portal message" | "Email";
   draft: string;
   copied: boolean;
+  contextual?: boolean;
   onKindChange: (kind: "Call script" | "Portal message" | "Email") => void;
   onDraftChange: (draft: string) => void;
   onCopy: () => void;
@@ -644,7 +646,9 @@ function InlineDraftPanel({
         </IconButton>
       </div>
       <p className="modal-intro">
-        Edit this draft for your situation. Nothing is sent from here.
+        {contextual
+          ? "Your saved update is included as context. Check the office and wording before you contact anyone. Nothing is sent from here."
+          : "Edit this draft for your situation. Nothing is sent from here."}
       </p>
       <div className="segmented" role="group" aria-label="Draft format">
         {(["Call script", "Portal message", "Email"] as const).map((option) => (
