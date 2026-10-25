@@ -988,10 +988,10 @@ function ReferralNavigatorApp() {
                     </span>
                     <span className="journey-copy">
                       <span className="journey-label">
-                        {step.title}
-                        <span>{done ? "Recorded" : translateText("Tap to record", language)}</span>
+                        {translateText(step.title, language)}
+                        <span>{done ? translateText("Recorded", language) : translateText("Tap to record", language)}</span>
                       </span>
-                      <span className="journey-step-copy">{step.copy}</span>
+                      <span className="journey-step-copy">{translateText(step.copy, language)}</span>
                     </span>
                   </button>
                 );
