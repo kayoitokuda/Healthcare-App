@@ -323,7 +323,8 @@ function LandingPage({
             </p>
           </div>
 
-          <div className="landing-preview" aria-label="Example referral progress">
+          <div className="landing-preview-panel">
+            <div className="landing-preview" aria-label="Example referral progress">
             <div className="landing-preview-top">
               <span className="landing-preview-icon">
                 <Stethoscope size={18} />
@@ -364,6 +365,7 @@ function LandingPage({
               <span>Next up: ask whether the referral was sent</span>
               <ArrowRight size={15} />
             </div>
+            </div>
           </div>
         </section>
 
@@ -377,6 +379,8 @@ function LandingPage({
             </p>
           </div>
           <div className="landing-steps">
+            <div className="landing-steps-track">
+              <div className="landing-steps-group">
             <article className="landing-step">
               <span>01</span>
               <ClipboardList size={20} />
@@ -404,6 +408,8 @@ function LandingPage({
                 office.
               </p>
             </article>
+          </div>
+            </div>
           </div>
         </section>
 
