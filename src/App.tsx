@@ -93,11 +93,11 @@ const initial: Referral[] = [
   },
 ];
 
-const steps = [
+const steps: Array<{ title: string; copy: string; milestone?: Milestone }> = [
   { title: "Recommendation", copy: "A clinician suggests specialist care" },
-  { title: "Referral sent", copy: "Check with the referring office" },
-  { title: "Receipt confirmed", copy: "Check with the specialist’s office" },
-  { title: "Ready to schedule", copy: "Ask how to book your visit" },
+  { title: "Referral sent", copy: "Check with the referring office", milestone: "referral-sent" },
+  { title: "Receipt confirmed", copy: "Check with the specialist’s office", milestone: "referral-received" },
+  { title: "Ready to schedule", copy: "Ask how to book your visit", milestone: "ready-to-schedule" },
 ];
 
 function nextStepFor(referral: Referral) {
@@ -705,6 +705,20 @@ function ReferralNavigatorApp() {
     setModal("update");
   }
 
+  function addMilestoneUpdate(milestone: Milestone) {
+    const titles: Record<Milestone, string> = {
+      "referral-sent": "Referral sent",
+      "referral-received": "Referral received",
+      "ready-to-schedule": "Ready to schedule",
+    };
+    setUpdateTitle(translateText(titles[milestone], language));
+    setUpdateDetail("");
+    setUpdateSource("You");
+    setUpdateMilestones([milestone]);
+    setUpdateEventDate("");
+    setModal("update");
+  }
+
   function saveUpdate() {
     if (!referral || !updateTitle.trim()) return;
     const update = {
@@ -961,23 +975,25 @@ function ReferralNavigatorApp() {
                   (sentRecorded && !receiptRecorded && i === 2) ||
                   (receiptRecorded && !readyRecorded && i === 3);
                 return (
-                  <div
+                  <button
+                    type="button"
                     className={`journey-step ${done ? "is-done" : ""} ${active ? "is-active" : ""}`}
                     key={step.title}
+                    disabled={!step.milestone || done}
+                    aria-label={step.milestone ? `${translateText("Tap to record", language)}: ${translateText(step.title, language)}` : step.title}
+                    onClick={() => step.milestone && addMilestoneUpdate(step.milestone)}
                   >
-                    <div className="journey-marker">
+                    <span className="journey-marker">
                       {done ? <Check size={15} /> : i + 1}
-                    </div>
-                    <div className="journey-copy">
-                      <div className="journey-label">
+                    </span>
+                    <span className="journey-copy">
+                      <span className="journey-label">
                         {step.title}
-                        <span>
-                          {done ? "Recorded" : i < 3 ? "Not confirmed" : "Next"}
-                        </span>
-                      </div>
-                      <p>{step.copy}</p>
-                    </div>
-                  </div>
+                        <span>{done ? "Recorded" : translateText("Tap to record", language)}</span>
+                      </span>
+                      <span className="journey-step-copy">{step.copy}</span>
+                    </span>
+                  </button>
                 );
               })}
             </div>
