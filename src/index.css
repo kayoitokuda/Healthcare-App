@@ -1,11 +1,7 @@
 :root {
-  font-family:
-    "Avenir Next",
-    Inter,
-    system-ui,
-    -apple-system,
-    "Segoe UI",
-    sans-serif;
+  --font-sans: "Source Sans Pro", Arial, sans-serif;
+  --font-serif: "Source Serif Pro", Georgia, serif;
+  font-family: var(--font-sans);
   color: #193638;
   background: #f4f8f6;
   font-synthesis: none;
@@ -74,7 +70,7 @@ button:disabled {
   align-items: center;
   gap: 10px;
   font:
-    800 21px Manrope,
+    800 21px "Source Sans Pro",
     sans-serif;
   letter-spacing: -0.7px;
   color: var(--ink);
@@ -173,7 +169,7 @@ button:disabled {
 .welcome h1,
 .detail-heading h1 {
   font:
-    800 32px/1.15 Manrope,
+    800 32px/1.15 "Source Sans Pro",
     sans-serif;
   letter-spacing: -1.2px;
   color: var(--ink);
@@ -243,7 +239,7 @@ button:disabled {
 }
 .list-title h2 {
   font:
-    700 20px Manrope,
+    700 20px "Source Sans Pro",
     sans-serif;
   letter-spacing: -0.45px;
   margin: 0;
@@ -337,7 +333,7 @@ button:disabled {
 }
 .first-step-card h3 {
   font:
-    700 16px Manrope,
+    700 16px "Source Sans Pro",
     sans-serif;
   letter-spacing: -0.35px;
   color: var(--ink);
@@ -393,7 +389,7 @@ button:disabled {
 }
 .referral-card h3 {
   font:
-    700 17px Manrope,
+    700 17px "Source Sans Pro",
     sans-serif;
   margin: 14px 0 5px;
   letter-spacing: -0.3px;
@@ -565,7 +561,7 @@ button:disabled {
   place-items: center;
 }
 .empty-state h3 {
-  font: 700 16px Manrope;
+  font: 700 16px "Source Sans Pro";
   margin: 13px 0 5px;
 }
 .empty-state p {
@@ -645,7 +641,7 @@ button:disabled {
 }
 .section-title-row h2 {
   font:
-    700 16px Manrope,
+    700 16px "Source Sans Pro",
     sans-serif;
   letter-spacing: -0.35px;
   color: var(--ink);
@@ -915,7 +911,7 @@ button:disabled {
   gap: 22px;
 }
 .tools-intro h2 {
-  font: 700 15px Manrope;
+  font: 700 15px "Source Sans Pro";
   margin: 0;
   color: var(--ink);
 }
@@ -1005,7 +1001,7 @@ button:disabled {
   border-bottom: 1px solid #edf2f0;
 }
 .modal-head h2 {
-  font: 700 18px Manrope;
+  font: 700 18px "Source Sans Pro";
   letter-spacing: -0.4px;
   margin: 0;
   color: var(--ink);
@@ -1113,7 +1109,7 @@ button:disabled {
   border-radius: 9px;
 }
 .help-list > div > span {
-  font: 700 10px Manrope;
+  font: 700 10px "Source Sans Pro";
   color: #63a092;
 }
 .help-list p {
@@ -1336,9 +1332,12 @@ button:disabled {
 /* Referral Navigator visual refresh, inspired by Churnkey's warm canvas,
    compact utility navigation, clear white panels, and cobalt data accents. */
 :root {
-  font-family: Inter, "Avenir Next", system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-family: var(--font-sans);
   color: #202331;
   background: #f6f5f1;
+  font-family: var(--font-sans);
+  --font-sans: "Source Sans Pro", Arial, sans-serif;
+  --font-serif: "Source Serif Pro", Georgia, serif;
   --ink: #202331;
   --muted: #747987;
   --teal: #3d5bc7;
@@ -1493,7 +1492,7 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
   outline-color: #8c9de2;
 }
 .modal-head h2, .tools-intro h2, .help-list > div > span {
-  font-family: Inter, "Avenir Next", system-ui, sans-serif;
+  font-family: var(--font-sans);
 }
 @media (max-width: 760px) {
   .topbar { height: 62px; padding: 0 18px; }
@@ -2968,7 +2967,7 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 .inline-draft .section-title-row h3 {
   margin: 0;
   color: var(--ink);
-  font: 700 16px Manrope, sans-serif;
+  font: 700 16px "Source Sans Pro", sans-serif;
   letter-spacing: -0.25px;
 }
 .inline-draft .modal-intro {
@@ -3043,7 +3042,7 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
   align-items: center;
   gap: 10px;
   color: var(--ink);
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: var(--font-serif);
   font-size: 20px;
   font-weight: 600;
   text-decoration: none;
@@ -3067,7 +3066,7 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 .auth-card h1 {
   margin: 0;
   color: var(--ink);
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: var(--font-serif);
   font-size: clamp(28px, 7vw, 34px);
   font-weight: 600;
 }
@@ -3237,7 +3236,7 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
   border-radius: 7px;
   background-color: #fff;
   color: #303545;
-  font: 600 12px Manrope, sans-serif;
+  font: 600 12px "Source Sans Pro", sans-serif;
   cursor: pointer;
 }
 .language-toggle select:hover {
@@ -3461,7 +3460,7 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 .dashboard-shell .agent-card-heading h2,
 .dashboard-shell .dashboard-next-step h2,
 .dashboard-shell .first-step-card h3 {
-  font-family: "Source Serif 4", Georgia, "Times New Roman", serif;
+  font-family: var(--font-serif);
 }
 .dashboard-shell .welcome h1 {
   font-size: 32px;
@@ -3482,7 +3481,7 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 }
 .dashboard-shell .agent-card-heading h2,
 .dashboard-shell .dashboard-next-step h2 {
-  font-family: "Source Serif 4", Georgia, "Times New Roman", serif;
+  font-family: var(--font-serif);
   font-size: 21px;
   letter-spacing: -0.3px;
 }
@@ -4045,7 +4044,7 @@ html {
 }
 .landing-header .brand {
   gap: 10px;
-  font-family: "Source Serif Pro", Georgia, serif;
+  font-family: var(--font-serif);
   font-size: 17px;
   font-weight: 700;
   letter-spacing: 0;
@@ -4120,7 +4119,7 @@ html {
   max-width: 500px;
   margin: 0;
   color: #222632;
-  font-family: "Source Serif Pro", Georgia, serif;
+  font-family: var(--font-serif);
   font-size: clamp(40px, 3.6vw, 48px);
   font-weight: 700;
   letter-spacing: 0;
@@ -4243,7 +4242,7 @@ html {
 }
 .landing-section-heading h2 {
   color: #222632;
-  font-family: "Source Serif Pro", Georgia, serif;
+  font-family: var(--font-serif);
   font-size: 28px;
   font-weight: 700;
   letter-spacing: 0;
@@ -4549,7 +4548,7 @@ html {
   align-items: center;
   gap: 10px;
   color: #202331;
-  font-family: "Source Serif Pro", Georgia, serif;
+  font-family: var(--font-serif);
   font-size: 17px;
   font-weight: 700;
   letter-spacing: 0;
