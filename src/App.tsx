@@ -1,5 +1,6 @@
 import {
   useEffect,
+  useId,
   useMemo,
   useRef,
   useState,
@@ -68,6 +69,17 @@ const today = new Date().toLocaleDateString("en-US", {
   day: "numeric",
   year: "numeric",
 });
+function motionSafeScrollBehavior(): ScrollBehavior {
+  return window.matchMedia?.("(prefers-reduced-motion: reduce)").matches
+    ? "auto"
+    : "smooth";
+}
+
+function updateTimestamp(update: Update) {
+  const parsed = Date.parse(update.eventDate ?? update.date);
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
 const initial: Referral[] = [
   {
     id: 1,
@@ -275,22 +287,82 @@ function Modal({
   onClose: () => void;
   children: ReactNode;
 }) {
+  const dialogRef = useRef<HTMLElement>(null);
+  const closeRef = useRef(onClose);
+  const titleId = useId();
+  useEffect(() => {
+    closeRef.current = onClose;
+  }, [onClose]);
+
+  useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!dialog) return;
+    const previousFocus = document.activeElement instanceof HTMLElement
+      ? document.activeElement
+      : null;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    const focusableSelector =
+      'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+    const focusInitial = dialog.querySelector<HTMLElement>(
+      'input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled])',
+    );
+    (focusInitial ?? dialog).focus();
+
+    function handleDialogKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        event.stopPropagation();
+        closeRef.current();
+        return;
+      }
+      if (event.key !== "Tab" || !dialog) return;
+      const focusable = Array.from(
+        dialog.querySelectorAll<HTMLElement>(focusableSelector),
+      ).filter((element) => element.getClientRects().length > 0);
+      if (!focusable.length) {
+        event.preventDefault();
+        dialog.focus();
+        return;
+      }
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
+    }
+
+    document.addEventListener("keydown", handleDialogKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleDialogKeyDown);
+      document.body.style.overflow = previousOverflow;
+      if (previousFocus?.isConnected) previousFocus.focus();
+    };
+  }, []);
+
   return (
     <div
       className="scrim"
-      onMouseDown={(e) => {
-        if (e.target === e.currentTarget) onClose();
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) closeRef.current();
       }}
     >
       <section
+        ref={dialogRef}
         className="modal"
         role="dialog"
         aria-modal="true"
-        aria-label={title}
+        aria-labelledby={titleId}
+        tabIndex={-1}
       >
         <div className="modal-head">
-          <h2>{title}</h2>
-          <IconButton label="Close" onClick={onClose}>
+          <h2 id={titleId}>{title}</h2>
+          <IconButton label="Close" onClick={() => closeRef.current()}>
             <X size={20} />
           </IconButton>
         </div>
@@ -320,7 +392,7 @@ function LandingPage({
               "",
               window.location.pathname + window.location.search,
             );
-            window.scrollTo({ top: 0, behavior: "smooth" });
+            window.scrollTo({ top: 0, behavior: motionSafeScrollBehavior() });
           }}
         >
           <span className="brand-mark">
@@ -523,11 +595,12 @@ function InlineDraftPanel({
       <p className="modal-intro">
         Edit this draft for your situation. Nothing is sent from here.
       </p>
-      <div className="segmented">
+      <div className="segmented" role="group" aria-label={translateText("Draft format", language)}>
         {(["Call script", "Portal message", "Email"] as const).map((option) => (
           <button
             type="button"
             className={kind === option ? "selected" : ""}
+            aria-pressed={kind === option}
             key={option}
             onClick={() => onKindChange(option)}
           >
@@ -871,7 +944,7 @@ function ReferralNavigatorApp() {
       ),
     );
     setInlineDraftId(null);
-    window.requestAnimationFrame(() => document.querySelector(".timeline-card")?.scrollIntoView({ behavior: "smooth", block: "center" }));
+    window.requestAnimationFrame(() => document.querySelector(".timeline-card")?.scrollIntoView({ behavior: motionSafeScrollBehavior(), block: "center" }));
     flash("Contact attempt added to your activity. Referral status is unchanged.");
   }
 
@@ -963,7 +1036,7 @@ function ReferralNavigatorApp() {
             <button
               onClick={() => {
                 setSelected(null);
-                window.requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: "smooth" }));
+                window.requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: motionSafeScrollBehavior() }));
               }}
             >
               <Home size={17} /> Overview
@@ -973,7 +1046,7 @@ function ReferralNavigatorApp() {
               aria-current="page"
               onClick={() => {
                 setSelected(null);
-                window.requestAnimationFrame(() => document.getElementById("dashboard-referrals")?.scrollIntoView({ behavior: "smooth" }));
+                window.requestAnimationFrame(() => document.getElementById("dashboard-referrals")?.scrollIntoView({ behavior: motionSafeScrollBehavior() }));
               }}
             >
               <ClipboardList size={17} /> My referrals
@@ -982,7 +1055,7 @@ function ReferralNavigatorApp() {
             <button
               onClick={() => {
                 setSelected(null);
-                window.requestAnimationFrame(() => document.getElementById("dashboard-next-step")?.scrollIntoView({ behavior: "smooth" }));
+                window.requestAnimationFrame(() => document.getElementById("dashboard-next-step")?.scrollIntoView({ behavior: motionSafeScrollBehavior() }));
               }}
             >
               <MessageCircle size={17} /> Next steps
@@ -1052,8 +1125,12 @@ function ReferralNavigatorApp() {
                 <p className="eyebrow">THE HANDOFF</p>
                 <h2>From recommendation to appointment</h2>
               </div>
-              <button className="text-button" onClick={() => addUpdate()}>
-                + Add update
+              <button
+                className="primary-button add-update-button"
+                onClick={() => addUpdate()}
+              >
+                <Plus size={18} aria-hidden="true" />
+                {translateText("Add update", language)}
               </button>
             </div>
             <div className="journey">
@@ -1075,7 +1152,13 @@ function ReferralNavigatorApp() {
                     className={`journey-step ${done ? "is-done" : ""} ${active ? "is-active" : ""}`}
                     key={step.title}
                     disabled={!step.milestone || done}
-                    aria-label={step.milestone ? `${translateText("Tap to record", language)}: ${translateText(step.title, language)}` : step.title}
+                    aria-label={
+                      !step.milestone
+                        ? translateText(step.title, language)
+                        : done
+                          ? `${translateText(step.title, language)}, ${translateText("Recorded", language)}`
+                          : `${translateText("Record referral step", language)}: ${translateText(step.title, language)}`
+                    }
                     onClick={() => step.milestone && addMilestoneUpdate(step.milestone)}
                   >
                     <span className="journey-marker">
@@ -1084,7 +1167,7 @@ function ReferralNavigatorApp() {
                     <span className="journey-copy">
                       <span className="journey-label">
                         {translateText(step.title, language)}
-                        <span>{done ? translateText("Recorded", language) : translateText("Tap to record", language)}</span>
+                        <span>{done ? translateText("Recorded", language) : step.milestone ? translateText("Select to record", language) : translateText("Starting point", language)}</span>
                       </span>
                       <span className="journey-step-copy">{translateText(step.copy, language)}</span>
                     </span>
@@ -1109,66 +1192,66 @@ function ReferralNavigatorApp() {
               <div className="action-list">
                 {latestReferralEvent?.eventType === "records-requested" ? (
                   <>
-                    <button className={`check-row ${referral.done.includes("confirm-record-method") ? "checked" : ""}`} onClick={() => toggleDone("confirm-record-method")}>
+                    <button type="button" aria-pressed={referral.done.includes("confirm-record-method")} className={`check-row ${referral.done.includes("confirm-record-method") ? "checked" : ""}`} onClick={() => toggleDone("confirm-record-method")}>
                       <span className="checkbox">{referral.done.includes("confirm-record-method") && <Check size={13} />}</span>
                       <span>{translateText("Confirm how to send the requested records", language)}</span>
                     </button>
-                    <button className={`check-row ${referral.done.includes("record-records-sent") ? "checked" : ""}`} onClick={() => toggleDone("record-records-sent")}>
+                    <button type="button" aria-pressed={referral.done.includes("record-records-sent")} className={`check-row ${referral.done.includes("record-records-sent") ? "checked" : ""}`} onClick={() => toggleDone("record-records-sent")}>
                       <span className="checkbox">{referral.done.includes("record-records-sent") && <Check size={13} />}</span>
                       <span>{translateText("Record when the requested records are sent", language)}</span>
                     </button>
                   </>
                 ) : latestReferralEvent?.eventType === "records-sent" ? (
                   <>
-                    <button className={`check-row ${referral.done.includes("confirm-records") ? "checked" : ""}`} onClick={() => toggleDone("confirm-records")}>
+                    <button type="button" aria-pressed={referral.done.includes("confirm-records")} className={`check-row ${referral.done.includes("confirm-records") ? "checked" : ""}`} onClick={() => toggleDone("confirm-records")}>
                       <span className="checkbox">{referral.done.includes("confirm-records") && <Check size={13} />}</span>
                       <span>{translateText("Confirm the records arrived", language)}</span>
                     </button>
-                    <button className={`check-row ${referral.done.includes("record-response") ? "checked" : ""}`} onClick={() => toggleDone("record-response")}>
+                    <button type="button" aria-pressed={referral.done.includes("record-response")} className={`check-row ${referral.done.includes("record-response") ? "checked" : ""}`} onClick={() => toggleDone("record-response")}>
                       <span className="checkbox">{referral.done.includes("record-response") && <Check size={13} />}</span>
                       <span>{translateText("Record the office’s response", language)}</span>
                     </button>
                   </>
                 ) : latestReferralEvent?.eventType === "follow-up-recommended" ? (
                   <>
-                    <button className={`check-row ${referral.done.includes("schedule-follow-up") ? "checked" : ""}`} onClick={() => toggleDone("schedule-follow-up")}>
+                    <button type="button" aria-pressed={referral.done.includes("schedule-follow-up")} className={`check-row ${referral.done.includes("schedule-follow-up") ? "checked" : ""}`} onClick={() => toggleDone("schedule-follow-up")}>
                       <span className="checkbox">{referral.done.includes("schedule-follow-up") && <Check size={13} />}</span>
                       <span>{translateText("Ask how to schedule your follow-up", language)}</span>
                     </button>
-                    <button className={`check-row ${referral.done.includes("record-follow-up") ? "checked" : ""}`} onClick={() => toggleDone("record-follow-up")}>
+                    <button type="button" aria-pressed={referral.done.includes("record-follow-up")} className={`check-row ${referral.done.includes("record-follow-up") ? "checked" : ""}`} onClick={() => toggleDone("record-follow-up")}>
                       <span className="checkbox">{referral.done.includes("record-follow-up") && <Check size={13} />}</span>
                       <span>{translateText("Add the follow-up date to your timeline", language)}</span>
                     </button>
                   </>
                 ) : latestReferralEvent?.eventType === "visit-completed" ? (
                   <>
-                    <button className={`check-row ${referral.done.includes("review-visit-notes") ? "checked" : ""}`} onClick={() => toggleDone("review-visit-notes")}>
+                    <button type="button" aria-pressed={referral.done.includes("review-visit-notes")} className={`check-row ${referral.done.includes("review-visit-notes") ? "checked" : ""}`} onClick={() => toggleDone("review-visit-notes")}>
                       <span className="checkbox">{referral.done.includes("review-visit-notes") && <Check size={13} />}</span>
                       <span>{translateText("Review your visit notes", language)}</span>
                     </button>
-                    <button className={`check-row ${referral.done.includes("record-visit-next-steps") ? "checked" : ""}`} onClick={() => toggleDone("record-visit-next-steps")}>
+                    <button type="button" aria-pressed={referral.done.includes("record-visit-next-steps")} className={`check-row ${referral.done.includes("record-visit-next-steps") ? "checked" : ""}`} onClick={() => toggleDone("record-visit-next-steps")}>
                       <span className="checkbox">{referral.done.includes("record-visit-next-steps") && <Check size={13} />}</span>
                       <span>{translateText("Record any next steps from your visit", language)}</span>
                     </button>
                   </>
                 ) : appointmentRecorded ? (
                   <>
-                    <button className={`check-row ${referral.done.includes("check-records") ? "checked" : ""}`} onClick={() => toggleDone("check-records")}>
+                    <button type="button" aria-pressed={referral.done.includes("check-records")} className={`check-row ${referral.done.includes("check-records") ? "checked" : ""}`} onClick={() => toggleDone("check-records")}>
                       <span className="checkbox">{referral.done.includes("check-records") && <Check size={13} />}</span>
                       <span>{translateText("Ask whether records or imaging are needed", language)}</span>
                     </button>
-                    <button className={`check-row ${referral.done.includes("prepare-visit") ? "checked" : ""}`} onClick={() => toggleDone("prepare-visit")}>
+                    <button type="button" aria-pressed={referral.done.includes("prepare-visit")} className={`check-row ${referral.done.includes("prepare-visit") ? "checked" : ""}`} onClick={() => toggleDone("prepare-visit")}>
                       <span className="checkbox">{referral.done.includes("prepare-visit") && <Check size={13} />}</span>
                       <span>{translateText("Prepare questions for your visit", language)}</span>
                     </button>
                   </>
                 ) : (
                   <>
-                    <button className={`check-row ${referral.done.includes("ask-sent") ? "checked" : ""}`} onClick={() => toggleDone("ask-sent")}>
+                    <button type="button" aria-pressed={referral.done.includes("ask-sent")} className={`check-row ${referral.done.includes("ask-sent") ? "checked" : ""}`} onClick={() => toggleDone("ask-sent")}>
                       <span className="checkbox">{referral.done.includes("ask-sent") && <Check size={13} />}</span>
                       <span>Ask the referring office if it was sent</span>
                     </button>
-                    <button className={`check-row ${referral.done.includes("ask-received") ? "checked" : ""}`} onClick={() => toggleDone("ask-received")}>
+                    <button type="button" aria-pressed={referral.done.includes("ask-received")} className={`check-row ${referral.done.includes("ask-received") ? "checked" : ""}`} onClick={() => toggleDone("ask-received")}>
                       <span className="checkbox">{referral.done.includes("ask-received") && <Check size={13} />}</span>
                       <span>Ask the specialist office if it arrived</span>
                     </button>
@@ -1224,12 +1307,16 @@ function ReferralNavigatorApp() {
                 <span className="count-chip">{referral.updates.length}</span>
               </div>
               <p className="timeline-intro">
+                <strong>{translateText("Newest updates first", language)}.</strong>{" "}
                 {translateText("This history continues after scheduling. Record requests, documents sent, and follow-ups as they happen.", language)}
               </p>
-              <div className="timeline-list">
-                {[...referral.updates].map((update) => (
-                  <article className="timeline-entry" key={update.id}>
+              <ol className="timeline-list" aria-label={translateText("Referral activity, newest first", language)}>
+                {[...referral.updates]
+                  .sort((a, b) => updateTimestamp(b) - updateTimestamp(a) || b.id - a.id)
+                  .map((update) => (
+                  <li className="timeline-entry" key={update.id}>
                     <span
+                      aria-hidden="true"
                       className={`source-dot ${update.source !== "You" ? "office-source" : ""}`}
                     />
                     <div className="entry-body">
@@ -1250,9 +1337,9 @@ function ReferralNavigatorApp() {
                           : `You recorded · ${update.source}`}
                       </span>
                     </div>
-                  </article>
+                  </li>
                 ))}
-              </div>
+              </ol>
               <button
                 className="outline-button full"
                 onClick={() => addUpdate()}
@@ -1328,13 +1415,14 @@ function ReferralNavigatorApp() {
                   What happened?
                   <input
                     autoFocus
+                    required
                     value={updateTitle}
                     onChange={(e) => setUpdateTitle(e.target.value)}
                     placeholder="e.g. Called to ask if referral was sent"
                   />
                 </label>
                 <div className="quick-log-label">{translateText("Select any referral steps you know have happened", language)}</div>
-                <div className="quick-log-options" aria-label="Select confirmed referral steps">
+                <div className="quick-log-options" role="group" aria-label="Select confirmed referral steps">
                   {([
                     ["referral-sent", "Referral sent"],
                     ["referral-received", "Referral received"],
@@ -1360,7 +1448,7 @@ function ReferralNavigatorApp() {
                   ))}
                 </div>
                 <div className="quick-log-label">{translateText("Common events", language)}</div>
-                <div className="quick-log-options" aria-label={translateText("Common events", language)}>
+                <div className="quick-log-options" role="group" aria-label={translateText("Common events", language)}>
                   {([
                     ["records-requested", "Records requested"],
                     ["records-sent", "Records sent"],
@@ -1508,7 +1596,7 @@ function ReferralNavigatorApp() {
             onClick={() => {
               setMenuOpen(false);
               document.getElementById("dashboard-overview")?.scrollIntoView({
-                behavior: "smooth",
+                behavior: motionSafeScrollBehavior(),
               });
             }}
           >
@@ -1518,7 +1606,7 @@ function ReferralNavigatorApp() {
             onClick={() => {
               setMenuOpen(false);
               document.getElementById("dashboard-referrals")?.scrollIntoView({
-                behavior: "smooth",
+                behavior: motionSafeScrollBehavior(),
               });
             }}
           >
@@ -1529,7 +1617,7 @@ function ReferralNavigatorApp() {
             onClick={() => {
               setMenuOpen(false);
               document.getElementById("dashboard-next-step")?.scrollIntoView({
-                behavior: "smooth",
+                behavior: motionSafeScrollBehavior(),
               });
             }}
           >
