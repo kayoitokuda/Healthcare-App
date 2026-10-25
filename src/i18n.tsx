@@ -11,6 +11,13 @@ const languageLocales: Record<AppLanguage, string> = {
 };
 
 const rows: Array<[string, string, string, string, string]> = [
+  ["Additional care steps", "追加のケア手順", "其他护理步骤", "Pasos adicionales de atención", "Các bước chăm sóc bổ sung"],
+  ["Add imaging, authorization, rescheduled visits, procedures, and follow-ups here. These are your notes, not office-verified status.", "画像検査、事前承認、予約変更、処置、再診などをここに追加できます。これはあなたの記録であり、医療機関が確認した状況ではありません。", "在此添加影像检查、保险授权、改期就诊、手术和复诊。这些是您的记录，并非诊所核实的状态。", "Agrega aquí estudios de imagen, autorizaciones, citas reprogramadas, procedimientos y seguimientos. Son tus notas, no estados verificados por los consultorios.", "Thêm chẩn đoán hình ảnh, phê duyệt bảo hiểm, lịch khám đổi, thủ thuật và tái khám tại đây. Đây là ghi chú của bạn, không phải trạng thái đã được phòng khám xác nhận."],
+  ["No additional steps recorded yet. Use “Add update” when the care path changes or continues.", "追加の手順はまだ記録されていません。ケアの流れが変わったり続いたりしたら「更新を追加」を使ってください。", "尚未记录其他步骤。护理流程有变化或继续时，请使用“添加更新”。", "Aún no hay pasos adicionales. Usa “Agregar actualización” cuando el proceso cambie o continúe.", "Chưa ghi lại bước bổ sung nào. Chọn “Thêm cập nhật” khi quá trình chăm sóc thay đổi hoặc tiếp tục."],
+  ["Other care step", "その他のケア手順", "其他护理步骤", "Otro paso de atención", "Bước chăm sóc khác"],
+  ["Patient recorded", "患者が記録", "患者记录", "Registrado por el paciente", "Bệnh nhân đã ghi"],
+  ["Referral checkpoints and what comes next", "紹介の確認ポイントと次のステップ", "转诊检查点及后续步骤", "Puntos de la referencia y próximos pasos", "Các mốc chuyển tuyến và bước tiếp theo"],
+  ["These are common referral checkpoints. Care can pause, repeat, branch, and continue after an appointment.", "一般的な紹介の確認ポイントです。ケアは一時停止、繰り返し、分岐し、予約後も続くことがあります。", "这些是常见的转诊检查点。护理过程可能暂停、重复、分支，也可能在预约后继续。", "Estos son puntos comunes de una referencia. La atención puede pausarse, repetirse, tomar distintas rutas y continuar después de una cita.", "Đây là các mốc chuyển tuyến thường gặp. Quá trình chăm sóc có thể tạm dừng, lặp lại, rẽ nhánh và tiếp tục sau cuộc hẹn."],
   ["Tap to record", "タップして記録", "点击记录", "Toca para registrar", "Nhấn để ghi lại"],
   ["YOUR ACTIVITY", "あなたの活動履歴", "你的活动记录", "TU ACTIVIDAD", "HOẠT ĐỘNG CỦA BẠN"],
   ["Confirm how to send the requested records.", "依頼された書類の送付方法を確認してください。", "确认所需资料的发送方式。", "Confirma cómo enviar los documentos solicitados.", "Xác nhận cách gửi hồ sơ được yêu cầu."],
