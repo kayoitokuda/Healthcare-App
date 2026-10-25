@@ -281,7 +281,14 @@ function LandingPage({
           type="button"
           className="brand brand-home"
           aria-label="Referral Navigator home"
-          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+          onClick={() => {
+            window.history.replaceState(
+              null,
+              "",
+              window.location.pathname + window.location.search,
+            );
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          }}
         >
           <span className="brand-mark">
             <HeartHandshake size={20} />
