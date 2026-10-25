@@ -5392,3 +5392,28 @@ html {
     min-height: 48px;
   }
 }
+
+
+/* Care-step script actions are easy to find, tap, and review inline. */
+.care-step-script-button {
+  display: inline-flex;
+  grid-column: 1 / -1;
+  min-height: 44px;
+  width: fit-content;
+  align-items: center;
+  gap: 8px;
+  padding: 0 14px;
+  border: 1px solid #405bcb;
+  border-radius: 9px;
+  color: #2948a7;
+  background: #f4f6ff;
+  font-size: 14px;
+  font-weight: 700;
+}
+.care-step-script-button:hover { background: #e9edff; }
+.care-step-script-button:focus-visible { outline: 3px solid #3156c4; outline-offset: 3px; }
+.care-step-item > .inline-draft { grid-column: 1 / -1; margin: 6px 0 0; padding: 16px; }
+@media (max-width: 760px) {
+  .care-step-script-button { width: 100%; justify-content: center; }
+  .care-step-item > .inline-draft { padding: 14px; }
+}
