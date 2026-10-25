@@ -111,9 +111,12 @@ export default function SignIn({
             />
             {mode === "sign-up" && <small id="signup-password-hint">Use at least 8 characters.</small>}
           </label>
-          <button className="auth-submit" type="submit" disabled={busy || !configured}>
-            <span aria-live="polite" aria-atomic="true">{busy ? "Please wait…" : mode === "sign-in" ? "Sign in" : "Create account"}</span>
+          <button className="auth-submit" type="submit" disabled={busy || !configured} aria-busy={busy}>
+            {busy ? "Please wait…" : mode === "sign-in" ? "Sign in" : "Create account"}
           </button>
+          <span className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+            {busy ? "Please wait…" : ""}
+          </span>
         </form>
 
         <p className="auth-switch">
