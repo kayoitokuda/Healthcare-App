@@ -829,7 +829,7 @@ export function LanguageToggle({ onChange }: { onChange?: (language: AppLanguage
   );
 }
 
-function localizedQuestion(question: string, language: AppLanguage, specialty: string) {
+function localizedQuestion(question: string, language: AppLanguage, specialty: string): string {
   if (language === "en") return question;
   const contextualQuestion = question.match(/^(.+?)\\s+Context: “(.+)”$/);
   if (contextualQuestion) {
