@@ -5151,3 +5151,93 @@ html {
     font-size: 14px;
   }
 }
+
+
+/* Unified dashboard type scale: page / section / card / body / support. */
+.dashboard-shell {
+  --type-page: clamp(30px, 3vw, 36px);
+  --type-section: 22px;
+  --type-card: 19px;
+  --type-body: 16px;
+  --type-support: 14px;
+  --type-eyebrow: 14px;
+}
+.dashboard-shell .eyebrow,
+.dashboard-shell .sidebar-nav-label,
+.dashboard-shell .menu-eyebrow {
+  font-size: var(--type-eyebrow);
+  line-height: 1.35;
+  letter-spacing: 0.08em;
+  color: #4e5666;
+}
+.dashboard-shell p:not(.eyebrow) {
+  font-size: var(--type-body);
+  line-height: 1.55;
+}
+.dashboard-shell :is(li, label, .body-copy, .timeline-intro, .modal-intro, .helper-note, .quick-log-hint, .toolkit-note, .menu-note p, .tools-intro > p:last-child) {
+  font-size: var(--type-body);
+  line-height: 1.55;
+}
+.dashboard-shell :is(small, .privacy-chip, .source-chip, .source-tag, .status-pill, .card-meta span, .entry-top > span, .sidebar-count, .guide-foot, .lower-card-empty, .journey-label span, .journey-step-copy) {
+  font-size: var(--type-support);
+  line-height: 1.45;
+}
+.dashboard-shell .journey-label {
+  font-size: 15px;
+  line-height: 1.35;
+}
+.dashboard-shell :is(.welcome h1, .detail-heading h1) {
+  font-size: var(--type-page);
+  line-height: 1.2;
+}
+.dashboard-shell :is(.section-title-row h2, .list-title h2, .lower-card-heading h2, .tools-intro h2) {
+  font-size: var(--type-section);
+  line-height: 1.3;
+}
+.dashboard-shell :is(.referral-card h3, .first-step-card h3, .inline-draft .section-title-row h3) {
+  font-size: var(--type-card);
+  line-height: 1.35;
+}
+.dashboard-shell :is(button, .tool-links button) {
+  font-size: 16px;
+  line-height: 1.4;
+}
+.dashboard-shell .quick-log-options button,
+.dashboard-shell .segmented button {
+  font-size: 15px;
+}
+.dashboard-shell .add-update-button {
+  font-size: 16px;
+}
+.dashboard-shell .form-body label,
+.dashboard-shell .form-body input,
+.dashboard-shell .form-body select,
+.dashboard-shell .form-body textarea,
+.dashboard-shell .inline-draft .draft-area {
+  font-size: 16px;
+}
+.dashboard-shell .modal-head h2 {
+  font-size: 24px;
+  line-height: 1.3;
+}
+@media (max-width: 760px) {
+  .dashboard-shell {
+    --type-section: 20px;
+    --type-card: 18px;
+  }
+  .dashboard-shell .welcome h1,
+  .dashboard-shell .detail-heading h1 {
+    font-size: clamp(28px, 7.5vw, 32px);
+    line-height: 1.2;
+  }
+  .dashboard-shell .eyebrow,
+  .dashboard-shell .sidebar-nav-label,
+  .dashboard-shell .menu-eyebrow {
+    font-size: 14px;
+  }
+  .dashboard-shell .journey-label,
+  .dashboard-shell .journey-label span,
+  .dashboard-shell .journey-step-copy {
+    font-size: 14px;
+  }
+}
