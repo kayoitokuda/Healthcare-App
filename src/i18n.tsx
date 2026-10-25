@@ -465,6 +465,19 @@ const rows: Array<[string, string, string, string, string]> = [
   ["Newest updates first", "新しい更新が上に表示されます", "最新更新显示在最上方", "Las actualizaciones más recientes aparecen primero", "Các cập nhật mới nhất hiển thị trước"],
   ["Add update", "更新を追加", "添加更新", "Añadir actualización", "Thêm cập nhật"],
   ["Enter a short summary before saving.", "保存する前に短い概要を入力してください。", "保存前请输入简短说明。", "Escribe un breve resumen antes de guardar.", "Nhập tóm tắt ngắn trước khi lưu."],
+  ["Manage your language preference and the account that stores your referrals.", "言語設定と紹介情報を保存するアカウントを管理します。", "管理应用语言偏好和保存转诊信息的账户。", "Administra tu idioma preferido y la cuenta donde se guardan tus referencias.", "Quản lý ngôn ngữ ưu tiên và tài khoản lưu thông tin giới thiệu."],
+  ["Language preference", "言語設定", "语言偏好", "Preferencia de idioma", "Tùy chọn ngôn ngữ"],
+  ["Choose the language used across the app. It applies immediately and is saved as your default.", "アプリ全体で使用する言語を選択します。すぐに反映され、デフォルトとして保存されます。", "选择应用使用的语言。更改会立即生效并保存为默认语言。", "Elige el idioma de la aplicación. Se aplica de inmediato y se guarda como predeterminado.", "Chọn ngôn ngữ dùng trong ứng dụng. Ngôn ngữ được áp dụng ngay và lưu làm mặc định."],
+  ["Changing the language updates app labels. It does not translate referral names or notes you entered.", "言語を変更するとアプリ内のラベルが変わります。入力した紹介先名やメモは翻訳されません。", "更改语言会更新应用标签，但不会翻译你输入的转诊名称或备注。", "Cambiar el idioma actualiza las etiquetas de la app. No traduce los nombres de referencias ni las notas que escribiste.", "Đổi ngôn ngữ sẽ cập nhật nhãn trong ứng dụng. Tên lượt giới thiệu và ghi chú bạn nhập sẽ không được dịch."],
+  ["Your account", "アカウント", "你的账户", "Tu cuenta", "Tài khoản của bạn"],
+  ["Signed in as", "ログイン中のアカウント", "当前登录账户", "Sesión iniciada como", "Đã đăng nhập với"],
+  ["Account details unavailable", "アカウント情報を表示できません", "账户信息不可用", "Datos de la cuenta no disponibles", "Không có thông tin tài khoản"],
+  ["Referral details are saved to this account. The app doesn’t contact offices or verify referral status or insurance coverage.", "紹介情報はこのアカウントに保存されます。アプリが医療機関に連絡したり、紹介状の状況や保険適用を確認したりすることはありません。", "转诊信息保存在此账户中。应用不会联系诊所，也不会核实转诊状态或保险范围。", "Los datos de la referencia se guardan en esta cuenta. La app no contacta consultorios ni verifica el estado de la referencia o la cobertura.", "Thông tin giới thiệu được lưu vào tài khoản này. Ứng dụng không liên hệ phòng khám hoặc xác minh trạng thái giới thiệu hay quyền lợi bảo hiểm."],
+  ["Saving your preference…", "設定を保存しています…", "正在保存你的偏好…", "Guardando tu preferencia…", "Đang lưu tùy chọn…"],
+  ["Saved in this browser only.", "このブラウザーにのみ保存しました。", "仅保存在此浏览器中。", "Guardado solo en este navegador.", "Chỉ lưu trên trình duyệt này."],
+  ["Default language saved to your account.", "デフォルトの言語をアカウントに保存しました。", "默认语言已保存到你的账户。", "El idioma predeterminado se guardó en tu cuenta.", "Đã lưu ngôn ngữ mặc định vào tài khoản của bạn."],
+  ["Couldn’t save your language. Please try again.", "言語を保存できませんでした。もう一度お試しください。", "无法保存语言设置，请重试。", "No se pudo guardar el idioma. Inténtalo de nuevo.", "Không thể lưu ngôn ngữ. Vui lòng thử lại."],
+  ["Done", "完了", "完成", "Listo", "Xong"],
 ];
 
 const dictionary = Object.fromEntries(
