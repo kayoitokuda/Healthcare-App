@@ -12,6 +12,9 @@ const languageLocales: Record<AppLanguage, string> = {
 
 const rows: Array<[string, string, string, string, string]> = [
   ["Tap to record", "タップして記録", "点击记录", "Toca para registrar", "Nhấn để ghi lại"],
+  ["YOUR ACTIVITY", "あなたの活動履歴", "你的活动记录", "TU ACTIVIDAD", "HOẠT ĐỘNG CỦA BẠN"],
+  ["Confirm how to send the requested records.", "依頼された書類の送付方法を確認してください。", "确认所需资料的发送方式。", "Confirma cómo enviar los documentos solicitados.", "Xác nhận cách gửi hồ sơ được yêu cầu."],
+  ["Record the next steps your clinician shared. Referral Navigator won’t interpret them.", "担当医から伝えられた次の手順を記録してください。Referral Navigatorは内容を解釈しません。", "记录临床医生告知的后续步骤。Referral Navigator 不会解读这些内容。", "Registra los próximos pasos que te indicó tu profesional de salud. Referral Navigator no los interpretará.", "Ghi lại các bước tiếp theo mà bác sĩ chia sẻ. Referral Navigator sẽ không diễn giải chúng."],
   ["Records requested", "書類の提出を依頼された", "需要提供资料", "Se solicitaron documentos", "Được yêu cầu gửi hồ sơ"],
   ["Records sent", "書類を送付した", "资料已发送", "Documentos enviados", "Đã gửi hồ sơ"],
   ["Follow-up visit recommended", "再診を勧められた", "建议复诊", "Se recomendó una consulta de seguimiento", "Được đề nghị tái khám"],
