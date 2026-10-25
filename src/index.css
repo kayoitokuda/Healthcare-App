@@ -4473,3 +4473,8 @@ html {
     transform: none;
   }
 }
+
+/* Keep the animated step track spanning the full explainer width. */
+.landing-steps {
+  display: block;
+}
