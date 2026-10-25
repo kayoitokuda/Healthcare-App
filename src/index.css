@@ -3031,7 +3031,7 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
     var(--paper);
 }
 .auth-card {
-  width: min(100%, 460px);
+  width: min(100%, 540px);
   padding: 34px;
   border: 1px solid var(--line);
   border-radius: 24px;
