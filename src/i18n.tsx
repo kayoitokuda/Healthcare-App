@@ -441,6 +441,22 @@ const rows: Array<[string, string, string, string, string]> = [
   ["This is based on a specialist-office confirmation you recorded.", "専門医療機関の確認としてあなたが記録した内容に基づいています。", "根据你记录的专科诊所确认信息。", "Se basa en la confirmación del consultorio especialista que registraste.", "Dựa trên xác nhận từ phòng khám chuyên khoa mà bạn đã ghi nhận."],
   ["Confirmed", "確認済み", "已确认", "Confirmado", "Đã xác nhận"],
   ["submit", "送信", "提交", "Enviar", "Gửi"],
+
+  ["REFERRAL TOOLKIT", "紹介のサポート", "转诊工具包", "RECURSOS PARA TU REFERENCIA", "CÔNG CỤ HỖ TRỢ GIỚI THIỆU"],
+  ["Who can help with the next step?", "次の手順は誰に相談できますか？", "下一步可以向谁求助？", "¿Quién puede ayudarte con el siguiente paso?", "Ai có thể giúp bạn ở bước tiếp theo?"],
+  ["Referring office", "紹介元の医療機関", "转诊诊所", "Consultorio que te refirió", "Nơi giới thiệu"],
+  ["Ask when the referral was sent and where it went.", "紹介状をいつ、どこへ送付したか確認しましょう。", "询问转诊何时发送以及发送至哪里。", "Pregunta cuándo enviaron la referencia y a dónde.", "Hỏi giấy giới thiệu được gửi khi nào và đến đâu."],
+  ["Prepare a call script", "電話用スクリプトを準備", "准备通话脚本", "Preparar un guion para llamar", "Chuẩn bị kịch bản gọi điện"],
+  ["Specialist office", "専門医療機関", "专科诊所", "Consultorio especialista", "Phòng khám chuyên khoa"],
+  ["Confirm it arrived and ask what to do before scheduling.", "届いているか確認し、予約前に必要なことを尋ねましょう。", "确认是否收到，并询问预约前需要做什么。", "Confirma que la recibieron y pregunta qué hacer antes de programar.", "Xác nhận họ đã nhận và hỏi cần làm gì trước khi đặt lịch."],
+  ["Health plan", "健康保険プラン", "健康保险计划", "Plan de salud", "Chương trình bảo hiểm"],
+  ["Check network status and referral or authorization requirements.", "ネットワーク内か、紹介状や事前承認が必要か確認しましょう。", "确认网络状态以及转诊或授权要求。", "Verifica la red y los requisitos de referencia o autorización.", "Kiểm tra trong mạng lưới và yêu cầu giấy giới thiệu hoặc phê duyệt."],
+  ["These are questions to verify with each office or your health plan. Coverage and referral status are not checked automatically.", "各医療機関や健康保険プランに確認するための質問です。補償内容や紹介状の状況は自動確認されません。", "这些问题可向相关诊所或保险计划核实。系统不会自动查询保障范围或转诊状态。", "Son preguntas para confirmar con cada consultorio o tu plan de salud. La cobertura y el estado de la referencia no se verifican automáticamente.", "Đây là các câu hỏi để xác minh với phòng khám hoặc chương trình bảo hiểm. Ứng dụng không tự kiểm tra quyền lợi hay trạng thái giấy giới thiệu."],
+  ["Add a referral to see questions tailored to your next step.", "紹介を追加すると、次の手順に合わせた質問が表示されます。", "添加转诊后即可查看符合下一步的问题。", "Agrega una referencia para ver preguntas según el siguiente paso.", "Thêm lượt giới thiệu để xem câu hỏi phù hợp với bước tiếp theo."],
+  ["your health plan", "健康保険プラン", "你的健康保险计划", "tu plan de salud", "chương trình bảo hiểm của bạn"],
+  ["Could you confirm whether you sent my referral and when it was sent?", "私の紹介状を送付したか、またいつ送付したか確認いただけますか？", "请确认是否已发送我的转诊，以及发送时间。", "¿Podrían confirmar si enviaron mi referencia y cuándo?", "Xin xác nhận đã gửi giấy giới thiệu của tôi chưa và gửi khi nào?"],
+  ["Could you confirm whether you received my referral and tell me if anything else is needed before scheduling?", "私の紹介状を受領したか、予約前にほかに必要なものがあるか確認いただけますか？", "请确认是否收到我的转诊，并告知预约前是否还需要其他资料。", "¿Podrían confirmar si recibieron mi referencia y si falta algo antes de programar?", "Xin xác nhận đã nhận giấy giới thiệu của tôi chưa và tôi cần bổ sung gì trước khi đặt lịch?"],
+  ["Is this specialist in my network, and does this visit need a referral or prior authorization?", "この専門医は保険ネットワーク内ですか？この受診には紹介状や事前承認が必要ですか？", "这位专科医生在我的保险网络内吗？此次就诊需要转诊或事先授权吗？", "¿Este especialista está dentro de mi red? ¿Necesito una referencia o autorización previa para esta consulta?", "Bác sĩ chuyên khoa này có trong mạng lưới của tôi không? Tôi có cần giấy giới thiệu hoặc phê duyệt trước cho lần khám này không？"],
 ];
 
 const dictionary = Object.fromEntries(
