@@ -51,8 +51,8 @@ export default function SignIn({
   return (
     <main className="auth-screen">
       <section className="auth-card" aria-labelledby="auth-title">
-        <a className="auth-brand" href="/" aria-label="Referral Navigator">
-          <span className="auth-brand-mark"><HeartHandshake size={21} /></span>
+        <a className="brand auth-brand" href="/" aria-label="Referral Navigator">
+          <span className="brand-mark auth-brand-mark"><HeartHandshake size={20} /></span>
           <span>Referral Navigator</span>
         </a>
         {onBack && (
