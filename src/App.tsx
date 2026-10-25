@@ -304,7 +304,11 @@ function LandingPage({
               const section = document.getElementById("landing-how-it-works");
               if (!section) return;
               window.history.replaceState(null, "", "#landing-how-it-works");
-              section.scrollIntoView({ behavior: "smooth", block: "start" });
+              const top = section.getBoundingClientRect().top + window.scrollY;
+              const behavior = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+                ? "auto"
+                : "smooth";
+              window.scrollTo({ top, behavior });
             }}
           >
             How it works
