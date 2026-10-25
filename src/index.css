@@ -3442,7 +3442,7 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
 }
 .dashboard-shell .summary-coral {
   border-color: #e5e3dd;
-  background: #f7f6f2;
+  background: #fdf0e6;
   color: #484856;
 }
 .dashboard-shell .summary-gold {
