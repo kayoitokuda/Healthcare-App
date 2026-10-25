@@ -11,6 +11,15 @@ const languageLocales: Record<AppLanguage, string> = {
 };
 
 const rows: Array<[string, string, string, string, string]> = [
+  ["Select confirmed referral steps", "確認済みの紹介ステップを選択", "选择已确认的转诊步骤", "Selecciona los pasos confirmados de la referencia", "Chọn các bước giới thiệu đã xác nhận"],
+  ["Select any referral steps you know have happened", "起きたことがわかっている紹介のステップをすべて選んでください", "请选择你确认已经发生的转诊步骤", "Selecciona todos los pasos de la referencia que sabes que ocurrieron", "Chọn mọi bước giới thiệu mà bạn biết đã xảy ra"],
+  ["Use these together only when the same source confirmed each step. Record separate updates if different offices confirmed them.", "同じ情報源から各ステップを確認した場合に一緒に選択してください。異なる医療機関から確認した場合は、別々に記録してください。", "仅在同一信息来源确认了每个步骤时一起选择。如果不同诊所分别确认，请分开记录。", "Selecciona varios solo si la misma fuente confirmó cada paso. Registra actualizaciones separadas si las confirmaron consultorios distintos.", "Chỉ chọn cùng lúc khi cùng một nguồn xác nhận từng bước. Hãy ghi riêng nếu các phòng khám khác nhau xác nhận."],
+  ["Referral progress update", "紹介の進捗更新", "转诊进度更新", "Actualización del progreso de la referencia", "Cập nhật tiến độ giấy giới thiệu"],
+  ["Who told you about these steps?", "これらのステップについて誰から聞きましたか？", "谁告诉你这些步骤的情况？", "¿Quién te informó sobre estos pasos?", "Ai đã cho bạn biết về các bước này?"],
+  ["When did this happen?", "これはいつ起きましたか？", "这是什么时候发生的？", "¿Cuándo ocurrió esto?", "Việc này xảy ra khi nào?"],
+  ["Optional", "任意", "选填", "Opcional", "Không bắt buộc"],
+  ["Happened", "発生日", "发生时间", "Ocurrió", "Đã xảy ra"],
+  ["Recorded", "記録日", "记录时间", "Registrado", "Đã ghi nhận"],
   ["Language", "言語", "语言", "Idioma", "Ngôn ngữ"],
   ["Possible hold-up", "遅れの可能性", "可能存在延误", "Posible demora", "Có thể bị trì hoãn"],
   ["Follow up on a possible hold-up", "遅れの可能性について確認する", "跟进可能的延误", "Dar seguimiento a una posible demora", "Theo dõi khả năng bị trì hoãn"],
@@ -415,7 +424,7 @@ function formatEnglishDate(source: string, language: AppLanguage) {
   return new Intl.DateTimeFormat(languageLocales[language], { year: "numeric", month: "short", day: "numeric" }).format(date);
 }
 
-export function translateText(source: string, language: AppLanguage): string {
+export export function translateText(source: string, language: AppLanguage): string {
   if (language === "en") return source;
   const clean = source.replace(/\s+/g, " ").trim();
   const exact = dictionary[clean]?.[language];
@@ -783,6 +792,14 @@ function localizedQuestion(question: string, language: AppLanguage, specialty: s
     },
   };
   const t = byLanguage[language];
+  if (/what do i need before scheduling|what do i need before i can schedule/.test(common)) {
+    return ({
+      ja: "予約前に必要なものを教えていただけますか？",
+      zh: "请问预约前还需要我准备什么？",
+      es: "¿Qué necesito antes de programar la cita?",
+      vi: "Tôi cần chuẩn bị gì trước khi đặt lịch?",
+    }[language]);
+  }
   if (/may be declined|might be declined|could be declined/.test(common)) return t.decline;
   if (/referral was declined/.test(common)) return t.declined;
   if (/has not been sent yet/.test(common)) return t.notSent + question.split(" to ").pop();
