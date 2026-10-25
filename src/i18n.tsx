@@ -508,6 +508,16 @@ function formatEnglishDate(source: string, language: AppLanguage) {
 export function translateText(source: string, language: AppLanguage): string {
   if (language === "en") return source;
   const clean = source.replace(/\s+/g, " ").trim();
+  const careStepNote = clean.match(/^Your note says: “(.+)”. Ask the office involved what should happen next\.$/);
+  if (careStepNote) {
+    const note = careStepNote[1];
+    return preserveWhitespace(source, {
+      ja: `メモには「${note}」とあります。関係する窓口に、次に何をすべきか確認してください。`,
+      zh: `你的记录写着“${note}”。请向相关诊所确认下一步。`,
+      es: `Tu nota dice: “${note}”. Pregunta a la oficina correspondiente qué sigue.`,
+      vi: `Ghi chú của bạn là: “${note}”. Hãy hỏi cơ sở liên quan về bước tiếp theo.`,
+    }[language]);
+  }
   const exact = dictionary[clean]?.[language];
   if (exact) return preserveWhitespace(source, exact);
 
@@ -821,6 +831,18 @@ export function LanguageToggle({ onChange }: { onChange?: (language: AppLanguage
 
 function localizedQuestion(question: string, language: AppLanguage, specialty: string) {
   if (language === "en") return question;
+  const contextualQuestion = question.match(/^(.+?)\\s+Context: “(.+)”$/);
+  if (contextualQuestion) {
+    const base = localizedQuestion(contextualQuestion[1], language, specialty);
+    const context = contextualQuestion[2];
+    const contextLine = {
+      ja: `私の記録には次のようにあります：「${context}」。`,
+      zh: `我的记录如下：“${context}”。`,
+      es: `Mi nota dice: “${context}”.`,
+      vi: `Ghi chú của tôi là: “${context}”.`,
+    }[language];
+    return `${base} ${contextLine}`;
+  }
   const common = question.toLowerCase();
   const byLanguage: Record<Exclude<AppLanguage, "en">, Record<string, string>> = {
     ja: {
@@ -873,6 +895,14 @@ function localizedQuestion(question: string, language: AppLanguage, specialty: s
     },
   };
   const t = byLanguage[language];
+  if (/help me clarify the next step/.test(common)) {
+    return ({
+      ja: "次に何をすればよいか教えていただけますか？",
+      zh: "请问我接下来应该怎么做？",
+      es: "¿Podrían ayudarme a aclarar cuál es el siguiente paso?",
+      vi: "Xin cho biết tôi nên làm gì tiếp theo.",
+    }[language]);
+  }
   if (/what do i need before scheduling|what do i need before i can schedule/.test(common)) {
     return ({
       ja: "予約前に必要なものを教えていただけますか？",
