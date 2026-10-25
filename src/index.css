@@ -656,7 +656,7 @@ button:disabled {
 }
 .journey {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(5, 1fr);
   margin: 24px 8px 3px;
   position: relative;
 }
@@ -665,8 +665,8 @@ button:disabled {
   height: 2px;
   background: #dfeae6;
   position: absolute;
-  left: 13%;
-  right: 13%;
+  left: 10%;
+  right: 10%;
   top: 14px;
 }
 .journey-step {
@@ -818,8 +818,14 @@ button:disabled {
 .button-stack button {
   width: 100%;
 }
+.timeline-intro {
+  margin: 11px 0 0;
+  color: #617874;
+  font-size: 12px;
+  line-height: 1.55;
+}
 .timeline-list {
-  margin: 19px 0 14px;
+  margin: 15px 0 14px;
 }
 .timeline-entry {
   display: flex;
@@ -1265,26 +1271,44 @@ button:disabled {
     font-size: 14px;
   }
   .journey {
+    grid-template-columns: 1fr;
+    gap: 0;
     margin: 20px 0 2px;
   }
   .journey:before {
-    left: 12%;
-    right: 12%;
+    width: 2px;
+    height: auto;
+    left: 13px;
+    right: auto;
+    top: 13px;
+    bottom: 20px;
   }
-  .journey-label {
-    font-size: 9px;
-  }
-  .journey-label span {
-    font-size: 8px;
-  }
-  .journey-copy p {
-    font-size: 8px;
-    max-width: 75px;
+  .journey-step {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 4px 4px 16px;
+    text-align: left;
   }
   .journey-marker {
     width: 26px;
     height: 26px;
-    font-size: 9px;
+    flex: 0 0 26px;
+    font-size: 11px;
+  }
+  .journey-copy {
+    margin: 0;
+    text-align: left;
+  }
+  .journey-label {
+    font-size: 14px;
+  }
+  .journey-label span {
+    font-size: 11px;
+  }
+  .journey-step-copy {
+    max-width: none;
+    font-size: 13px;
   }
   .content-grid {
     grid-template-columns: 1fr;
@@ -1423,7 +1447,7 @@ body { background: var(--paper); }
 .journey-step.is-done .journey-marker { background: #3d5bc7; border-color: #3d5bc7; }
 .journey-step.is-active .journey-marker { border-color: #e0b842; color: #8a6415; background: #fff9e8; }
 .journey-label { color: #353a49; }
-.journey-label span, .journey-copy p { color: #838998; }
+ .journey-label span, .journey-step-copy { color: #838998; }
 .journey-step.is-active .journey-label span { color: #8a6415; }
 .content-grid { gap: 14px; margin-top: 14px; }
 .body-copy, .check-row { color: #626b7b; }
@@ -2198,6 +2222,14 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
   margin: 0;
   padding: 30px clamp(22px, 3vw, 48px) 36px;
 }
+.dashboard-shell > .detail-wrap {
+  grid-column: 2;
+  grid-row: 1;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 30px clamp(22px, 3vw, 48px) 36px;
+}
 .dashboard-shell .welcome {
   min-height: 156px;
   padding: 24px 28px;
@@ -2572,6 +2604,9 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
     display: block;
   }
   .dashboard-shell > .dashboard-wrap {
+    padding: 20px 18px 30px;
+  }
+  .dashboard-shell > .detail-wrap {
     padding: 20px 18px 30px;
   }
   .dashboard-shell .welcome {
@@ -4665,3 +4700,97 @@ html {
 .optional-label { color: #526d69; font-size: 13px; font-weight: 500; }
 .entry-top > span { color: #435f5d; font-size: 13px; }
 .form-body input, .form-body select, .form-body textarea { font-size: 16px; }
+
+
+/* Dashboard referral toolkit: practical contacts with actions that open a reviewed draft. */
+.toolkit-card .lower-card-heading {
+  margin-bottom: 10px;
+}
+.toolkit-items {
+  display: grid;
+  gap: 4px;
+}
+.toolkit-item {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  align-items: flex-start;
+  gap: 11px;
+  padding: 10px 2px;
+  border: 0;
+  border-bottom: 1px solid #e8ebe7;
+  color: var(--ink);
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+.toolkit-item:last-child {
+  border-bottom: 0;
+}
+.toolkit-item:hover .toolkit-copy em {
+  color: #0f665f;
+  text-decoration: underline;
+}
+.toolkit-item:focus-visible {
+  outline: 3px solid #405bcb;
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+.toolkit-icon {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  flex: 0 0 32px;
+  place-items: center;
+  border-radius: 9px;
+  color: #23645e;
+  background: #e8f4f0;
+}
+.toolkit-copy {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+}
+.toolkit-copy strong {
+  color: #243936;
+  font-size: 14px;
+}
+.toolkit-copy small {
+  color: #5b706c;
+  font-size: 12px;
+  line-height: 1.4;
+}
+.toolkit-copy em {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 2px;
+  color: #3158bc;
+  font-size: 12px;
+  font-style: normal;
+  font-weight: 700;
+}
+.toolkit-note {
+  display: flex;
+  align-items: flex-start;
+  gap: 7px;
+  margin: 12px 0 0;
+  color: #63736f;
+  font-size: 11px;
+  line-height: 1.45;
+}
+.toolkit-note svg {
+  flex: none;
+  margin-top: 1px;
+}
+@media (min-width: 761px) {
+  .journey-label { font-size: 13px; }
+  .journey-label span { font-size: 11px; }
+  .journey-step-copy { font-size: 11px; }
+}
+@media (max-width: 760px) {
+  .toolkit-card { padding: 16px; }
+  .toolkit-copy strong { font-size: 14px; }
+  .toolkit-copy small, .toolkit-copy em { font-size: 13px; }
+  .toolkit-note { font-size: 12px; }
+}
