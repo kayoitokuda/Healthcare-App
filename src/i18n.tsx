@@ -424,7 +424,7 @@ function formatEnglishDate(source: string, language: AppLanguage) {
   return new Intl.DateTimeFormat(languageLocales[language], { year: "numeric", month: "short", day: "numeric" }).format(date);
 }
 
-export export function translateText(source: string, language: AppLanguage): string {
+export function translateText(source: string, language: AppLanguage): string {
   if (language === "en") return source;
   const clean = source.replace(/\s+/g, " ").trim();
   const exact = dictionary[clean]?.[language];
