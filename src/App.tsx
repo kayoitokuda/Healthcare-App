@@ -803,7 +803,7 @@ function ReferralNavigatorApp() {
       return;
     }
     const { error } = await supabase.auth.updateUser({ data: { preferred_language: language } });
-    setLanguageSaveState(error ? `Could not save: ${error.message}` : "Default language saved to your account.");
+    setLanguageSaveState(error ? "Couldn’t save your language. Please try again." : "Default language saved to your account.");
   }
 
   function flash(message: string) {
@@ -1986,13 +1986,31 @@ function ReferralNavigatorApp() {
         >
           {modal === "settings" ? (
             <div className="form-body settings-body">
-              <p className="modal-intro">Choose the language used throughout Referral Navigator. This default is saved to your account.</p>
-              <label className="settings-language-field">
-                Default language
-                <LanguageToggle onChange={(language) => void savePreferredLanguage(language)} />
-              </label>
-              {languageSaveState && <p className="settings-save-state" role="status">{languageSaveState}</p>}
-              <button className="primary-button full" onClick={() => setModal(null)}>Done</button>
+              <p className="modal-intro">
+                {translateText("Manage your language preference and the account that stores your referrals.", language)}
+              </p>
+              <section className="settings-panel" aria-labelledby="settings-language-heading">
+                <h3 id="settings-language-heading">{translateText("Language preference", language)}</h3>
+                <p>{translateText("Choose the language used across the app. It applies immediately and is saved as your default.", language)}</p>
+                <LanguageToggle onChange={(nextLanguage) => void savePreferredLanguage(nextLanguage)} />
+                <p className="settings-panel-note">
+                  {translateText("Changing the language updates app labels. It does not translate referral names or notes you entered.", language)}
+                </p>
+              </section>
+              <section className="settings-panel" aria-labelledby="settings-account-heading">
+                <h3 id="settings-account-heading">{translateText("Your account", language)}</h3>
+                <p className="settings-account-email">
+                  <span>{translateText("Signed in as", language)}</span>{" "}
+                  <strong>{user?.email ?? translateText("Account details unavailable", language)}</strong>
+                </p>
+                <p className="settings-panel-note">
+                  {translateText("Referral details are saved to this account. The app doesn’t contact offices or verify referral status or insurance coverage.", language)}
+                </p>
+              </section>
+              {languageSaveState && <p className="settings-save-state" role="status" aria-live="polite">{translateText(languageSaveState, language)}</p>}
+              <button type="button" className="primary-button full" onClick={() => setModal(null)}>
+                {translateText("Done", language)}
+              </button>
             </div>
           ) : modal === "new" ? (
             <form className="form-body" onSubmit={createReferral}>
