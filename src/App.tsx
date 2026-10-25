@@ -37,7 +37,7 @@ import { LanguageProvider, LanguageToggle, localizedDraft, translateText, useApp
 
 type Source = "You" | "Referring office" | "Specialist office" | "Health plan";
 type Milestone = "referral-sent" | "referral-received" | "ready-to-schedule" | "appointment-scheduled";
-type ReferralEventType = "records-requested" | "records-sent" | "follow-up-recommended" | "visit-completed";
+type ReferralEventType = "records-requested" | "records-sent" | "follow-up-recommended" | "visit-completed" | "care-step";
 type Update = {
   id: number;
   title: string;
@@ -147,6 +147,12 @@ function nextStepFor(referral: Referral) {
     return {
       title: "Record any next steps from your visit",
       detail: "Record the next steps your clinician shared. Referral Navigator won’t interpret them.",
+    };
+  }
+  if (latestEvent?.eventType === "care-step") {
+    return {
+      title: "Review your latest care step",
+      detail: "Decide which office to contact next, or add another update when something changes.",
     };
   }
 
@@ -762,6 +768,9 @@ function ReferralNavigatorApp() {
     referral?.updates.some((u) => hasMilestone(u, "ready-to-schedule")) ?? false;
   const appointmentRecorded =
     referral?.updates.some((u) => hasMilestone(u, "appointment-scheduled")) ?? false;
+  const careSteps = referral ? [...referral.updates]
+    .filter((update) => update.eventType || (!update.milestone && !update.milestones && !["Specialist recommended", "Referral added to your tracker"].includes(update.title)))
+    .sort((a, b) => updateTimestamp(b) - updateTimestamp(a)) : [];
   const currentNextStep = referral ? nextStepFor(referral) : null;
   const latestReferralEvent = referral
     ? [...referral.updates].sort((a, b) => b.id - a.id)[0]
@@ -857,7 +866,7 @@ function ReferralNavigatorApp() {
       ...(updateEventDate ? { eventDate: new Date(`${updateEventDate}T12:00:00`).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) } : {}),
       source: updateSource,
       ...(updateMilestones.length ? { milestones: updateMilestones } : {}),
-      ...(updateEventType ? { eventType: updateEventType } : {}),
+      ...(updateEventType ? { eventType: updateEventType } : updateMilestones.length ? {} : { eventType: "care-step" as const }),
     };
     setReferrals((all) =>
       all.map((r) =>
@@ -1131,7 +1140,7 @@ function ReferralNavigatorApp() {
             <div className="section-title-row">
               <div>
                 <p className="eyebrow">THE HANDOFF</p>
-                <h2>From recommendation to appointment</h2>
+                <h2>{translateText("Referral checkpoints and what comes next", language)}</h2>
               </div>
               <button
                 className="primary-button add-update-button"
@@ -1141,6 +1150,7 @@ function ReferralNavigatorApp() {
                 {translateText("Add update", language)}
               </button>
             </div>
+            <p className="handoff-intro">{translateText("These are common referral checkpoints. Care can pause, repeat, branch, and continue after an appointment.", language)}</p>
             <div className="journey">
               {steps.map((step, i) => {
                 const done =
@@ -1182,6 +1192,30 @@ function ReferralNavigatorApp() {
                   </button>
                 );
               })}
+            </div>
+            <div className="journey-continuation">
+              <div className="continuation-heading">
+                <div>
+                  <h3>{translateText("Additional care steps", language)}</h3>
+                  <p>{translateText("Add imaging, authorization, rescheduled visits, procedures, and follow-ups here. These are your notes, not office-verified status.", language)}</p>
+                </div>
+                <span className="continuation-count">{careSteps.length}</span>
+              </div>
+              {careSteps.length ? (
+                <ol className="care-step-list">
+                  {careSteps.slice(0, 4).map((update) => (
+                    <li className="care-step-item" key={update.id}>
+                      <span className="care-step-date">{update.eventDate ?? update.date}</span>
+                      <strong>{update.title}</strong>
+                      <p>{update.detail}</p>
+                      <span className="care-step-source">{translateText(update.source, language)} · {translateText("Patient recorded", language)}</span>
+                    </li>
+                  ))}
+                  {careSteps.length > 4 && <li className="care-step-more">{translateText("See all updates in the activity timeline below.", language)}</li>}
+                </ol>
+              ) : (
+                <p className="care-step-empty">{translateText("No additional steps recorded yet. Use “Add update” when the care path changes or continues.", language)}</p>
+              )}
             </div>
           </section>
 
@@ -1467,6 +1501,7 @@ function ReferralNavigatorApp() {
                     ["records-sent", "Records sent"],
                     ["follow-up-recommended", "Follow-up visit recommended"],
                     ["visit-completed", "Visit completed"],
+                    ["care-step", "Other care step"],
                   ] as const).map(([eventType, title]) => (
                     <button
                       type="button"
