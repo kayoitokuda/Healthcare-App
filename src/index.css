@@ -4794,3 +4794,360 @@ html {
   .toolkit-copy small, .toolkit-copy em { font-size: 13px; }
   .toolkit-note { font-size: 12px; }
 }
+
+
+/* WCAG 2.1 AA and older-adult usability improvements across authenticated screens. */
+.app-shell,
+.auth-screen {
+  font-size: 16px;
+}
+.app-shell :is(p, li, label, small, .source-chip, .section-count, .count-chip, .privacy-chip, .card-meta span, .route-line, .journey-label, .journey-label span, .journey-step-copy, .body-copy, .timeline-intro, .entry-top > span, .entry-body > p, .tool-links small, .tools-intro > p:last-child, .disclaimer, .modal-intro, .helper-note, .menu-eyebrow, .menu-item-copy small, .menu-note p, .sidebar-nav-label, .recent-update-copy small, .lower-card-empty, .reminders-card li, .bottom-callout p, .footer, .subheading, .back-link, .quick-log-label, .quick-log-hint, .optional-label, .toolkit-copy small, .toolkit-note) {
+  font-size: max(14px, 1em);
+  line-height: 1.5;
+}
+.app-shell .eyebrow,
+.app-shell .sidebar-nav-label,
+.app-shell .menu-eyebrow {
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  color: #4e5666;
+}
+.app-shell .privacy-chip,
+.app-shell .card-meta span,
+.app-shell .route-line,
+.app-shell .journey-label span,
+.app-shell .journey-step-copy,
+.app-shell .body-copy,
+.app-shell .timeline-intro,
+.app-shell .entry-top > span,
+.app-shell .entry-body > p,
+.app-shell .tool-links small,
+.app-shell .tools-intro > p:last-child,
+.app-shell .disclaimer,
+.app-shell .helper-note,
+.app-shell .menu-item-copy small,
+.app-shell .menu-note p,
+.app-shell .recent-update-copy small,
+.app-shell .lower-card-empty,
+.app-shell .reminders-card li,
+.app-shell .bottom-callout p,
+.app-shell .footer,
+.app-shell .subheading,
+.app-shell .back-link,
+.app-shell .quick-log-hint,
+.app-shell .toolkit-copy small,
+.app-shell .toolkit-note,
+.auth-screen .auth-intro,
+.auth-screen .auth-form small,
+.auth-screen .auth-switch,
+.auth-screen .auth-privacy,
+.auth-screen .auth-back {
+  color: #4e5666;
+}
+.app-shell .journey-label {
+  color: #303545;
+  font-size: 14px;
+}
+.app-shell .journey-label span,
+.app-shell .journey-step-copy {
+  font-size: 13px;
+}
+.app-shell :is(button, a, input, select, textarea) {
+  scroll-margin-top: 92px;
+}
+.app-shell button {
+  min-height: 44px;
+  font-size: max(14px, 1em);
+  line-height: 1.35;
+}
+.app-shell .brand-home {
+  font-size: 17px;
+}
+.app-shell .icon-button {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+}
+.app-shell .check-row {
+  min-height: 48px;
+  padding-block: 10px;
+  color: #384f4b;
+}
+.app-shell .journey-step {
+  min-height: 72px;
+}
+.app-shell .journey-step:disabled {
+  opacity: 1;
+}
+.app-shell :is(.form-body input, .form-body select, .form-body textarea, .auth-form input, .language-toggle select) {
+  min-height: 48px;
+  font-size: 16px;
+}
+.app-shell textarea,
+.auth-screen textarea {
+  font-size: 16px;
+  line-height: 1.5;
+}
+.app-shell :is(input, textarea)::placeholder,
+.auth-screen :is(input, textarea)::placeholder {
+  color: #596577;
+  opacity: 1;
+}
+.app-shell .quick-log-options button,
+.app-shell .segmented button {
+  min-height: 44px;
+  padding: 8px 14px;
+}
+.app-shell .quick-log-options button {
+  font-size: 14px;
+}
+.app-shell .source-chip,
+.app-shell .status-pill {
+  font-size: 13px;
+  line-height: 1.35;
+}
+.app-shell button:disabled {
+  opacity: 1;
+}
+.app-shell .journey-marker {
+  color: #4e5666;
+}
+.app-shell .journey-step.is-done .journey-marker {
+  color: #fff;
+}
+.app-shell :focus-visible,
+.auth-screen :focus-visible {
+  outline: 3px solid #3156c4;
+  outline-offset: 3px;
+}
+.app-shell .journey-step:focus-visible {
+  outline: 3px solid #3156c4;
+  outline-offset: 3px;
+}
+.app-shell .modal {
+  max-height: min(90vh, 900px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.app-shell .form-body label,
+.auth-screen .auth-form label {
+  font-size: 16px;
+  line-height: 1.5;
+}
+.app-shell .form-body label > :is(input, select, textarea),
+.auth-screen .auth-form label > :is(input, select, textarea) {
+  margin-top: 6px;
+}
+.app-shell .scrim {
+  padding: max(16px, env(safe-area-inset-top)) 16px max(16px, env(safe-area-inset-bottom));
+}
+.auth-screen .auth-submit,
+.auth-screen .auth-switch button,
+.auth-screen .auth-back {
+  min-height: 48px;
+  font-size: 16px;
+}
+@media (max-width: 760px) {
+  .app-shell .topbar {
+    min-height: 64px;
+    height: auto;
+  }
+  .app-shell .detail-wrap,
+  .app-shell .dashboard-wrap {
+    padding-inline: 16px;
+  }
+  .app-shell .modal {
+    width: min(100%, 560px);
+    max-height: calc(100dvh - 32px);
+  }
+  .app-shell .journey-label,
+  .app-shell .journey-label span,
+  .app-shell .journey-step-copy {
+    font-size: 14px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .app-shell *,
+  .auth-screen * {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+
+/* The activity is a semantic ordered list, with visual connector lines retained. */
+.app-shell .timeline-list {
+  list-style: none;
+  padding: 0;
+}
+.app-shell .timeline-intro strong {
+  color: #303545;
+}
+.app-shell p:not(.eyebrow) {
+  font-size: max(14px, 1em);
+  line-height: 1.5;
+}
+.app-shell :is(.source-tag, .entry-top strong, .sidebar-count, .tool-links button, .dashboard-nav button, .nav button, .footer button, .menu-item) {
+  font-size: max(14px, 1em);
+}
+.app-shell .guide-foot,
+.app-shell .sidebar-count,
+.app-shell .menu-item,
+.app-shell .tool-links button {
+  color: #4e5666;
+}
+.app-shell .journey-marker {
+  font-size: 14px;
+}
+
+
+/* Keep the inline script close control compact inside the full-width action stack. */
+.inline-draft .section-title-row > div {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.inline-draft .section-title-row > .icon-button {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
+  flex: 0 0 44px;
+  padding: 0;
+  border-radius: 8px;
+}
+.inline-draft .draft-area {
+  display: block;
+  width: 100%;
+  min-height: 176px;
+  padding: 12px 14px;
+  border: 1px solid #c6ccd6;
+  border-radius: 8px;
+  color: #303545;
+  background: #fff;
+  font-family: inherit;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+@media (max-width: 640px) {
+  .inline-draft .section-title-row {
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .inline-draft .section-title-row h3 {
+    font-size: 18px;
+    line-height: 1.35;
+  }
+  .inline-draft .draft-area {
+    min-height: 190px;
+    padding: 12px;
+  }
+}
+
+
+/* Keep auth copy and section headings legible at larger text settings. */
+.auth-screen p:not(.auth-eyebrow),
+.auth-screen small {
+  font-size: max(14px, 1em);
+  line-height: 1.5;
+}
+.auth-screen .auth-eyebrow {
+  color: #4e5666;
+  font-size: 12px;
+}
+.auth-screen .auth-form small {
+  font-size: 14px;
+}
+.app-shell .status-pill,
+.app-shell .source-chip,
+.app-shell .source-tag {
+  font-size: 14px;
+}
+.app-shell :is(.section-title-row h2, .list-title h2, .lower-card-heading h2) {
+  font-size: max(18px, 1em);
+  line-height: 1.35;
+}
+
+
+/* Make the handoff's primary update action easy to find and tap. */
+.app-shell .add-update-button {
+  display: inline-flex;
+  min-height: 48px;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 0 20px;
+  border: 1px solid #334bb0;
+  border-radius: 11px;
+  color: #fff;
+  background: #405bcb;
+  box-shadow: 0 3px 9px rgba(51, 75, 176, 0.22);
+  font-size: 16px;
+  font-weight: 700;
+}
+.app-shell .add-update-button:hover {
+  border-color: #2f46aa;
+  background: #2f46aa;
+  box-shadow: 0 5px 14px rgba(51, 75, 176, 0.28);
+  transform: translateY(-1px);
+}
+.app-shell .add-update-button:active {
+  transform: translateY(0);
+}
+@media (max-width: 760px) {
+  .app-shell .journey-card .section-title-row {
+    align-items: stretch;
+  }
+  .app-shell .journey-card .add-update-button {
+    width: 100%;
+  }
+}
+
+
+/* Strong enough boundaries for fields, toggles, and keyboard focus. */
+.app-shell :is(input, select, textarea),
+.auth-screen .auth-form input {
+  border-color: #7b8292;
+}
+.app-shell .language-toggle select {
+  border-color: #7b8292;
+}
+.app-shell .checkbox {
+  border-color: #667085;
+}
+.app-shell .quick-log-options button {
+  border-color: #6f8c87;
+}
+.app-shell :is(.secondary-button, .outline-button) {
+  border-color: #7b8292;
+}
+.app-shell .segmented button {
+  color: #4e5666;
+}
+.app-shell .segmented button.selected {
+  color: #263f93;
+}
+.app-shell .journey-marker {
+  border-color: #788395;
+}
+.app-shell .inline-draft .draft-area {
+  border-color: #7b8292;
+}
+.app-shell .language-toggle select:focus-visible,
+.auth-screen input:focus-visible {
+  outline: 3px solid #3156c4;
+  outline-offset: 3px;
+}
+@media (max-width: 760px) {
+  .app-shell .journey-label,
+  .app-shell .journey-label span,
+  .app-shell .journey-step-copy {
+    font-size: 14px;
+  }
+}
