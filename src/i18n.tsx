@@ -457,6 +457,13 @@ const rows: Array<[string, string, string, string, string]> = [
   ["Could you confirm whether you sent my referral and when it was sent?", "私の紹介状を送付したか、またいつ送付したか確認いただけますか？", "请确认是否已发送我的转诊，以及发送时间。", "¿Podrían confirmar si enviaron mi referencia y cuándo?", "Xin xác nhận đã gửi giấy giới thiệu của tôi chưa và gửi khi nào?"],
   ["Could you confirm whether you received my referral and tell me if anything else is needed before scheduling?", "私の紹介状を受領したか、予約前にほかに必要なものがあるか確認いただけますか？", "请确认是否收到我的转诊，并告知预约前是否还需要其他资料。", "¿Podrían confirmar si recibieron mi referencia y si falta algo antes de programar?", "Xin xác nhận đã nhận giấy giới thiệu của tôi chưa và tôi cần bổ sung gì trước khi đặt lịch?"],
   ["Is this specialist in my network, and does this visit need a referral or prior authorization?", "この専門医は保険ネットワーク内ですか？この受診には紹介状や事前承認が必要ですか？", "这位专科医生在我的保险网络内吗？此次就诊需要转诊或事先授权吗？", "¿Este especialista está dentro de mi red? ¿Necesito una referencia o autorización previa para esta consulta?", "Bác sĩ chuyên khoa này có trong mạng lưới của tôi không? Tôi có cần giấy giới thiệu hoặc phê duyệt trước cho lần khám này không？"],
+  ["Record referral step", "紹介の進捗を記録", "记录转诊步骤", "Registrar el paso de la referencia", "Ghi lại bước giới thiệu"],
+  ["Select to record", "選択して記録", "选择以记录", "Selecciona para registrar", "Chọn để ghi lại"],
+  ["Starting point", "起点", "起始步骤", "Punto de partida", "Bước bắt đầu"],
+  ["Draft format", "下書きの形式", "草稿格式", "Formato del borrador", "Định dạng bản nháp"],
+  ["Referral activity, newest first", "紹介履歴（新しい順）", "转诊活动，最新在前", "Actividad de la referencia, de más reciente a más antigua", "Hoạt động giới thiệu, mới nhất trước"],
+  ["Newest updates first", "新しい更新が上に表示されます", "最新更新显示在最上方", "Las actualizaciones más recientes aparecen primero", "Các cập nhật mới nhất hiển thị trước"],
+  ["Add update", "更新を追加", "添加更新", "Añadir actualización", "Thêm cập nhật"],
 ];
 
 const dictionary = Object.fromEntries(
