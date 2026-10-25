@@ -676,6 +676,27 @@ button:disabled {
   flex-direction: column;
   align-items: center;
   text-align: center;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+}
+.journey-step:not(:disabled) {
+  cursor: pointer;
+}
+.journey-step:not(:disabled):hover .journey-marker {
+  border-color: var(--teal);
+  box-shadow: 0 0 0 3px rgba(32, 105, 94, 0.1);
+}
+.journey-step:focus-visible {
+  outline: 3px solid #d7a353;
+  outline-offset: 5px;
+  border-radius: 8px;
+}
+.journey-step:disabled {
+  opacity: 1;
 }
 .journey-marker {
   width: 29px;
@@ -700,6 +721,7 @@ button:disabled {
   background: #fffaf0;
 }
 .journey-copy {
+  display: block;
   margin-top: 9px;
 }
 .journey-label {
@@ -717,7 +739,8 @@ button:disabled {
 .journey-step.is-active .journey-label span {
   color: #9a6418;
 }
-.journey-copy p {
+.journey-step-copy {
+  display: block;
   font-size: 9px;
   color: #8a9a96;
   margin: 4px auto 0;
