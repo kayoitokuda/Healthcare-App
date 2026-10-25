@@ -305,10 +305,11 @@ function Modal({
 
     const focusableSelector =
       'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
-    const focusInitial = dialog.querySelector<HTMLElement>(
-      'input:not([disabled]), select:not([disabled]), textarea:not([disabled]), button:not([disabled])',
+    const firstField = dialog.querySelector<HTMLElement>(
+      'input:not([disabled]), select:not([disabled]), textarea:not([disabled])',
     );
-    (focusInitial ?? dialog).focus();
+    const firstButton = dialog.querySelector<HTMLElement>("button:not([disabled])");
+    (firstField ?? firstButton ?? dialog).focus();
 
     function handleDialogKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") {
@@ -328,7 +329,10 @@ function Modal({
       }
       const first = focusable[0];
       const last = focusable[focusable.length - 1];
-      if (event.shiftKey && document.activeElement === first) {
+      if (!dialog.contains(document.activeElement)) {
+        event.preventDefault();
+        (event.shiftKey ? last : first).focus();
+      } else if (event.shiftKey && document.activeElement === first) {
         event.preventDefault();
         last.focus();
       } else if (!event.shiftKey && document.activeElement === last) {
@@ -341,7 +345,11 @@ function Modal({
     return () => {
       document.removeEventListener("keydown", handleDialogKeyDown);
       document.body.style.overflow = previousOverflow;
-      if (previousFocus?.isConnected) previousFocus.focus();
+      if (previousFocus?.isConnected) {
+        previousFocus.focus();
+      } else {
+        document.querySelector<HTMLElement>(".dashboard-shell .menu-trigger")?.focus();
+      }
     };
   }, []);
 
@@ -1415,12 +1423,17 @@ function ReferralNavigatorApp() {
                   What happened?
                   <input
                     autoFocus
+                    id="update-title"
+                    aria-describedby="update-title-help"
                     required
                     value={updateTitle}
                     onChange={(e) => setUpdateTitle(e.target.value)}
                     placeholder="e.g. Called to ask if referral was sent"
                   />
                 </label>
+                <p className="quick-log-hint" id="update-title-help">
+                  {translateText("Enter a short summary before saving.", language)}
+                </p>
                 <div className="quick-log-label">{translateText("Select any referral steps you know have happened", language)}</div>
                 <div className="quick-log-options" role="group" aria-label="Select confirmed referral steps">
                   {([
