@@ -603,7 +603,7 @@ function InlineDraftPanel({
       <p className="modal-intro">
         Edit this draft for your situation. Nothing is sent from here.
       </p>
-      <div className="segmented" role="group" aria-label={translateText("Draft format", language)}>
+      <div className="segmented" role="group" aria-label="Draft format">
         {(["Call script", "Portal message", "Email"] as const).map((option) => (
           <button
             type="button"
