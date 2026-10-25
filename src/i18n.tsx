@@ -464,6 +464,7 @@ const rows: Array<[string, string, string, string, string]> = [
   ["Referral activity, newest first", "紹介履歴（新しい順）", "转诊活动，最新在前", "Actividad de la referencia, de más reciente a más antigua", "Hoạt động giới thiệu, mới nhất trước"],
   ["Newest updates first", "新しい更新が上に表示されます", "最新更新显示在最上方", "Las actualizaciones más recientes aparecen primero", "Các cập nhật mới nhất hiển thị trước"],
   ["Add update", "更新を追加", "添加更新", "Añadir actualización", "Thêm cập nhật"],
+  ["Enter a short summary before saving.", "保存する前に短い概要を入力してください。", "保存前请输入简短说明。", "Escribe un breve resumen antes de guardar.", "Nhập tóm tắt ngắn trước khi lưu."],
 ];
 
 const dictionary = Object.fromEntries(
