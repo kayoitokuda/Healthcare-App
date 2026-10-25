@@ -123,7 +123,9 @@ function nextStepFor(referral: Referral) {
   );
   const ready = referral.updates.some((update) => hasMilestone(update, "ready-to-schedule"));
   const appointmentScheduled = referral.updates.some((update) => hasMilestone(update, "appointment-scheduled"));
-  const latestEvent = [...referral.updates].sort((a, b) => b.id - a.id)[0];
+  const latestEvent = [...referral.updates]
+    .filter((update) => update.eventType || update.milestone || update.milestones?.length)
+    .sort((a, b) => b.id - a.id)[0];
 
   if (latestEvent?.eventType === "records-requested") {
     return {
@@ -150,9 +152,10 @@ function nextStepFor(referral: Referral) {
     };
   }
   if (latestEvent?.eventType === "care-step") {
+    const note = updateContextText(latestEvent);
     return {
       title: "Review your latest care step",
-      detail: "Decide which office to contact next, or add another update when something changes.",
+      detail: `Your note says: “${note}.” Ask the office involved what should happen next.`,
     };
   }
 
@@ -185,6 +188,40 @@ function nextStepFor(referral: Referral) {
     detail: "The specialist may still ask for records, imaging, or other details. Record any new requests in your activity timeline.",
   };
 }
+function updateContextText(update: Update) {
+  const detail = update.detail.trim();
+  return [update.title.trim(), detail && detail !== "No additional notes." ? detail : ""]
+    .filter(Boolean)
+    .join(": ")
+    .replace(/[“”]/g, "'")
+    .replace(/\s+/g, " ")
+    .slice(0, 500);
+}
+
+function recipientForUpdate(update: Update, referral: Referral) {
+  const text = `${update.title} ${update.detail}`.toLowerCase();
+  if (/primary care|primary doctor|\\bpcp\\b|family doctor|referring office|referring clinician/.test(text)) return referral.from;
+  if (/health plan|insurance|prior authorization|pre-authorization|coverage/.test(text)) return "your health plan";
+  if (update.source === "Referring office") return referral.from;
+  if (update.source === "Specialist office" || /specialist|clinic|surgeon/.test(text)) return referral.to;
+  return "the office involved";
+}
+
+function contextualQuestionFor(update: Update) {
+  const note = updateContextText(update);
+  const question =
+    update.eventType === "records-requested"
+      ? "Could you tell me how to send the requested records?"
+      : update.eventType === "records-sent"
+        ? "Could you confirm whether you received the requested records?"
+        : update.eventType === "follow-up-recommended"
+          ? "Could you help me schedule a follow-up visit?"
+          : update.eventType === "visit-completed"
+            ? "Could you clarify the next steps we discussed?"
+            : "Could you help me clarify the next step?";
+  return `${question} Context: “${note}”`;
+}
+
 function IconButton({
   label,
   onClick,
@@ -658,6 +695,8 @@ function ReferralNavigatorApp() {
   const [syncError, setSyncError] = useState("");
   const [demoMode, setDemoMode] = useState(false);
   const [inlineDraftId, setInlineDraftId] = useState<number | null>(null);
+  const [inlineDraftContextId, setInlineDraftContextId] = useState<number | null>(null);
+  const [inlineDraftPlacement, setInlineDraftPlacement] = useState<"next-step" | "care-step">("next-step");
   const [selected, setSelected] = useState<number | null>(null);
   const [modal, setModal] = useState<
     "new" | "update" | "notes" | "help" | "settings" | null
@@ -773,7 +812,9 @@ function ReferralNavigatorApp() {
     .sort((a, b) => updateTimestamp(b) - updateTimestamp(a)) : [];
   const currentNextStep = referral ? nextStepFor(referral) : null;
   const latestReferralEvent = referral
-    ? [...referral.updates].sort((a, b) => b.id - a.id)[0]
+    ? [...referral.updates]
+        .filter((update) => update.eventType || update.milestone || update.milestones?.length)
+        .sort((a, b) => b.id - a.id)[0]
     : undefined;
   const status = useMemo(() => {
     if (confirmedReceived) return "Specialist office confirmation recorded";
@@ -908,6 +949,8 @@ function ReferralNavigatorApp() {
   function startMessage(
     kind: "Call script" | "Portal message" | "Email" = "Call script",
     target: Referral | undefined = referral,
+    contextUpdateId?: number | null,
+    placement: "next-step" | "care-step" = "next-step",
   ) {
     if (!target) return;
     setMessageKind(kind);
@@ -915,36 +958,51 @@ function ReferralNavigatorApp() {
     const received = target.updates.some((update) => hasMilestone(update, "referral-received") && update.source === "Specialist office");
     const ready = target.updates.some((update) => hasMilestone(update, "ready-to-schedule"));
     const appointmentScheduled = target.updates.some((update) => hasMilestone(update, "appointment-scheduled"));
-    const latestEvent = [...target.updates].sort((a, b) => b.id - a.id)[0];
-    const recipient = latestEvent?.eventType ? target.to : sent ? target.to : target.from;
-    const question = latestEvent?.eventType === "records-requested"
-      ? "Could you tell me how to send the requested records?"
-      : latestEvent?.eventType === "records-sent"
-        ? "Could you confirm whether you received the requested records?"
-        : latestEvent?.eventType === "follow-up-recommended"
-          ? "Could you help me schedule a follow-up visit?"
-          : latestEvent?.eventType === "visit-completed"
-            ? "Could you clarify the next steps we discussed?"
-            : appointmentScheduled
-              ? "What should I bring or prepare before the appointment?"
-              : ready
-                ? "Could you help me find an appointment time?"
-                : received
-                  ? "What do I need before scheduling an appointment?"
-                  : sent
-                    ? `Could you confirm whether you received my ${target.specialty} referral?`
-                    : `Could you confirm whether you sent my ${target.specialty} referral?`;
-    setMessageDraft(localizedDraft(language, kind, recipient, target.specialty, question));
+    const latestEvent = [...target.updates]
+      .filter((update) => update.eventType || update.milestone || update.milestones?.length)
+      .sort((a, b) => b.id - a.id)[0];
+    const contextUpdate = contextUpdateId === undefined
+      ? latestEvent?.eventType ? latestEvent : undefined
+      : contextUpdateId === null
+        ? undefined
+        : target.updates.find((update) => update.id === contextUpdateId);
+    const recipient = contextUpdate
+      ? recipientForUpdate(contextUpdate, target)
+      : sent ? target.to : target.from;
+    const question = contextUpdate
+      ? contextualQuestionFor(contextUpdate)
+      : appointmentScheduled
+        ? "What should I bring or prepare before the appointment?"
+        : ready
+          ? "Could you help me find an appointment time?"
+          : received
+            ? "What do I need before scheduling an appointment?"
+            : sent
+              ? `Could you confirm whether you received my ${target.specialty} referral?`
+              : `Could you confirm whether you sent my ${target.specialty} referral?`;
+    const localizedRecipient = recipient === "your health plan" && language !== "en"
+      ? translateText(recipient, language)
+      : recipient;
+    setMessageDraft(localizedDraft(language, kind, localizedRecipient, target.specialty, question));
     setCopied(false);
     setInlineDraftId(target.id);
+    setInlineDraftContextId(contextUpdate?.id ?? null);
+    setInlineDraftPlacement(placement);
     setModal(null);
   }
 
-  function logContactAttempt(target: Referral) {
+  function draftContactRecipient(target: Referral) {
+    const update = inlineDraftContextId === null
+      ? undefined
+      : target.updates.find((item) => item.id === inlineDraftContextId);
+    return update ? recipientForUpdate(update, target) : undefined;
+  }
+
+    function logContactAttempt(target: Referral, officeOverride?: string) {
     const sent = target.updates.some(
       (update) => hasMilestone(update, "referral-sent"),
     );
-    const office = sent ? target.to : target.from;
+    const office = officeOverride || (sent ? target.to : target.from);
     const update: Update = {
       id: Date.now(),
       title: `You contacted ${office}`,
@@ -1209,6 +1267,28 @@ function ReferralNavigatorApp() {
                       <strong>{update.title}</strong>
                       <p>{update.detail}</p>
                       <span className="care-step-source">{translateText(update.source, language)} · {translateText("Patient recorded", language)}</span>
+                      <button
+                        type="button"
+                        className="care-step-script-button"
+                        onClick={() => startMessage("Call script", referral, update.id, "care-step")}
+                      >
+                        <Phone size={16} /> Prepare a call script
+                      </button>
+                      {inlineDraftId === referral.id &&
+                        inlineDraftPlacement === "care-step" &&
+                        inlineDraftContextId === update.id && (
+                          <InlineDraftPanel
+                            kind={messageKind}
+                            draft={messageDraft}
+                            copied={copied}
+                            contextual
+                            onKindChange={(kind) => startMessage(kind, referral, update.id, "care-step")}
+                            onDraftChange={setMessageDraft}
+                            onCopy={copyDraft}
+                            onContact={() => logContactAttempt(referral, draftContactRecipient(referral))}
+                            onClose={() => setInlineDraftId(null)}
+                          />
+                        )}
                     </li>
                   ))}
                   {careSteps.length > 4 && <li className="care-step-more">{translateText("See all updates in the activity timeline below.", language)}</li>}
@@ -1303,19 +1383,20 @@ function ReferralNavigatorApp() {
               <div className="button-stack">
                 <button
                   className="primary-button"
-                  onClick={() => startMessage("Call script")}
+                  onClick={() => startMessage("Call script", referral, latestReferralEvent?.eventType ? latestReferralEvent.id : null, "next-step")}
                 >
                   <Phone size={17} /> Prepare a call script
                 </button>
-                {inlineDraftId === referral.id && messageKind === "Call script" && (
+                {inlineDraftId === referral.id && inlineDraftPlacement === "next-step" && messageKind === "Call script" && (
                   <InlineDraftPanel
                     kind={messageKind}
                     draft={messageDraft}
                     copied={copied}
-                    onKindChange={(kind) => startMessage(kind, referral)}
+                    contextual={inlineDraftContextId !== null}
+                    onKindChange={(kind) => startMessage(kind, referral, inlineDraftContextId, inlineDraftPlacement)}
                     onDraftChange={setMessageDraft}
                     onCopy={copyDraft}
-                    onContact={() => logContactAttempt(referral)}
+                    onContact={() => logContactAttempt(referral, draftContactRecipient(referral))}
                     onClose={() => setInlineDraftId(null)}
                   />
                 )}
@@ -1325,15 +1406,16 @@ function ReferralNavigatorApp() {
                 >
                   <MessageCircle size={17} /> Draft a portal message
                 </button>
-                {inlineDraftId === referral.id && messageKind !== "Call script" && (
+                {inlineDraftId === referral.id && inlineDraftPlacement === "next-step" && messageKind !== "Call script" && (
                   <InlineDraftPanel
                     kind={messageKind}
                     draft={messageDraft}
                     copied={copied}
-                    onKindChange={(kind) => startMessage(kind, referral)}
+                    contextual={inlineDraftContextId !== null}
+                    onKindChange={(kind) => startMessage(kind, referral, inlineDraftContextId, inlineDraftPlacement)}
                     onDraftChange={setMessageDraft}
                     onCopy={copyDraft}
-                    onContact={() => logContactAttempt(referral)}
+                    onContact={() => logContactAttempt(referral, draftContactRecipient(referral))}
                     onClose={() => setInlineDraftId(null)}
                   />
                 )}
