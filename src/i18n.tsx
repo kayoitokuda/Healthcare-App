@@ -11,6 +11,7 @@ const languageLocales: Record<AppLanguage, string> = {
 };
 
 const rows: Array<[string, string, string, string, string]> = [
+  ["Tap to record", "タップして記録", "点击记录", "Toca para registrar", "Nhấn để ghi lại"],
   ["Select confirmed referral steps", "確認済みの紹介ステップを選択", "选择已确认的转诊步骤", "Selecciona los pasos confirmados de la referencia", "Chọn các bước giới thiệu đã xác nhận"],
   ["Select any referral steps you know have happened", "起きたことがわかっている紹介のステップをすべて選んでください", "请选择你确认已经发生的转诊步骤", "Selecciona todos los pasos de la referencia que sabes que ocurrieron", "Chọn mọi bước giới thiệu mà bạn biết đã xảy ra"],
   ["Use these together only when the same source confirmed each step. Record separate updates if different offices confirmed them.", "同じ情報源から各ステップを確認した場合に一緒に選択してください。異なる医療機関から確認した場合は、別々に記録してください。", "仅在同一信息来源确认了每个步骤时一起选择。如果不同诊所分别确认，请分开记录。", "Selecciona varios solo si la misma fuente confirmó cada paso. Registra actualizaciones separadas si las confirmaron consultorios distintos.", "Chỉ chọn cùng lúc khi cùng một nguồn xác nhận từng bước. Hãy ghi riêng nếu các phòng khám khác nhau xác nhận."],
