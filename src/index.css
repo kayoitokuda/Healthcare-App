@@ -1473,26 +1473,26 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
     gap: 7px;
   }
   .list-title p {
-    font-size: 10px;
+    font-size: 12px;
     max-width: 185px;
   }
   .add-button {
     gap: 4px;
     padding: 0 8px;
-    font-size: 9px;
+    font-size: 12px;
   }
   .status-pill {
-    font-size: 9px;
+    font-size: 12px;
     padding: 6px 8px;
   }
   .route-line {
-    font-size: 11px;
+    font-size: 12px;
   }
   .privacy-chip {
     display: none;
   }
   .footer {
-    font-size: 9px;
+    font-size: 12px;
   }
 }
 .header-menu {
@@ -2487,7 +2487,8 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
     padding: 12px;
   }
   .summary-card-top span {
-    font-size: 7px;
+    font-size: 11px;
+    line-height: 1.3;
   }
 }
 @media (max-width: 900px) and (min-width: 761px) {
@@ -2602,10 +2603,12 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
     transform: scale(0.58);
   }
   .summary-card-top span {
-    font-size: 7px;
+    font-size: 11px;
+    line-height: 1.3;
   }
   .summary-card > p {
-    font-size: 8px;
+    font-size: 12px;
+    line-height: 1.35;
   }
   .dashboard-shell .dashboard-section .section-title-row {
     align-items: flex-start;
@@ -4628,3 +4631,14 @@ html {
     font-size: 14px;
   }
 }
+
+
+/* Multi-step, low-effort referral logging */
+.quick-log-label { color: #405c59; font-size: 14px; font-weight: 700; margin: 2px 0 -4px; }
+.quick-log-options { display: flex; flex-wrap: wrap; gap: 8px; }
+.quick-log-options button { min-height: 40px; padding: 8px 12px; display: inline-flex; align-items: center; gap: 6px; border: 1px solid #c4d8d1; border-radius: 10px; color: #254b47; background: #fff; font-size: 14px; font-weight: 650; }
+.quick-log-options button:hover, .quick-log-options button.selected { border-color: #167a73; background: #e8f4f0; color: #0f665f; }
+.quick-log-hint { margin: -2px 0 0; color: #435f5d; font-size: 13px; line-height: 1.45; }
+.optional-label { color: #526d69; font-size: 13px; font-weight: 500; }
+.entry-top > span { color: #435f5d; font-size: 13px; }
+.form-body input, .form-body select, .form-body textarea { font-size: 16px; }
