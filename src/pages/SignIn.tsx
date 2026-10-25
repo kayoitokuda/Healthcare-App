@@ -76,7 +76,7 @@ export default function SignIn({
         {error && <p className="auth-alert" role="alert">{error}</p>}
         {notice && <p className="auth-notice" role="status">{notice}</p>}
 
-        <form className="auth-form" onSubmit={handleSubmit}>
+        <form className="auth-form" onSubmit={handleSubmit} aria-busy={busy}>
           {mode === "sign-up" && (
             <label>
               Name
@@ -104,14 +104,15 @@ export default function SignIn({
               autoComplete={mode === "sign-in" ? "current-password" : "new-password"}
               type="password"
               minLength={8}
+              aria-describedby={mode === "sign-up" ? "signup-password-hint" : undefined}
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               required
             />
-            {mode === "sign-up" && <small>Use at least 8 characters.</small>}
+            {mode === "sign-up" && <small id="signup-password-hint">Use at least 8 characters.</small>}
           </label>
           <button className="auth-submit" type="submit" disabled={busy || !configured}>
-            {busy ? "Please wait…" : mode === "sign-in" ? "Sign in" : "Create account"}
+            <span aria-live="polite" aria-atomic="true">{busy ? "Please wait…" : mode === "sign-in" ? "Sign in" : "Create account"}</span>
           </button>
         </form>
 
