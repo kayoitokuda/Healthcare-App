@@ -108,14 +108,6 @@ const initial: Referral[] = [
   },
 ];
 
-const steps: Array<{ title: string; copy: string; milestone?: Milestone }> = [
-  { title: "Recommendation", copy: "A clinician suggests specialist care" },
-  { title: "Referral sent", copy: "Check with the referring office", milestone: "referral-sent" },
-  { title: "Receipt confirmed", copy: "Check with the specialist’s office", milestone: "referral-received" },
-  { title: "Ready to schedule", copy: "Ask how to book your visit", milestone: "ready-to-schedule" },
-  { title: "Appointment scheduled", copy: "Your referral led to a booked visit", milestone: "appointment-scheduled" },
-];
-
 function nextStepFor(referral: Referral) {
   const sent = referral.updates.some((update) => hasMilestone(update, "referral-sent"));
   const received = referral.updates.some(
@@ -848,13 +840,6 @@ function ReferralNavigatorApp() {
       (u) =>
         hasMilestone(u, "referral-received") && u.source === "Specialist office",
     ) ?? false;
-  const readyRecorded =
-    referral?.updates.some((u) => hasMilestone(u, "ready-to-schedule")) ?? false;
-  const appointmentRecorded =
-    referral?.updates.some((u) => hasMilestone(u, "appointment-scheduled")) ?? false;
-  const careSteps = referral ? [...referral.updates]
-    .filter((update) => update.eventType || (!update.milestone && !update.milestones && !["Specialist recommended", "Referral added to your tracker"].includes(update.title)))
-    .sort((a, b) => updateTimestamp(b) - updateTimestamp(a)) : [];
   const currentNextStep = referral ? nextStepFor(referral) : null;
   const latestReferralEvent = referral
     ? [...referral.updates]
@@ -916,22 +901,6 @@ function ReferralNavigatorApp() {
     setModal("update");
   }
 
-  function addMilestoneUpdate(milestone: Milestone) {
-    const titles: Record<Milestone, string> = {
-      "referral-sent": "Referral sent",
-      "referral-received": "Referral received",
-      "ready-to-schedule": "Ready to schedule",
-      "appointment-scheduled": "Appointment scheduled",
-    };
-    setUpdateTitle(translateText(titles[milestone], language));
-    setUpdateDetail("");
-    setUpdateSource("You");
-    setUpdateMilestones([milestone]);
-    setUpdateEventDate("");
-    setUpdateEventType(null);
-    setModal("update");
-  }
-
   function addQuickEvent(eventType: ReferralEventType, title: string) {
     setUpdateTitle(translateText(title, language));
     setUpdateDetail("");
@@ -961,22 +930,6 @@ function ReferralNavigatorApp() {
     );
     setModal(null);
     flash("Update added to your referral.");
-  }
-
-  function toggleDone(id: string) {
-    if (!referral) return;
-    setReferrals((all) =>
-      all.map((r) =>
-        r.id === referral.id
-          ? {
-              ...r,
-              done: r.done.includes(id)
-                ? r.done.filter((x) => x !== id)
-                : [...r.done, id],
-            }
-          : r,
-      ),
-    );
   }
 
   function startToolkitDraft(recipient: string, question: string, target: Referral) {
