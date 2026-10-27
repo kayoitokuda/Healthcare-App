@@ -11,6 +11,7 @@ import {
 import {
   ArrowLeft,
   ArrowRight,
+  Archive,
   Building2,
   CalendarDays,
   Check,
@@ -25,9 +26,11 @@ import {
   MessageCircle,
   Phone,
   Plus,
+  Pencil,
   ShieldCheck,
   Settings,
   Stethoscope,
+  Trash2,
   X,
 } from "lucide-react";
 import { AuthProvider, useAuth } from "./auth/AuthContext";
@@ -36,6 +39,7 @@ import { supabase } from "./lib/supabase";
 import { LanguageProvider, LanguageToggle, localizedDraft, translateText, useAppLanguage, type AppLanguage } from "./i18n";
 
 type Source = "You" | "Referring office" | "Specialist office" | "Health plan";
+type DashboardPage = "overview" | "referrals" | "next-steps";
 type Milestone = "referral-sent" | "referral-received" | "ready-to-schedule" | "appointment-scheduled";
 type ReferralEventType = "records-requested" | "records-sent" | "follow-up-recommended" | "visit-completed" | "care-step";
 type Update = {
@@ -62,6 +66,7 @@ type Referral = {
   updates: Update[];
   done: string[];
   notes: string;
+  archived?: boolean;
 };
 
 const today = new Date().toLocaleDateString("en-US", {
@@ -276,6 +281,8 @@ function HeaderMenu({
   menuRef,
   onToggle,
   onHome,
+  onReferrals,
+  onNextSteps,
   onAddReferral,
   onHelp,
   referralCount,
@@ -284,6 +291,8 @@ function HeaderMenu({
   menuRef: RefObject<HTMLDivElement | null>;
   onToggle: () => void;
   onHome: () => void;
+  onReferrals: () => void;
+  onNextSteps: () => void;
   onAddReferral: () => void;
   onHelp: () => void;
   referralCount: number;
@@ -310,14 +319,22 @@ function HeaderMenu({
           <nav className="menu-links" aria-label="Quick actions">
             <button className="menu-item" onClick={onHome}>
               <span className="menu-item-icon">
-                <ClipboardList size={18} />
+                <Home size={18} />
               </span>
               <span className="menu-item-copy">
-                <strong>My referrals</strong>
-                <small>
-                  {referralCount} {referralCount === 1 ? "referral" : "referrals"} in your tracker
-                </small>
+                <strong>Overview</strong>
+                <small>See your referral summary</small>
               </span>
+              <ArrowRight size={16} />
+            </button>
+            <button className="menu-item" onClick={onReferrals}>
+              <span className="menu-item-icon"><ClipboardList size={18} /></span>
+              <span className="menu-item-copy"><strong>My referrals</strong><small>{referralCount} {referralCount === 1 ? "referral" : "referrals"} in your tracker</small></span>
+              <ArrowRight size={16} />
+            </button>
+            <button className="menu-item" onClick={onNextSteps}>
+              <span className="menu-item-icon"><MessageCircle size={18} /></span>
+              <span className="menu-item-copy"><strong>Next steps</strong><small>See open follow-ups</small></span>
               <ArrowRight size={16} />
             </button>
             <button className="menu-item" onClick={onAddReferral}>
@@ -735,6 +752,9 @@ function ReferralNavigatorApp() {
   const [inlineDraftContextId, setInlineDraftContextId] = useState<number | null>(null);
   const [inlineDraftPlacement, setInlineDraftPlacement] = useState<"next-step" | "care-step">("next-step");
   const [selected, setSelected] = useState<number | null>(null);
+  const [dashboardPage, setDashboardPage] = useState<DashboardPage>("overview");
+  const [showArchived, setShowArchived] = useState(false);
+  const [editingReferralId, setEditingReferralId] = useState<number | null>(null);
   const [modal, setModal] = useState<
     "new" | "update" | "notes" | "help" | "settings" | null
   >(null);
@@ -831,6 +851,8 @@ function ReferralNavigatorApp() {
 
   const referral =
     referrals.find((item) => item.id === selected) ?? referrals[0];
+  const activeReferrals = referrals.filter((item) => !item.archived);
+  const visibleReferrals = referrals.filter((item) => Boolean(item.archived) === showArchived);
   const sentRecorded =
     referral?.updates.some((u) => hasMilestone(u, "referral-sent")) ?? false;
   const receiptRecorded =
@@ -852,28 +874,35 @@ function ReferralNavigatorApp() {
     if (sentRecorded) return "Waiting for receipt";
     return "Not confirmed yet";
   }, [confirmedReceived, receiptRecorded, sentRecorded]);
-  const receiptConfirmedCount = referrals.filter((item) =>
+  const receiptConfirmedCount = activeReferrals.filter((item) =>
     item.updates.some(
       (update) =>
         hasMilestone(update, "referral-received") &&
         update.source === "Specialist office",
     ),
   ).length;
-  const readyToScheduleCount = referrals.filter((item) =>
+  const readyToScheduleCount = activeReferrals.filter((item) =>
     item.updates.some((update) => hasMilestone(update, "ready-to-schedule")),
   ).length;
-  const followUpCount = referrals.filter(
+  const followUpCount = activeReferrals.filter(
     (item) =>
       !item.updates.some((update) => hasMilestone(update, "ready-to-schedule")),
   ).length;
-  const nextReferral = referrals[0];
+  const nextReferral = activeReferrals[0];
   const nextStep = nextReferral ? nextStepFor(nextReferral) : null;
-  const latestUpdates = referrals
+  const latestUpdates = activeReferrals
     .flatMap((item) =>
       item.updates.map((update) => ({ referral: item, update })),
     )
     .sort((a, b) => b.update.id - a.update.id)
     .slice(0, 4);
+
+  function navigateDashboard(page: DashboardPage) {
+    setSelected(null);
+    setDashboardPage(page);
+    setMenuOpen(false);
+    window.scrollTo({ top: 0, behavior: motionSafeScrollBehavior() });
+  }
 
   async function savePreferredLanguage(language: AppLanguage) {
     setLanguage(language);
@@ -1027,11 +1056,32 @@ function ReferralNavigatorApp() {
       setDemoMode(false);
     }
     setSelected(null);
+    setEditingReferralId(null);
     setNewSpecialty("");
     setNewFrom("");
     setNewTo("");
     setNewDate("");
     setModal("new");
+  }
+
+  function openEditReferral(item: Referral) {
+    setEditingReferralId(item.id);
+    setNewSpecialty(item.specialty);
+    setNewFrom(item.from);
+    setNewTo(item.to);
+    setNewDate("");
+    setModal("new");
+  }
+
+  async function deleteReferral(item: Referral) {
+    setReferrals((all) => all.filter((referralItem) => referralItem.id !== item.id));
+    if (supabase && ownerId) {
+      const { error } = await supabase.from("referrals").delete()
+        .eq("owner_id", ownerId)
+        .eq("referral_key", String(item.id));
+      if (error) setSyncError(error.message);
+    }
+    flash("Referral deleted.");
   }
 
   async function copyDraft() {
@@ -1047,6 +1097,19 @@ function ReferralNavigatorApp() {
   function createReferral(e: FormEvent) {
     e.preventDefault();
     if (!newSpecialty.trim()) return;
+    if (editingReferralId !== null) {
+      setReferrals((all) => all.map((item) => item.id === editingReferralId ? {
+        ...item,
+        specialty: newSpecialty.trim(),
+        from: newFrom.trim() || "Referring office not added",
+        to: newTo.trim() || "Specialist office not added",
+      } : item));
+      setModal(null);
+      setEditingReferralId(null);
+      setNewSpecialty(""); setNewFrom(""); setNewTo(""); setNewDate("");
+      flash("Referral details updated.");
+      return;
+    }
     const created: Referral = {
       id: Date.now(),
       specialty: newSpecialty.trim(),
@@ -1099,7 +1162,7 @@ function ReferralNavigatorApp() {
             type="button"
             className="brand brand-home"
             aria-label="Referral Navigator home"
-            onClick={() => setSelected(null)}
+            onClick={() => navigateDashboard("overview")}
           >
             <span className="brand-mark"><HeartHandshake size={20} /></span>
             <span>Referral Navigator</span>
@@ -1107,29 +1170,24 @@ function ReferralNavigatorApp() {
           <nav className="nav dashboard-nav" aria-label="Dashboard navigation">
             <p className="sidebar-nav-label">YOUR SPACE</p>
             <button
-              onClick={() => {
-                setSelected(null);
-                window.requestAnimationFrame(() => window.scrollTo({ top: 0, behavior: motionSafeScrollBehavior() }));
-              }}
+              className={dashboardPage === "overview" ? "nav-active" : ""}
+              aria-current={dashboardPage === "overview" ? "page" : undefined}
+              onClick={() => navigateDashboard("overview")}
             >
               <Home size={17} /> Overview
             </button>
             <button
-              className="nav-active"
-              aria-current="page"
-              onClick={() => {
-                setSelected(null);
-                window.requestAnimationFrame(() => document.getElementById("dashboard-referrals")?.scrollIntoView({ behavior: motionSafeScrollBehavior() }));
-              }}
+              className={dashboardPage === "referrals" ? "nav-active" : ""}
+              aria-current={dashboardPage === "referrals" ? "page" : undefined}
+              onClick={() => navigateDashboard("referrals")}
             >
               <ClipboardList size={17} /> My referrals
-              <span className="sidebar-count">{referrals.length}</span>
+              <span className="sidebar-count">{activeReferrals.length}</span>
             </button>
             <button
-              onClick={() => {
-                setSelected(null);
-                window.requestAnimationFrame(() => document.getElementById("dashboard-next-step")?.scrollIntoView({ behavior: motionSafeScrollBehavior() }));
-              }}
+              className={dashboardPage === "next-steps" ? "nav-active" : ""}
+              aria-current={dashboardPage === "next-steps" ? "page" : undefined}
+              onClick={() => navigateDashboard("next-steps")}
             >
               <MessageCircle size={17} /> Next steps
             </button>
@@ -1151,10 +1209,12 @@ function ReferralNavigatorApp() {
               open={menuOpen}
               menuRef={menuRef}
               onToggle={() => setMenuOpen((open) => !open)}
-              onHome={() => { setSelected(null); setMenuOpen(false); }}
+              onHome={() => navigateDashboard("overview")}
+              onReferrals={() => navigateDashboard("referrals")}
+              onNextSteps={() => navigateDashboard("next-steps")}
               onAddReferral={() => { setMenuOpen(false); openNewReferral(); }}
               onHelp={() => { setMenuOpen(false); setModal("help"); }}
-              referralCount={referrals.length}
+              referralCount={activeReferrals.length}
             />
           </div>
         </header>
@@ -1548,7 +1608,7 @@ function ReferralNavigatorApp() {
           type="button"
           className="brand brand-home"
           aria-label="Referral Navigator home"
-          onClick={() => setSelected(null)}
+            onClick={() => navigateDashboard("overview")}
         >
           <span className="brand-mark">
             <HeartHandshake size={20} />
@@ -1558,34 +1618,24 @@ function ReferralNavigatorApp() {
         <nav className="nav dashboard-nav" aria-label="Dashboard navigation">
           <p className="sidebar-nav-label">YOUR SPACE</p>
           <button
-            className="nav-active"
-            onClick={() => {
-              setMenuOpen(false);
-              document.getElementById("dashboard-overview")?.scrollIntoView({
-                behavior: motionSafeScrollBehavior(),
-              });
-            }}
+            className={dashboardPage === "overview" ? "nav-active" : ""}
+            aria-current={dashboardPage === "overview" ? "page" : undefined}
+            onClick={() => navigateDashboard("overview")}
           >
             <Home size={17} /> Overview
           </button>
           <button
-            onClick={() => {
-              setMenuOpen(false);
-              document.getElementById("dashboard-referrals")?.scrollIntoView({
-                behavior: motionSafeScrollBehavior(),
-              });
-            }}
+            className={dashboardPage === "referrals" ? "nav-active" : ""}
+            aria-current={dashboardPage === "referrals" ? "page" : undefined}
+            onClick={() => navigateDashboard("referrals")}
           >
             <ClipboardList size={17} /> My referrals
-            <span className="sidebar-count">{referrals.length}</span>
+            <span className="sidebar-count">{activeReferrals.length}</span>
           </button>
           <button
-            onClick={() => {
-              setMenuOpen(false);
-              document.getElementById("dashboard-next-step")?.scrollIntoView({
-                behavior: motionSafeScrollBehavior(),
-              });
-            }}
+            className={dashboardPage === "next-steps" ? "nav-active" : ""}
+            aria-current={dashboardPage === "next-steps" ? "page" : undefined}
+            onClick={() => navigateDashboard("next-steps")}
           >
             <MessageCircle size={17} /> Next steps
           </button>
@@ -1610,10 +1660,9 @@ function ReferralNavigatorApp() {
             open={menuOpen}
             menuRef={menuRef}
             onToggle={() => setMenuOpen((open) => !open)}
-            onHome={() => {
-              setSelected(null);
-              setMenuOpen(false);
-            }}
+            onHome={() => navigateDashboard("overview")}
+            onReferrals={() => navigateDashboard("referrals")}
+            onNextSteps={() => navigateDashboard("next-steps")}
             onAddReferral={() => {
               setMenuOpen(false);
               openNewReferral();
@@ -1622,11 +1671,20 @@ function ReferralNavigatorApp() {
               setMenuOpen(false);
               setModal("help");
             }}
-            referralCount={referrals.length}
+            referralCount={activeReferrals.length}
           />
         </div>
       </header>
       <main className="dashboard-wrap" id="dashboard-overview">
+        {dashboardPage !== "overview" && <div className="dashboard-page-heading">
+          <div>
+            <p className="eyebrow">{dashboardPage === "referrals" ? "YOUR CARE, ORGANIZED" : "A CLEAR NEXT STEP"}</p>
+            <h1>{dashboardPage === "referrals" ? "Your referrals" : "Next steps"}</h1>
+            <p>{dashboardPage === "referrals" ? "Keep each specialist handoff and its updates together." : "Follow up across your referrals, at your own pace."}</p>
+          </div>
+          {dashboardPage === "referrals" && <button className="primary-button add-button" onClick={openNewReferral}><Plus size={17} /> Add a referral</button>}
+        </div>}
+        {dashboardPage === "overview" && <>
         <section className="welcome">
           <div>
             <p className="eyebrow">YOUR CARE, ORGANIZED</p>
@@ -1663,8 +1721,8 @@ function ReferralNavigatorApp() {
               <ClipboardList size={17} />
               <span>IN YOUR TRACKER</span>
             </div>
-            <strong>{referrals.length}</strong>
-            <p>Referral{referrals.length === 1 ? "" : "s"} you added</p>
+            <strong>{activeReferrals.length}</strong>
+            <p>Referral{activeReferrals.length === 1 ? "" : "s"} in your tracker</p>
           </article>
           <article className="summary-card summary-gold">
             <div className="summary-card-top">
@@ -1691,41 +1749,48 @@ function ReferralNavigatorApp() {
             <p>Based on updates you recorded</p>
           </article>
         </section>
-
-        <section className="dashboard-section" id="dashboard-referrals">
-          <div className="section-title-row list-title">
-            <div>
-              <h2>Your referrals</h2>
-              <p>Updates are entered by you and labeled by source.</p>
-            </div>
-            <button
-              className="primary-button add-button"
-              onClick={openNewReferral}
-            >
-              <Plus size={17} /> Add a referral
-            </button>
+        <section className="overview-next-step">
+          <div className="overview-next-icon"><MessageCircle size={20} /></div>
+          <div className="overview-next-copy">
+            <p className="eyebrow">YOUR NEXT STEP</p>
+            <h2>{nextStep?.title ?? "Add your first referral"}</h2>
+            <p>{nextStep?.detail ?? "Start with what your clinician recommended. You can fill in office details later."}</p>
+            {nextReferral && <small>For {nextReferral.specialty} · Based on updates you recorded</small>}
           </div>
-          {referrals.length === 0 ? (
+          <div className="overview-next-actions">
+            {nextReferral ? <button className="primary-button" onClick={() => startMessage("Call script", nextReferral)}><Phone size={16} /> Prepare a call script</button> : <button className="primary-button" onClick={openNewReferral}><Plus size={16} /> Add a referral</button>}
+            <button className="text-button" onClick={() => navigateDashboard("next-steps")}>All next steps <ArrowRight size={15} /></button>
+          </div>
+          {nextReferral && inlineDraftId === nextReferral.id && inlineDraftPlacement === "next-step" && <div className="overview-inline-draft"><InlineDraftPanel kind={messageKind} draft={messageDraft} copied={copied} contextual={inlineDraftContextId !== null} onKindChange={(kind) => startMessage(kind, nextReferral, latestReferralEvent?.id ?? null, "next-step")} onDraftChange={setMessageDraft} onCopy={copyDraft} onContact={() => logContactAttempt(nextReferral)} onClose={() => setInlineDraftId(null)} /></div>}
+        </section>
+        </>}
+
+        {dashboardPage === "referrals" && <section className="dashboard-section" id="dashboard-referrals">
+          <div className="referral-list-controls" role="group" aria-label="Referral list filter">
+            <button type="button" className={!showArchived ? "is-selected" : ""} aria-pressed={!showArchived} onClick={() => setShowArchived(false)}>Active <span>{activeReferrals.length}</span></button>
+            <button type="button" className={showArchived ? "is-selected" : ""} aria-pressed={showArchived} onClick={() => setShowArchived(true)}>Archived <span>{referrals.length - activeReferrals.length}</span></button>
+          </div>
+          <p className="referrals-source-note"><ShieldCheck size={15} /> Updates are entered by you and labeled by source.</p>
+          {visibleReferrals.length === 0 ? (
             <div className="empty-state">
               <span className="empty-icon">
-                <Stethoscope size={24} />
+                {showArchived ? <Archive size={24} /> : <Stethoscope size={24} />}
               </span>
-              <h3>No referrals yet</h3>
+              <h3>{showArchived ? "No archived referrals" : "No referrals yet"}</h3>
               <p>
-                Add a referral to keep the next steps and office details
-                together.
+                {showArchived ? "Referrals you archive will be kept here, so you can restore them later." : "Add a referral to keep the next steps and office details together."}
               </p>
-              <button
+              {!showArchived && <button
                 className="primary-button"
                 onClick={openNewReferral}
               >
                 <Plus size={17} /> Add your first referral
-              </button>
+              </button>}
             </div>
           ) : (
             <div className="referral-list-layout">
               <div className="referral-grid">
-                {referrals.map((r) => {
+                {visibleReferrals.map((r) => {
                   const receipt = r.updates.some(
                     (u) => hasMilestone(u, "referral-received"),
                   );
@@ -1803,40 +1868,36 @@ function ReferralNavigatorApp() {
                       )}
                       <button
                         className="card-link"
-                        onClick={() => setSelected(r.id)}
+                        onClick={() => { setDashboardPage("referrals"); setSelected(r.id); }}
                       >
                         View full referral <ArrowRight size={17} />
                       </button>
+                      <div className="referral-manage-actions" aria-label={`${r.specialty} actions`}>
+                        <button type="button" onClick={() => openEditReferral(r)}><Pencil size={14} /> Edit</button>
+                        <button type="button" onClick={() => setReferrals((all) => all.map((item) => item.id === r.id ? { ...item, archived: !r.archived } : item))}><Archive size={14} /> {r.archived ? "Restore" : "Archive"}</button>
+                        <button type="button" className="delete-action" onClick={() => {
+                          if (window.confirm(`Permanently delete the ${r.specialty} referral and its saved updates? This can’t be undone.`)) void deleteReferral(r);
+                        }}><Trash2 size={14} /> Delete</button>
+                      </div>
                     </article>
                   );
                 })}
               </div>
-              <aside className="first-step-card" id="dashboard-next-step">
-                <span className="guide-icon">
-                  <MessageCircle size={18} />
-                </span>
-                <p className="eyebrow">YOUR NEXT STEP</p>
-                <h3>{nextStep?.title ?? "Add your first referral"}</h3>
-                <p>{nextStep?.detail ?? "Start with what your clinician recommended. You can fill in office details later."}</p>
-                <button
-                  className="text-button"
-                  onClick={() =>
-                    nextReferral
-                      ? setSelected(nextReferral.id)
-                      : openNewReferral()
-                  }
-                >
-                  {nextReferral ? "Open referral" : "Add a referral"}{" "}
-                  <ArrowRight size={15} />
-                </button>
-                <div className="guide-foot">
-                  <ShieldCheck size={14} /> Based on your saved updates
-                </div>
-              </aside>
             </div>
           )}
-        </section>
-        <section className="dashboard-lower-grid">
+        </section>}
+        {dashboardPage === "next-steps" && <section className="next-steps-page" aria-label="Open next steps">
+          {activeReferrals.length === 0 ? <div className="empty-state"><span className="empty-icon"><MessageCircle size={24} /></span><h2>No next steps yet</h2><p>Add a referral and your follow-up questions will appear here.</p><button className="primary-button" onClick={openNewReferral}><Plus size={17} /> Add a referral</button></div> : activeReferrals.map((item) => {
+            const action = nextStepFor(item);
+            const latestItemEvent = [...item.updates].filter((update) => update.eventType || update.milestone || update.milestones?.length).sort((a, b) => b.id - a.id)[0];
+            return <article className="next-step-card" key={item.id}>
+              <div className="next-step-card-main"><span className="guide-icon"><MessageCircle size={18} /></span><div><p className="eyebrow">{item.specialty}</p><h2>{action.title}</h2><p>{action.detail}</p><small>Based on the updates you recorded. Confirm details with the relevant office.</small></div></div>
+              <div className="next-step-card-actions"><button className="primary-button" onClick={() => startMessage("Call script", item, latestItemEvent?.id, "next-step")}><Phone size={16} /> Prepare a call script</button><button className="secondary-button" onClick={() => { setDashboardPage("referrals"); setSelected(item.id); }}>Open referral <ArrowRight size={15} /></button></div>
+              {inlineDraftId === item.id && inlineDraftPlacement === "next-step" && <InlineDraftPanel kind={messageKind} draft={messageDraft} copied={copied} contextual={inlineDraftContextId !== null} onKindChange={(kind) => startMessage(kind, item, latestItemEvent?.id, "next-step")} onDraftChange={setMessageDraft} onCopy={copyDraft} onContact={() => logContactAttempt(item)} onClose={() => setInlineDraftId(null)} />}
+            </article>;
+          })}
+        </section>}
+        {dashboardPage === "overview" && <section className="dashboard-lower-grid">
           <article className="dashboard-lower-card">
             <div className="lower-card-heading">
               <div>
@@ -1910,7 +1971,7 @@ function ReferralNavigatorApp() {
               <ShieldCheck size={14} /> {translateText("These are questions to verify with each office or your health plan. Coverage and referral status are not checked automatically.", language)}
             </p>
           </article>
-        </section>
+        </section>}
         <section className="bottom-callout">
           <span className="callout-icon">
             <ShieldCheck size={19} />
@@ -1934,7 +1995,7 @@ function ReferralNavigatorApp() {
       </main>
       {modal && (
         <Modal
-          title={modal === "settings" ? "Settings" : modal === "new" ? "Add a referral" : "A little guidance"}
+          title={modal === "settings" ? "Settings" : modal === "new" ? editingReferralId !== null ? "Edit referral" : "Add a referral" : "A little guidance"}
           onClose={() => setModal(null)}
         >
           {modal === "settings" ? (
@@ -1967,10 +2028,7 @@ function ReferralNavigatorApp() {
             </div>
           ) : modal === "new" ? (
             <form className="form-body" onSubmit={createReferral}>
-              <p className="modal-intro">
-                Add what you know after a clinician recommends specialist care.
-                You can fill in the rest later.
-              </p>
+              <p className="modal-intro">{editingReferralId !== null ? "Update the referral details in your tracker." : "Add what you know after a clinician recommends specialist care. You can fill in the rest later."}</p>
               <label>
                 Specialty or reason
                 <input
@@ -1997,20 +2055,16 @@ function ReferralNavigatorApp() {
                   placeholder="If you know it"
                 />
               </label>
-              <label>
+              {editingReferralId === null && <label>
                 Date recommended
-                <input
-                  type="date"
-                  value={newDate}
-                  onChange={(e) => setNewDate(e.target.value)}
-                />
-              </label>
+                <input type="date" value={newDate} onChange={(e) => setNewDate(e.target.value)} />
+              </label>}
               <p className="helper-note">
                 <ShieldCheck size={15} /> Adding a referral only saves it in
                 your tracker. Nothing is sent to an office.
               </p>
               <button className="primary-button full" type="submit">
-                Add to my referrals
+                {editingReferralId !== null ? "Save changes" : "Add to my referrals"}
               </button>
             </form>
           ) : (
@@ -2140,3 +2194,4 @@ export default function App() {
     </LanguageProvider>
   );
 }
+
