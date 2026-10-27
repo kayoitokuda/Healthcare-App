@@ -12,14 +12,15 @@ This page is the source of truth for branch-to-version naming. Patch numbers are
 | v0.3.2 | Appointments and localization | Oct 23, 2026, 2:26 p.m. | `v0.3.2-appointments-localized` | `v0.3-appointments-localized` |
 | v0.3.3 | Supabase sign-in/account follow-on | Oct 24, 2026, 2:20 p.m. | `v0.3.3-auth-account-follow-on` | `codex/supabase-auth-foundation` |
 | v0.4.1 | Research-informed referral-flow iteration | Oct 24, 2026, 11:46 p.m. | `v0.4.1-research-informed-referral-flow` | `v0.4-research-informed-referral-flow`, `codex/v0.4-research-informed-referral-flow` |
+| v0.4.2 | Flexible referral-details journey layout exploration | Oct 26, 2026, 6:44 p.m. | `v0.4-referral-details-layout-exploration` | `v0.4.1-research-informed-referral-flow` |
 
 ## Patch sequence
 
-Version numbers follow first known successful preview publication dates, not the previous spreadsheet row order. The v0.3 sequence is handoff refinements, appointments/localization, then the auth/account follow-on. The v0.1 branches are ordered by their Oct 17 publication times. The v0.2.1 and v0.4.1 rows each group multiple snapshots from their single branch family rather than incrementing the patch for every deployment.
+Version numbers follow first known successful preview publication dates, not the previous spreadsheet row order. The v0.3 sequence is handoff refinements, appointments/localization, then the auth/account follow-on. The v0.1 branches are ordered by their Oct 17 publication times. The v0.2.1, v0.4.1, and v0.4.2 rows each group snapshots from their branch family rather than incrementing the patch for every deployment. The v0.4.2 patch was assigned after the first successful preview from the referral-details layout branch.
 
 ## Canonical branch naming
 
-Use the version-prefixed canonical branches in the table for ongoing work. Earlier source refs remain available for historical previews and commit provenance. The v0.1.2 branch is a snapshot at its recorded v0.1 main-branch commit; it does not rename or repoint the current `main` branch.
+Use the canonical branches in the table for ongoing work. The v0.4.2 branch keeps its `v0.4-` exploratory name; the patch number is recorded separately after its first successful preview. Earlier source refs remain available for historical previews and commit provenance. The v0.1.2 branch is a snapshot at its recorded v0.1 main-branch commit; it does not rename or repoint the current `main` branch.
 
 The connected GitHub actions can create and update branches but do not provide a branch-rename/delete operation. Canonical versioned branches were created from the documented source snapshots or branch heads; old refs remain intact.
 
