@@ -152,11 +152,7 @@ function nextStepFor(referral: Referral) {
     };
   }
   if (latestEvent?.eventType === "care-step") {
-    const note = updateContextText(latestEvent);
-    return {
-      title: "Review your latest care step",
-      detail: `Your note says: “${note}.” Ask the office involved what should happen next.`,
-    };
+    return careStepSuggestion(latestEvent);
   }
 
   if (!sent) {
@@ -196,6 +192,51 @@ function updateContextText(update: Update) {
     .replace(/[“”]/g, "'")
     .replace(/\s+/g, " ")
     .slice(0, 500);
+}
+
+function careStepSuggestion(update: Update) {
+  const context = updateContextText(update).toLowerCase();
+  if (/record|document|photo|x.?ray|mri|imaging|scan|test result/.test(context)) {
+    return {
+      title: "Clarify the records or imaging request",
+      detail: "Ask which records or images are needed, how to send them, and how to confirm they arrived.",
+    };
+  }
+  if (/authorization|pre.?auth|insurance|coverage|in network/.test(context)) {
+    return {
+      title: "Check what is needed for authorization",
+      detail: "Ask which office is handling authorization, whether anything is needed from you, and when to follow up.",
+    };
+  }
+  if (/primary doctor|primary care|another specialist|second specialist|new referral|referral to/.test(context)) {
+    return {
+      title: "Confirm who will send the next referral",
+      detail: "Ask the referring office which specialist the referral is for, where it will be sent, and when to check back.",
+    };
+  }
+  if (/follow.?up|return visit|check.?in/.test(context)) {
+    return {
+      title: "Ask how to arrange the follow-up",
+      detail: "Confirm which office should schedule the follow-up and when they recommend you contact them.",
+    };
+  }
+  if (/reschedul|cancel|no availability|wait.?list/.test(context)) {
+    return {
+      title: "Confirm the new appointment plan",
+      detail: "Ask about the next available date, any wait-list option, and whether the earlier preparation still applies.",
+    };
+  }
+  if (/surgery|procedure|operation/.test(context)) {
+    return {
+      title: "Ask what needs to happen before the procedure",
+      detail: "Ask the office which preparation steps, documents, or appointments they want you to complete and who can answer questions.",
+    };
+  }
+  const note = updateContextText(update);
+  return {
+    title: "Ask what should happen after this update",
+    detail: `Based on your note, “${note},” ask the office involved what the next step is and when to follow up.`,
+  };
 }
 
 function recipientForUpdate(update: Update, referral: Referral) {
@@ -1198,86 +1239,67 @@ function ReferralNavigatorApp() {
             </p>
           </div>
 
-          <section className="section-card journey-card">
-            <div className="section-title-row">
+          <section className="section-card journey-card journey-combined">
+            <div className="section-title-row journey-header">
               <div>
-                <p className="eyebrow">THE HANDOFF</p>
-                <h2>{translateText("Referral checkpoints and what comes next", language)}</h2>
+                <p className="eyebrow">{translateText("THE HANDOFF", language)}</p>
+                <h2>{translateText("Your referral journey", language)}</h2>
+                <p className="journey-summary">
+                  {translateText("Common checkpoints and your updates, together in one timeline. Add what happened when it happens. Steps can repeat or continue after a visit.", language)}
+                </p>
               </div>
               <button
+                type="button"
                 className="primary-button add-update-button"
                 onClick={() => addUpdate()}
               >
                 <Plus size={18} aria-hidden="true" />
-                {translateText("Add update", language)}
+                {translateText("Add a step", language)}
               </button>
             </div>
-            <p className="handoff-intro">{translateText("These are common referral checkpoints. Care can pause, repeat, branch, and continue after an appointment.", language)}</p>
-            <div className="journey">
-              {steps.map((step, i) => {
-                const done =
-                  i === 0 ||
-                  (i === 1 && sentRecorded) ||
-                  (i === 2 && receiptRecorded) ||
-                  (i === 3 && readyRecorded) ||
-                  (i === 4 && appointmentRecorded);
-                const active =
-                  (!sentRecorded && i === 1) ||
-                  (sentRecorded && !receiptRecorded && i === 2) ||
-                  (receiptRecorded && !readyRecorded && i === 3) ||
-                  (readyRecorded && !appointmentRecorded && i === 4);
-                return (
-                  <button
-                    type="button"
-                    className={`journey-step ${done ? "is-done" : ""} ${active ? "is-active" : ""}`}
-                    key={step.title}
-                    disabled={!step.milestone || done}
-                    aria-label={
-                      !step.milestone
-                        ? translateText(step.title, language)
-                        : done
-                          ? `${translateText(step.title, language)}, ${translateText("Recorded", language)}`
-                          : `${translateText("Record referral step", language)}: ${translateText(step.title, language)}`
-                    }
-                    onClick={() => step.milestone && addMilestoneUpdate(step.milestone)}
-                  >
-                    <span className="journey-marker">
-                      {done ? <Check size={15} /> : i + 1}
-                    </span>
-                    <span className="journey-copy">
-                      <span className="journey-label">
-                        {translateText(step.title, language)}
-                        <span>{done ? translateText("Recorded", language) : step.milestone ? translateText("Select to record", language) : translateText("Starting point", language)}</span>
-                      </span>
-                      <span className="journey-step-copy">{translateText(step.copy, language)}</span>
-                    </span>
-                  </button>
-                );
-              })}
-            </div>
-            <div className="journey-continuation">
-              <div className="continuation-heading">
-                <div>
-                  <h3>{translateText("Additional care steps", language)}</h3>
-                  <p>{translateText("Add imaging, authorization, rescheduled visits, procedures, and follow-ups here. These are your notes, not office-verified status.", language)}</p>
+
+            <ol className="referral-journey-list" aria-label={translateText("Referral journey, oldest updates first", language)}>
+              <li className="journey-event journey-start">
+                <span className="journey-event-marker" aria-hidden="true"><Check size={15} /></span>
+                <div className="journey-event-body">
+                  <span className="journey-date">{referral.date}</span>
+                  <h3>{translateText("Recommendation", language)}</h3>
+                  <p>{translateText("A clinician recommended specialist care. This is the starting point for the referral you are tracking.", language)}</p>
+                  <span className="source-tag">{translateText("Starting point · You entered this", language)}</span>
                 </div>
-                <span className="continuation-count">{careSteps.length}</span>
-              </div>
-              {careSteps.length ? (
-                <ol className="care-step-list">
-                  {careSteps.slice(0, 4).map((update) => (
-                    <li className="care-step-item" key={update.id}>
-                      <span className="care-step-date">{update.eventDate ?? update.date}</span>
-                      <strong>{update.title}</strong>
+              </li>
+              {[...referral.updates]
+                .filter((update) => !["Referral added to your tracker", "Specialist recommended"].includes(update.title))
+                .sort((a, b) => updateTimestamp(a) - updateTimestamp(b) || a.id - b.id)
+                .map((update) => (
+                  <li className="journey-event" key={update.id}>
+                    <span className="journey-event-marker" aria-hidden="true">
+                      {update.milestone || update.milestones?.length ? <Check size={15} /> : <span />}
+                    </span>
+                    <div className="journey-event-body">
+                      <div className="journey-event-heading">
+                        <div>
+                          <span className="journey-date">
+                            {update.eventDate ? <>{translateText("Happened", language)} {update.eventDate} · {translateText("recorded", language)} {update.date}</> : update.date}
+                          </span>
+                          <h3>{update.title}</h3>
+                        </div>
+                        <span className={update.source === "You" ? "source-tag" : "source-tag source-tag-office"}>
+                          {update.source === "You"
+                            ? translateText("You entered this", language)
+                            : `${translateText("You recorded", language)} · ${translateText(update.source, language)}`}
+                        </span>
+                      </div>
                       <p>{update.detail}</p>
-                      <span className="care-step-source">{translateText(update.source, language)} · {translateText("Patient recorded", language)}</span>
-                      <button
-                        type="button"
-                        className="care-step-script-button"
-                        onClick={() => startMessage("Call script", referral, update.id, "care-step")}
-                      >
-                        <Phone size={16} /> Prepare a call script
-                      </button>
+                      <div className="journey-event-actions">
+                        <button
+                          type="button"
+                          className="care-step-script-button"
+                          onClick={() => startMessage("Call script", referral, update.id, "care-step")}
+                        >
+                          <Phone size={16} /> {translateText("Prepare a call script", language)}
+                        </button>
+                      </div>
                       {inlineDraftId === referral.id &&
                         inlineDraftPlacement === "care-step" &&
                         inlineDraftContextId === update.id && (
@@ -1293,191 +1315,48 @@ function ReferralNavigatorApp() {
                             onClose={() => setInlineDraftId(null)}
                           />
                         )}
-                    </li>
-                  ))}
-                  {careSteps.length > 4 && <li className="care-step-more">{translateText("See all updates in the activity timeline below.", language)}</li>}
-                </ol>
-              ) : (
-                <p className="care-step-empty">{translateText("No additional steps recorded yet. Use “Add update” when the care path changes or continues.", language)}</p>
-              )}
-            </div>
-          </section>
-
-          <div className="content-grid">
-            <section className="section-card next-card">
-              <div className="section-title-row">
-                <div>
-                  <p className="eyebrow">YOUR NEXT STEP</p>
-                  <h2>{translateText(currentNextStep?.title ?? "Check whether it was sent", language)}</h2>
-                </div>
-                <span className="round-icon">
-                  <ClipboardList size={19} />
-                </span>
-              </div>
-              <p className="body-copy">{translateText(currentNextStep?.detail ?? "", language)}</p>
-              <div className="action-list">
-                {latestReferralEvent?.eventType === "records-requested" ? (
-                  <>
-                    <button type="button" aria-pressed={referral.done.includes("confirm-record-method")} className={`check-row ${referral.done.includes("confirm-record-method") ? "checked" : ""}`} onClick={() => toggleDone("confirm-record-method")}>
-                      <span className="checkbox">{referral.done.includes("confirm-record-method") && <Check size={13} />}</span>
-                      <span>{translateText("Confirm how to send the requested records", language)}</span>
-                    </button>
-                    <button type="button" aria-pressed={referral.done.includes("record-records-sent")} className={`check-row ${referral.done.includes("record-records-sent") ? "checked" : ""}`} onClick={() => toggleDone("record-records-sent")}>
-                      <span className="checkbox">{referral.done.includes("record-records-sent") && <Check size={13} />}</span>
-                      <span>{translateText("Record when the requested records are sent", language)}</span>
-                    </button>
-                  </>
-                ) : latestReferralEvent?.eventType === "records-sent" ? (
-                  <>
-                    <button type="button" aria-pressed={referral.done.includes("confirm-records")} className={`check-row ${referral.done.includes("confirm-records") ? "checked" : ""}`} onClick={() => toggleDone("confirm-records")}>
-                      <span className="checkbox">{referral.done.includes("confirm-records") && <Check size={13} />}</span>
-                      <span>{translateText("Confirm the records arrived", language)}</span>
-                    </button>
-                    <button type="button" aria-pressed={referral.done.includes("record-response")} className={`check-row ${referral.done.includes("record-response") ? "checked" : ""}`} onClick={() => toggleDone("record-response")}>
-                      <span className="checkbox">{referral.done.includes("record-response") && <Check size={13} />}</span>
-                      <span>{translateText("Record the office’s response", language)}</span>
-                    </button>
-                  </>
-                ) : latestReferralEvent?.eventType === "follow-up-recommended" ? (
-                  <>
-                    <button type="button" aria-pressed={referral.done.includes("schedule-follow-up")} className={`check-row ${referral.done.includes("schedule-follow-up") ? "checked" : ""}`} onClick={() => toggleDone("schedule-follow-up")}>
-                      <span className="checkbox">{referral.done.includes("schedule-follow-up") && <Check size={13} />}</span>
-                      <span>{translateText("Ask how to schedule your follow-up", language)}</span>
-                    </button>
-                    <button type="button" aria-pressed={referral.done.includes("record-follow-up")} className={`check-row ${referral.done.includes("record-follow-up") ? "checked" : ""}`} onClick={() => toggleDone("record-follow-up")}>
-                      <span className="checkbox">{referral.done.includes("record-follow-up") && <Check size={13} />}</span>
-                      <span>{translateText("Add the follow-up date to your timeline", language)}</span>
-                    </button>
-                  </>
-                ) : latestReferralEvent?.eventType === "visit-completed" ? (
-                  <>
-                    <button type="button" aria-pressed={referral.done.includes("review-visit-notes")} className={`check-row ${referral.done.includes("review-visit-notes") ? "checked" : ""}`} onClick={() => toggleDone("review-visit-notes")}>
-                      <span className="checkbox">{referral.done.includes("review-visit-notes") && <Check size={13} />}</span>
-                      <span>{translateText("Review your visit notes", language)}</span>
-                    </button>
-                    <button type="button" aria-pressed={referral.done.includes("record-visit-next-steps")} className={`check-row ${referral.done.includes("record-visit-next-steps") ? "checked" : ""}`} onClick={() => toggleDone("record-visit-next-steps")}>
-                      <span className="checkbox">{referral.done.includes("record-visit-next-steps") && <Check size={13} />}</span>
-                      <span>{translateText("Record any next steps from your visit", language)}</span>
-                    </button>
-                  </>
-                ) : appointmentRecorded ? (
-                  <>
-                    <button type="button" aria-pressed={referral.done.includes("check-records")} className={`check-row ${referral.done.includes("check-records") ? "checked" : ""}`} onClick={() => toggleDone("check-records")}>
-                      <span className="checkbox">{referral.done.includes("check-records") && <Check size={13} />}</span>
-                      <span>{translateText("Ask whether records or imaging are needed", language)}</span>
-                    </button>
-                    <button type="button" aria-pressed={referral.done.includes("prepare-visit")} className={`check-row ${referral.done.includes("prepare-visit") ? "checked" : ""}`} onClick={() => toggleDone("prepare-visit")}>
-                      <span className="checkbox">{referral.done.includes("prepare-visit") && <Check size={13} />}</span>
-                      <span>{translateText("Prepare questions for your visit", language)}</span>
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    <button type="button" aria-pressed={referral.done.includes("ask-sent")} className={`check-row ${referral.done.includes("ask-sent") ? "checked" : ""}`} onClick={() => toggleDone("ask-sent")}>
-                      <span className="checkbox">{referral.done.includes("ask-sent") && <Check size={13} />}</span>
-                      <span>Ask the referring office if it was sent</span>
-                    </button>
-                    <button type="button" aria-pressed={referral.done.includes("ask-received")} className={`check-row ${referral.done.includes("ask-received") ? "checked" : ""}`} onClick={() => toggleDone("ask-received")}>
-                      <span className="checkbox">{referral.done.includes("ask-received") && <Check size={13} />}</span>
-                      <span>Ask the specialist office if it arrived</span>
-                    </button>
-                  </>
-                )}
-              </div>
-              <div className="button-stack">
-                <button
-                  className="primary-button"
-                  onClick={() => startMessage("Call script", referral, latestReferralEvent?.eventType ? latestReferralEvent.id : null, "next-step")}
-                >
-                  <Phone size={17} /> Prepare a call script
-                </button>
-                {inlineDraftId === referral.id && inlineDraftPlacement === "next-step" && messageKind === "Call script" && (
-                  <InlineDraftPanel
-                    kind={messageKind}
-                    draft={messageDraft}
-                    copied={copied}
-                    contextual={inlineDraftContextId !== null}
-                    onKindChange={(kind) => startMessage(kind, referral, inlineDraftContextId, inlineDraftPlacement)}
-                    onDraftChange={setMessageDraft}
-                    onCopy={copyDraft}
-                    onContact={() => logContactAttempt(referral, draftContactRecipient(referral))}
-                    onClose={() => setInlineDraftId(null)}
-                  />
-                )}
-                <button
-                  className="secondary-button"
-                  onClick={() => startMessage("Portal message")}
-                >
-                  <MessageCircle size={17} /> Draft a portal message
-                </button>
-                {inlineDraftId === referral.id && inlineDraftPlacement === "next-step" && messageKind !== "Call script" && (
-                  <InlineDraftPanel
-                    kind={messageKind}
-                    draft={messageDraft}
-                    copied={copied}
-                    contextual={inlineDraftContextId !== null}
-                    onKindChange={(kind) => startMessage(kind, referral, inlineDraftContextId, inlineDraftPlacement)}
-                    onDraftChange={setMessageDraft}
-                    onCopy={copyDraft}
-                    onContact={() => logContactAttempt(referral, draftContactRecipient(referral))}
-                    onClose={() => setInlineDraftId(null)}
-                  />
-                )}
-              </div>
-            </section>
-
-            <section className="section-card timeline-card">
-              <div className="section-title-row">
-                <div>
-                  <p className="eyebrow">{translateText("YOUR ACTIVITY", language)}</p>
-                  <h2>{translateText("Activity timeline", language)}</h2>
-                </div>
-                <span className="count-chip">{referral.updates.length}</span>
-              </div>
-              <p className="timeline-intro">
-                <strong>{translateText("Newest updates first", language)}.</strong>{" "}
-                {translateText("This history continues after scheduling. Record requests, documents sent, and follow-ups as they happen.", language)}
-              </p>
-              <ol className="timeline-list" aria-label={translateText("Referral activity, newest first", language)}>
-                {[...referral.updates]
-                  .sort((a, b) => updateTimestamp(b) - updateTimestamp(a) || b.id - a.id)
-                  .map((update) => (
-                  <li className="timeline-entry" key={update.id}>
-                    <span
-                      aria-hidden="true"
-                      className={`source-dot ${update.source !== "You" ? "office-source" : ""}`}
-                    />
-                    <div className="entry-body">
-                      <div className="entry-top">
-                        <strong>{update.title}</strong>
-                        <span>
-                          {update.eventDate ? <>
-                            <span>Happened</span> {update.eventDate} · <span>Recorded</span> {update.date}
-                          </> : update.date}
-                        </span>
-                      </div>
-                      <p>{update.detail}</p>
-                      <span
-                        className={`source-tag ${update.source !== "You" ? "source-tag-office" : ""}`}
-                      >
-                        {update.source === "You"
-                          ? "You entered this"
-                          : `You recorded · ${update.source}`}
-                      </span>
                     </div>
                   </li>
                 ))}
-              </ol>
-              <button
-                className="outline-button full"
-                onClick={() => addUpdate()}
-              >
-                <Plus size={16} /> Record an event
-              </button>
+            </ol>
+
+            <section className="journey-next" aria-labelledby="journey-next-title">
+              <div className="journey-next-marker" aria-hidden="true" />
+              <div className="journey-next-content">
+                <p className="eyebrow">{translateText("UP NEXT · A POSSIBLE NEXT STEP", language)}</p>
+                <h3 id="journey-next-title">{translateText(currentNextStep?.title ?? "Check whether it was sent", language)}</h3>
+                <p>{translateText(currentNextStep?.detail ?? "", language)}</p>
+                <p className="journey-suggestion-note">
+                  {translateText("This suggestion uses the details you entered. Confirm the next step with the relevant office.", language)}
+                </p>
+                <div className="journey-next-actions">
+                  <button type="button" className="secondary-button" onClick={() => addUpdate()}>
+                    <Plus size={16} /> {translateText("Record an update", language)}
+                  </button>
+                  <button
+                    type="button"
+                    className="primary-button"
+                    onClick={() => startMessage("Call script", referral, latestReferralEvent?.id ?? null, "next-step")}
+                  >
+                    <Phone size={16} /> {translateText("Prepare a call script", language)}
+                  </button>
+                </div>
+                {inlineDraftId === referral.id && inlineDraftPlacement === "next-step" && (
+                  <InlineDraftPanel
+                    kind={messageKind}
+                    draft={messageDraft}
+                    copied={copied}
+                    contextual={inlineDraftContextId !== null}
+                    onKindChange={(kind) => startMessage(kind, referral, inlineDraftContextId, inlineDraftPlacement)}
+                    onDraftChange={setMessageDraft}
+                    onCopy={copyDraft}
+                    onContact={() => logContactAttempt(referral, draftContactRecipient(referral))}
+                    onClose={() => setInlineDraftId(null)}
+                  />
+                )}
+              </div>
             </section>
-          </div>
-
-
+          </section>
 
           <section className="section-card tools-card">
             <div className="tools-intro">
