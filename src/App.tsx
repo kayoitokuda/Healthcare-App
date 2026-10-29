@@ -1811,6 +1811,9 @@ function ReferralNavigatorApp() {
               Know what you’ve heard, what’s still unclear, and who to contact
               next.
             </p>
+            <button className="primary-button overview-add-cta" onClick={openNewReferral}>
+              <Plus size={18} /> Add a referral
+            </button>
           </div>
           <div className="welcome-art">
             <div className="art-orbit orbit-one" />
