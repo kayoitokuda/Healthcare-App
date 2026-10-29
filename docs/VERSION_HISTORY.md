@@ -14,7 +14,7 @@ This page is the source of truth for branch-to-version naming. Patch numbers are
 | v0.4.1 | Research-informed referral-flow iteration | Oct 24, 2026, 11:46 p.m. | `v0.4.1-research-informed-referral-flow` | `v0.4-research-informed-referral-flow`, `codex/v0.4-research-informed-referral-flow` |
 | v0.4.2 | Flexible referral-details journey layout exploration | Oct 26, 2026, 6:44 p.m. | `v0.4-referral-details-layout-exploration` | `v0.4.1-research-informed-referral-flow` |
 | v0.4.3 | Separate dashboard pages for overview, referrals, and next steps | Oct 26, 2026, 7:30 p.m. | `v0.4.3-dashboard-pages` | `v0.4-referral-details-layout-exploration` 
-| v0.4.4 | Denial and redirection follow-up questions with tailored next-step suggestions | Pending preview | `v0.4.4-denial-next-steps` | `v0.4.3-dashboard-pages` |
+| v0.4.4 | Denial and redirection follow-up questions with tailored next-step suggestions | Oct 29, 2026, 4:45 p.m. | `v0.4.4-denial-next-steps` | `v0.4.3-dashboard-pages` |
 
 ## Patch sequence
 
