@@ -13,7 +13,7 @@ This page is the source of truth for branch-to-version naming. Patch numbers are
 | v0.3.3 | Supabase sign-in/account follow-on | Oct 24, 2026, 2:20 p.m. | `v0.3.3-auth-account-follow-on` | `codex/supabase-auth-foundation` |
 | v0.4.1 | Research-informed referral-flow iteration | Oct 24, 2026, 11:46 p.m. | `v0.4.1-research-informed-referral-flow` | `v0.4-research-informed-referral-flow`, `codex/v0.4-research-informed-referral-flow` |
 | v0.4.2 | Flexible referral-details journey layout exploration | Oct 26, 2026, 6:44 p.m. | `v0.4-referral-details-layout-exploration` | `v0.4.1-research-informed-referral-flow` |
-| v0.4.3 | Separate dashboard pages for overview, referrals, and next steps | Oct 26, 2026, 7:30 p.m. | `v0.4.3-dashboard-pages` | `v0.4-referral-details-layout-exploration` |
+| v0.4.3 | Separate dashboard pages for overview, referrals, and next steps | Oct 26, 2026, 7:30 p.m. | `v0.4.3-dashboard-pages` | `v0.4-referral-details-layout-exploration` |\n| v0.4.4 | Denial and redirection follow-up questions with tailored next-step suggestions | Pending preview | `v0.4.4-denial-next-steps` | `v0.4.3-dashboard-pages` |
 
 ## Patch sequence
 
@@ -21,7 +21,7 @@ Version numbers follow first known successful preview publication dates, not the
 
 ## Canonical branch naming
 
-Use the canonical branches in the table for ongoing work. The v0.4.2 branch keeps its `v0.4-` exploratory name; the patch number is recorded separately after its first successful preview. The next dashboard iteration uses the canonical branch `v0.4.3-dashboard-pages`. Earlier source refs remain available for historical previews and commit provenance. The v0.1.2 branch is a snapshot at its recorded v0.1 main-branch commit; it does not rename or repoint the current `main` branch.
+Use the canonical branches in the table for ongoing work. The v0.4.2 branch keeps its `v0.4-` exploratory name; the patch number is recorded separately after its first successful preview. The dashboard-page build uses the canonical branch `v0.4.3-dashboard-pages`. Denial and redirection guidance is prototyped on `v0.4.4-denial-next-steps`. Earlier source refs remain available for historical previews and commit provenance. The v0.1.2 branch is a snapshot at its recorded v0.1 main-branch commit; it does not rename or repoint the current `main` branch.
 
 The connected GitHub actions can create and update branches but do not provide a branch-rename/delete operation. Canonical versioned branches were created from the documented source snapshots or branch heads; old refs remain intact.
 
