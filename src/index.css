@@ -5685,3 +5685,52 @@ html {
 .next-step-card-actions>button{flex:1 1 180px}
 }
 
+
+
+/* v0.4.4 denial and redirection follow-up questionnaire */
+.outcome-questionnaire {
+  margin: 4px 0 8px;
+  padding: 14px 16px;
+  border: 1px solid #d8deea;
+  border-radius: 10px;
+  background: #f8f9fc;
+}
+.outcome-questionnaire > summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 42px;
+  color: #2948a7;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.outcome-questionnaire > summary:focus-visible {
+  outline: 3px solid #3156c4;
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+.outcome-questionnaire-content {
+  display: grid;
+  gap: 14px;
+  padding-top: 12px;
+}
+.outcome-guidance {
+  display: grid;
+  gap: 6px;
+  padding: 15px;
+  border: 1px solid #d8deea;
+  border-left: 4px solid #c59a2e;
+  border-radius: 9px;
+  background: #fff;
+}
+.outcome-guidance .eyebrow { margin: 0; }
+.outcome-guidance strong { color: #252938; font-size: 17px; line-height: 1.4; }
+.outcome-guidance p:not(.eyebrow) { margin: 0; color: #4e5666; font-size: 15px; line-height: 1.5; }
+.outcome-guidance .outcome-guidance-note { color: #626b7b; font-size: 14px; }
+.outcome-event-context { margin: 7px 0 0 !important; color: #4e5666; font-size: 14px; line-height: 1.5; }
+@media (max-width: 640px) {
+  .outcome-questionnaire { padding: 12px; }
+  .outcome-guidance { padding: 13px; }
+  .outcome-guidance strong { font-size: 16px; }
+}
