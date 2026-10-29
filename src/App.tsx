@@ -41,7 +41,7 @@ import { LanguageProvider, LanguageToggle, localizedDraft, translateText, useApp
 type Source = "You" | "Referring office" | "Specialist office" | "Health plan";
 type DashboardPage = "overview" | "referrals" | "next-steps";
 type Milestone = "referral-sent" | "referral-received" | "ready-to-schedule" | "appointment-scheduled";
-type ReferralEventType = "records-requested" | "records-sent" | "follow-up-recommended" | "visit-completed" | "care-step";
+type ReferralEventType = "records-requested" | "records-sent" | "follow-up-recommended" | "visit-completed" | "care-step" | "specialist-declined" | "insurance-denied" | "referral-redirected";
 type Update = {
   id: number;
   title: string;
@@ -52,6 +52,8 @@ type Update = {
   milestones?: Milestone[];
   eventDate?: string;
   eventType?: ReferralEventType;
+  outcomeReason?: string;
+  outcomeSuggestion?: string;
 };
 function hasMilestone(update: Update, milestone: Milestone) {
   return update.milestone === milestone || update.milestones?.includes(milestone) === true;
@@ -151,6 +153,9 @@ function nextStepFor(referral: Referral) {
   if (latestEvent?.eventType === "care-step") {
     return careStepSuggestion(latestEvent);
   }
+  if (latestEvent && isOutcomeEventType(latestEvent.eventType)) {
+    return outcomeRecommendation(latestEvent.eventType, latestEvent.outcomeReason, latestEvent.outcomeSuggestion);
+  }
 
   if (!sent) {
     return {
@@ -181,6 +186,44 @@ function nextStepFor(referral: Referral) {
     detail: "The specialist may still ask for records, imaging, or other details. Record any new requests in your activity timeline.",
   };
 }
+type OutcomeEventType = "specialist-declined" | "insurance-denied" | "referral-redirected";
+function isOutcomeEventType(eventType: ReferralEventType | null | undefined): eventType is OutcomeEventType {
+  return eventType === "specialist-declined" || eventType === "insurance-denied" || eventType === "referral-redirected";
+}
+function outcomeReasonOptions(eventType: OutcomeEventType) {
+  if (eventType === "specialist-declined") {
+    return ["Out of network", "Not accepting new patients", "Wrong specialty", "Records or information needed", "Other", "I’m not sure"];
+  }
+  if (eventType === "insurance-denied") {
+    return ["Authorization denied", "Out of network", "More information requested", "Service not covered / unclear", "Other", "I’m not sure"];
+  }
+  return ["Another specialist recommended", "Sent to another office", "Asked me to contact the referring office", "Other", "I’m not sure"];
+}
+function outcomeRecommendation(eventType: OutcomeEventType, reason = "", suggestion = "") {
+  if (suggestion.trim()) {
+    return eventType === "referral-redirected"
+      ? { title: "Confirm the redirected referral", detail: "You recorded a suggested destination or next step. Ask who will send the referral, where it is going, and when to check that it arrived." }
+      : { title: "Follow up on the step they suggested", detail: "You recorded a suggested next step. Confirm who will handle it and when to check back." };
+  }
+  if (eventType === "specialist-declined") {
+    if (reason === "Out of network") return { title: "Ask about in-network alternatives", detail: "Ask the referring office whether it can redirect the referral. You can also ask your health plan for in-network specialist options." };
+    if (reason === "Not accepting new patients") return { title: "Ask the referring office to redirect the referral", detail: "Ask whether the referring office can suggest another specialist. You can also ask the health plan which in-network offices are accepting patients." };
+    if (reason === "Wrong specialty") return { title: "Ask which specialist to contact next", detail: "Ask the referring office which type of specialist is appropriate and whether it can send a new referral." };
+    if (reason === "Records or information needed") return { title: "Clarify what information is missing", detail: "Ask the specialist office which records or information it needs and who should send them." };
+    return { title: "Clarify why the specialist could not accept it", detail: "Ask the specialist office for the reason. Then ask the referring office whether it can redirect the referral, and ask your health plan about in-network options if needed." };
+  }
+  if (eventType === "insurance-denied") {
+    if (reason === "More information requested") return { title: "Ask what information the plan needs", detail: "Ask the health plan what information is needed and whether it must come from you or the clinician’s office." };
+    if (reason === "Out of network") return { title: "Ask the plan about in-network options", detail: "Ask your health plan for in-network specialist options. You can also ask the referring office whether it can redirect the referral." };
+    if (reason === "Service not covered / unclear") return { title: "Ask the plan to explain the decision", detail: "Ask your health plan what the notice means, what options or deadlines may apply, and what to ask your clinician’s office." };
+    return { title: "Ask the plan to explain the denial", detail: "Ask your health plan for the reason, any options or deadlines, and whether more information is needed. You can ask the clinician’s office if it can help with supporting information." };
+  }
+  if (reason === "Another specialist recommended" || reason === "Sent to another office") {
+    return { title: "Confirm the new referral destination", detail: "Ask the referring office where the referral is going, who will send it, and when to check that the new office received it." };
+  }
+  return { title: "Clarify where the referral is going", detail: "Ask the office involved which specialist or office is next, who will send the referral, and when to check for receipt." };
+}
+
 function updateContextText(update: Update) {
   const detail = update.detail.trim();
   return [update.title.trim(), detail && detail !== "No additional notes." ? detail : ""]
@@ -237,6 +280,11 @@ function careStepSuggestion(update: Update) {
 }
 
 function recipientForUpdate(update: Update, referral: Referral) {
+  if (update.eventType === "insurance-denied") return "your health plan";
+  if (update.eventType === "specialist-declined") {
+    return update.outcomeReason === "Records or information needed" ? referral.to : referral.from;
+  }
+  if (update.eventType === "referral-redirected") return referral.from;
   const text = `${update.title} ${update.detail}`.toLowerCase();
   if (/primary care|primary doctor|\\bpcp\\b|family doctor|referring office|referring clinician/.test(text)) return referral.from;
   if (/health plan|insurance|prior authorization|pre-authorization|coverage/.test(text)) return "your health plan";
@@ -246,6 +294,26 @@ function recipientForUpdate(update: Update, referral: Referral) {
 }
 
 function contextualQuestionFor(update: Update) {
+  if (update.eventType === "insurance-denied") {
+    const question = "Could you explain the reason for the authorization denial, any options or deadlines, and whether more information is needed?";
+    const context = [update.outcomeReason && `Reason shared: ${update.outcomeReason}`, update.outcomeSuggestion && `Suggested next step: ${update.outcomeSuggestion}`].filter(Boolean).join("; ");
+    return context ? `${question} Context: “${context}”` : question;
+  }
+  if (update.eventType === "specialist-declined" && update.outcomeReason === "Records or information needed") {
+    const question = "Could you tell me which records or information are needed and who should send them?";
+    const context = [update.outcomeReason && `Reason shared: ${update.outcomeReason}`, update.outcomeSuggestion && `Suggested next step: ${update.outcomeSuggestion}`].filter(Boolean).join("; ");
+    return context ? `${question} Context: “${context}”` : question;
+  }
+  if (update.eventType === "specialist-declined") {
+    const question = "Could you clarify why the specialist couldn’t accept the referral and whether it can be redirected?";
+    const context = [update.outcomeReason && `Reason shared: ${update.outcomeReason}`, update.outcomeSuggestion && `Suggested next step: ${update.outcomeSuggestion}`].filter(Boolean).join("; ");
+    return context ? `${question} Context: “${context}”` : question;
+  }
+  if (update.eventType === "referral-redirected") {
+    const question = "Could you confirm where the referral is being sent, who will send it, and when I should check that it was received?";
+    const context = [update.outcomeReason && `Reason shared: ${update.outcomeReason}`, update.outcomeSuggestion && `Suggested next step: ${update.outcomeSuggestion}`].filter(Boolean).join("; ");
+    return context ? `${question} Context: “${context}”` : question;
+  }
   const note = updateContextText(update);
   const question =
     update.eventType === "records-requested"
@@ -764,6 +832,8 @@ function ReferralNavigatorApp() {
   const [updateMilestones, setUpdateMilestones] = useState<Milestone[]>([]);
   const [updateEventDate, setUpdateEventDate] = useState("");
   const [updateEventType, setUpdateEventType] = useState<ReferralEventType | null>(null);
+  const [outcomeReason, setOutcomeReason] = useState("");
+  const [outcomeSuggestedNextStep, setOutcomeSuggestedNextStep] = useState("");
   const [messageKind, setMessageKind] = useState<
     "Call script" | "Portal message" | "Email"
   >("Call script");
@@ -863,6 +933,9 @@ function ReferralNavigatorApp() {
         hasMilestone(u, "referral-received") && u.source === "Specialist office",
     ) ?? false;
   const currentNextStep = referral ? nextStepFor(referral) : null;
+  const outcomePreview = isOutcomeEventType(updateEventType)
+    ? outcomeRecommendation(updateEventType, outcomeReason, outcomeSuggestedNextStep)
+    : null;
   const latestReferralEvent = referral
     ? [...referral.updates]
         .filter((update) => update.eventType || update.milestone || update.milestones?.length)
@@ -927,15 +1000,19 @@ function ReferralNavigatorApp() {
     setUpdateMilestones([]);
     setUpdateEventDate("");
     setUpdateEventType(null);
+    setOutcomeReason("");
+    setOutcomeSuggestedNextStep("");
     setModal("update");
   }
 
   function addQuickEvent(eventType: ReferralEventType, title: string) {
     setUpdateTitle(translateText(title, language));
     setUpdateDetail("");
-    setUpdateSource("You");
+    setUpdateSource(eventType === "specialist-declined" ? "Specialist office" : eventType === "insurance-denied" ? "Health plan" : eventType === "referral-redirected" ? "Referring office" : "You");
     setUpdateMilestones([]);
     setUpdateEventDate("");
+    setOutcomeReason("");
+    setOutcomeSuggestedNextStep("");
     setUpdateEventType(eventType);
     setModal("update");
   }
@@ -951,6 +1028,8 @@ function ReferralNavigatorApp() {
       source: updateSource,
       ...(updateMilestones.length ? { milestones: updateMilestones } : {}),
       ...(updateEventType ? { eventType: updateEventType } : updateMilestones.length ? {} : { eventType: "care-step" as const }),
+      ...(isOutcomeEventType(updateEventType) && outcomeReason ? { outcomeReason } : {}),
+      ...(isOutcomeEventType(updateEventType) && outcomeSuggestedNextStep.trim() ? { outcomeSuggestion: outcomeSuggestedNextStep.trim() } : {}),
     };
     setReferrals((all) =>
       all.map((r) =>
@@ -1304,6 +1383,8 @@ function ReferralNavigatorApp() {
                         </span>
                       </div>
                       <p>{update.detail}</p>
+                      {update.outcomeReason && <p className="outcome-event-context"><strong>{translateText("Reason shared", language)}:</strong> {translateText(update.outcomeReason, language)}</p>}
+                      {update.outcomeSuggestion && <p className="outcome-event-context"><strong>{translateText("Next step mentioned", language)}:</strong> {update.outcomeSuggestion}</p>}
                       <div className="journey-event-actions">
                         <button
                           type="button"
@@ -1465,6 +1546,8 @@ function ReferralNavigatorApp() {
                           : [...updateMilestones, value];
                         setUpdateMilestones(next);
                         setUpdateEventType(null);
+                        setOutcomeReason("");
+                        setOutcomeSuggestedNextStep("");
                         setUpdateTitle(next.length > 1 ? translateText("Referral progress update", language) : next.length === 1 ? translateText(label, language) : "");
                       }}
                     >
@@ -1479,6 +1562,9 @@ function ReferralNavigatorApp() {
                     ["records-sent", "Records sent"],
                     ["follow-up-recommended", "Follow-up visit recommended"],
                     ["visit-completed", "Visit completed"],
+                    ["specialist-declined", "Specialist could not accept"],
+                    ["insurance-denied", "Insurance authorization denied"],
+                    ["referral-redirected", "Referral redirected"],
                     ["care-step", "Other care step"],
                   ] as const).map(([eventType, title]) => (
                     <button
@@ -1492,6 +1578,38 @@ function ReferralNavigatorApp() {
                     </button>
                   ))}
                 </div>
+                {outcomePreview && isOutcomeEventType(updateEventType) && (
+                  <details className="outcome-questionnaire" open key={updateEventType}>
+                    <summary>{translateText("Add optional details to tailor next steps", language)}</summary>
+                    <div className="outcome-questionnaire-content">
+                      <p className="quick-log-hint">{translateText("Skip anything you don’t know. These answers help suggest questions; they don’t determine coverage or who is responsible.", language)}</p>
+                      <label>
+                        {translateText("What reason did they give?", language)}
+                        <select value={outcomeReason} onChange={(e) => setOutcomeReason(e.target.value)}>
+                          <option value="">{translateText("Choose if you know", language)}</option>
+                          {outcomeReasonOptions(updateEventType).map((reason) => (
+                            <option key={reason} value={reason}>{translateText(reason, language)}</option>
+                          ))}
+                        </select>
+                      </label>
+                      <label>
+                        {translateText(updateEventType === "referral-redirected" ? "Where was it redirected, or what did they tell you?" : "Did they suggest a next step?", language)}
+                        <textarea
+                          value={outcomeSuggestedNextStep}
+                          onChange={(e) => setOutcomeSuggestedNextStep(e.target.value)}
+                          placeholder={translateText(updateEventType === "referral-redirected" ? "e.g. The referring office will send it to another specialist" : "e.g. Send more records or contact another office", language)}
+                          rows={2}
+                        />
+                      </label>
+                      <div className="outcome-guidance" aria-live="polite">
+                        <p className="eyebrow">{translateText("Possible next step", language)}</p>
+                        <strong>{translateText(outcomePreview.title, language)}</strong>
+                        <p>{translateText(outcomePreview.detail, language)}</p>
+                        <p className="outcome-guidance-note">{translateText("Confirm the options with the office or health plan. Referral Navigator can’t verify the decision.", language)}</p>
+                      </div>
+                    </div>
+                  </details>
+                )}
                 {updateMilestones.length > 1 && <p className="quick-log-hint">{translateText("Use these together only when the same source confirmed each step. Record separate updates if different offices confirmed them.", language)}</p>}
                 <label>
                   {translateText("Who did this update come from?", language)}
