@@ -14,6 +14,15 @@ This page is the source of truth for branch-to-version naming. Patch numbers are
 | v0.4.1 | Research-informed referral-flow iteration | Oct 24, 2026, 11:46 p.m. | `v0.4.1-research-informed-referral-flow` | `v0.4-research-informed-referral-flow`, `codex/v0.4-research-informed-referral-flow` |
 | v0.4.2 | Flexible referral-details journey layout exploration | Oct 26, 2026, 6:44 p.m. | `v0.4-referral-details-layout-exploration` | `v0.4.1-research-informed-referral-flow` |
 | v0.4.3 | Separate dashboard pages for overview, referrals, and next steps | Oct 26, 2026, 7:30 p.m. | `v0.4.3-dashboard-pages` | `v0.4-referral-details-layout-exploration` |
+| v0.4.4 | Denial and redirection follow-up questions with tailored next-step suggestions | Oct 29, 2026, 4:45 p.m. | `v0.4.4-denial-next-steps` | `v0.4.3-dashboard-pages` |
+
+## Current branch and research status — October 29, 2026
+
+- Latest inspected implementation: `v0.4.4-denial-next-steps`, with optional denial/redirection follow-up questions and contextual administrative suggestions.
+- `main` application code remains at the v0.4.3 baseline; updating documentation does not merge v0.4.4 application changes.
+- GitHub default branch remains `claude/youthful-volta-ragd1z` (v0 code). Default checkout is not the latest implementation.
+- The [fixed v0.4.3 formative-test preview](https://referral-navigator-94dxl0ja0-kayoitokudas-projects.vercel.app) remains the planned baseline. The test plan (private project record) records S01, S03, and S09 as not started.
+- Preview publication timestamps above are retained from the existing version record; they were not independently re-audited against Vercel during the documentation review. See [project summary](PROJECT_SUMMARY.md) for decisions and implementation limits.
 
 ## Patch sequence
 
@@ -21,10 +30,10 @@ Version numbers follow first known successful preview publication dates, not the
 
 ## Canonical branch naming
 
-Use the canonical branches in the table for ongoing work. The v0.4.2 branch keeps its `v0.4-` exploratory name; the patch number is recorded separately after its first successful preview. The next dashboard iteration uses the canonical branch `v0.4.3-dashboard-pages`. Earlier source refs remain available for historical previews and commit provenance. The v0.1.2 branch is a snapshot at its recorded v0.1 main-branch commit; it does not rename or repoint the current `main` branch.
+Use the canonical branches in the table for ongoing work. The v0.4.2 branch keeps its `v0.4-` exploratory name; the patch number is recorded separately after its first successful preview. The dashboard-page build uses the canonical branch `v0.4.3-dashboard-pages`. Denial and redirection guidance is prototyped on `v0.4.4-denial-next-steps`. Earlier source refs remain available for historical previews and commit provenance. The v0.1.2 branch is a snapshot at its recorded v0.1 main-branch commit; it does not rename or repoint the current `main` branch.
 
 The connected GitHub actions can create and update branches but do not provide a branch-rename/delete operation. Canonical versioned branches were created from the documented source snapshots or branch heads; old refs remain intact.
 
 ## Preview tracking
 
-Fixed Vercel deployment URLs and commit SHAs identify historical snapshots. The branch alias can move as the canonical branch advances. The spreadsheet’s **Version Links** tab records both, in descending **Build created (Pacific)** order. Decision-log entries stay at the broader v0.1 label when the historical record does not identify which of its two branch snapshots the decision belonged to.
+Fixed Vercel deployment URLs and commit SHAs identify historical snapshots. The branch alias can move as the canonical branch advances. The spreadsheet’s **Version Links** tab (private project record) records both, in descending **Build created (Pacific)** order. Decision-log entries stay at the broader v0.1 label when the historical record does not identify which of its two branch snapshots the decision belonged to.
