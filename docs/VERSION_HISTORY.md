@@ -13,8 +13,16 @@ This page is the source of truth for branch-to-version naming. Patch numbers are
 | v0.3.3 | Supabase sign-in/account follow-on | Oct 24, 2026, 2:20 p.m. | `v0.3.3-auth-account-follow-on` | `codex/supabase-auth-foundation` |
 | v0.4.1 | Research-informed referral-flow iteration | Oct 24, 2026, 11:46 p.m. | `v0.4.1-research-informed-referral-flow` | `v0.4-research-informed-referral-flow`, `codex/v0.4-research-informed-referral-flow` |
 | v0.4.2 | Flexible referral-details journey layout exploration | Oct 26, 2026, 6:44 p.m. | `v0.4-referral-details-layout-exploration` | `v0.4.1-research-informed-referral-flow` |
-| v0.4.3 | Separate dashboard pages for overview, referrals, and next steps | Oct 26, 2026, 7:30 p.m. | `v0.4.3-dashboard-pages` | `v0.4-referral-details-layout-exploration` 
+| v0.4.3 | Separate dashboard pages for overview, referrals, and next steps | Oct 26, 2026, 7:30 p.m. | `v0.4.3-dashboard-pages` | `v0.4-referral-details-layout-exploration` |
 | v0.4.4 | Denial and redirection follow-up questions with tailored next-step suggestions | Oct 29, 2026, 4:45 p.m. | `v0.4.4-denial-next-steps` | `v0.4.3-dashboard-pages` |
+
+## Current branch and research status — October 29, 2026
+
+- Latest inspected implementation: `v0.4.4-denial-next-steps`, with optional denial/redirection follow-up questions and contextual administrative suggestions.
+- `main` application code remains at the v0.4.3 baseline; updating documentation does not merge v0.4.4 application changes.
+- GitHub default branch remains `claude/youthful-volta-ragd1z` (v0 code). Default checkout is not the latest implementation.
+- The [fixed v0.4.3 formative-test preview](https://referral-navigator-94dxl0ja0-kayoitokudas-projects.vercel.app) remains the planned baseline. The test plan (private project record) records S01, S03, and S09 as not started.
+- Preview publication timestamps above are retained from the existing version record; they were not independently re-audited against Vercel during the documentation review. See [project summary](PROJECT_SUMMARY.md) for decisions and implementation limits.
 
 ## Patch sequence
 
@@ -28,4 +36,4 @@ The connected GitHub actions can create and update branches but do not provide a
 
 ## Preview tracking
 
-Fixed Vercel deployment URLs and commit SHAs identify historical snapshots. The branch alias can move as the canonical branch advances. The spreadsheet’s **Version Links** tab records both, in descending **Build created (Pacific)** order. Decision-log entries stay at the broader v0.1 label when the historical record does not identify which of its two branch snapshots the decision belonged to.
+Fixed Vercel deployment URLs and commit SHAs identify historical snapshots. The branch alias can move as the canonical branch advances. The spreadsheet’s **Version Links** tab (private project record) records both, in descending **Build created (Pacific)** order. Decision-log entries stay at the broader v0.1 label when the historical record does not identify which of its two branch snapshots the decision belonged to.
