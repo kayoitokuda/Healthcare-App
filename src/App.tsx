@@ -54,6 +54,7 @@ type Update = {
   eventType?: ReferralEventType;
   outcomeReason?: string;
   outcomeSuggestion?: string;
+  eventTypes?: ReferralEventType[];
 };
 function hasMilestone(update: Update, milestone: Milestone) {
   return update.milestone === milestone || update.milestones?.includes(milestone) === true;
@@ -832,6 +833,7 @@ function ReferralNavigatorApp() {
   const [updateMilestones, setUpdateMilestones] = useState<Milestone[]>([]);
   const [updateEventDate, setUpdateEventDate] = useState("");
   const [updateEventType, setUpdateEventType] = useState<ReferralEventType | null>(null);
+  const [updateEventTypes, setUpdateEventTypes] = useState<ReferralEventType[]>([]);
   const [outcomeReason, setOutcomeReason] = useState("");
   const [outcomeSuggestedNextStep, setOutcomeSuggestedNextStep] = useState("");
   const [messageKind, setMessageKind] = useState<
@@ -1000,21 +1002,54 @@ function ReferralNavigatorApp() {
     setUpdateMilestones([]);
     setUpdateEventDate("");
     setUpdateEventType(null);
+    setUpdateEventTypes([]);
     setOutcomeReason("");
     setOutcomeSuggestedNextStep("");
     setModal("update");
   }
 
   function addQuickEvent(eventType: ReferralEventType, title: string) {
-    setUpdateTitle(translateText(title, language));
-    setUpdateDetail("");
-    setUpdateSource(eventType === "specialist-declined" ? "Specialist office" : eventType === "insurance-denied" ? "Health plan" : eventType === "referral-redirected" ? "Referring office" : "You");
-    setUpdateMilestones([]);
-    setUpdateEventDate("");
-    setOutcomeReason("");
-    setOutcomeSuggestedNextStep("");
-    setUpdateEventType(eventType);
-    setModal("update");
+    const wasSelected = updateEventTypes.includes(eventType);
+    let next = wasSelected
+      ? updateEventTypes.filter((item) => item !== eventType)
+      : [...updateEventTypes, eventType];
+    if (!wasSelected && isOutcomeEventType(eventType)) {
+      next = [...next.filter((item) => !isOutcomeEventType(item)), eventType];
+    }
+    const nextOutcome = [...next].reverse().find(isOutcomeEventType) ?? null;
+    const primaryEvent = nextOutcome ?? next[next.length - 1] ?? null;
+    const eventTitles: Record<ReferralEventType, string> = {
+      "records-requested": "Records requested",
+      "records-sent": "Records sent",
+      "follow-up-recommended": "Follow-up visit recommended",
+      "visit-completed": "Visit completed",
+      "specialist-declined": "Specialist could not accept",
+      "insurance-denied": "Insurance authorization denied",
+      "referral-redirected": "Referral redirected",
+      "care-step": "Other care step",
+    };
+    const milestoneTitles: Record<Milestone, string> = {
+      "referral-sent": "Referral sent",
+      "referral-received": "Referral received",
+      "ready-to-schedule": "Ready to schedule",
+      "appointment-scheduled": "Appointment scheduled",
+    };
+    const summary = [
+      ...updateMilestones.map((item) => milestoneTitles[item]),
+      ...next.map((item) => eventTitles[item]),
+    ].map((item) => translateText(item, language)).join(" · ");
+    setUpdateEventTypes(next);
+    setUpdateEventType(primaryEvent);
+    setUpdateTitle(summary);
+    if (primaryEvent !== updateEventType) {
+      setOutcomeReason("");
+      setOutcomeSuggestedNextStep("");
+    }
+    setUpdateSource(next.length === 1 && updateMilestones.length === 0
+      ? eventType === "specialist-declined" ? "Specialist office"
+        : eventType === "insurance-denied" ? "Health plan"
+          : eventType === "referral-redirected" ? "Referring office" : "You"
+      : "You");
   }
 
   function saveUpdate() {
@@ -1028,6 +1063,7 @@ function ReferralNavigatorApp() {
       source: updateSource,
       ...(updateMilestones.length ? { milestones: updateMilestones } : {}),
       ...(updateEventType ? { eventType: updateEventType } : updateMilestones.length ? {} : { eventType: "care-step" as const }),
+      ...(updateEventTypes.length ? { eventTypes: updateEventTypes } : {}),
       ...(isOutcomeEventType(updateEventType) && outcomeReason ? { outcomeReason } : {}),
       ...(isOutcomeEventType(updateEventType) && outcomeSuggestedNextStep.trim() ? { outcomeSuggestion: outcomeSuggestedNextStep.trim() } : {}),
     };
@@ -1350,19 +1386,48 @@ function ReferralNavigatorApp() {
               </button>
             </div>
 
-            <ol className="referral-journey-list" aria-label={translateText("Referral journey, oldest updates first", language)}>
-              <li className="journey-event journey-start">
-                <span className="journey-event-marker" aria-hidden="true"><Check size={15} /></span>
-                <div className="journey-event-body">
-                  <span className="journey-date">{referral.date}</span>
-                  <h3>{translateText("Recommendation", language)}</h3>
-                  <p>{translateText("A clinician recommended specialist care. This is the starting point for the referral you are tracking.", language)}</p>
-                  <span className="source-tag">{translateText("Starting point · You entered this", language)}</span>
+            <section className="journey-next" aria-labelledby="journey-next-title">
+              <div className="journey-next-marker" aria-hidden="true" />
+              <div className="journey-next-content">
+                <p className="eyebrow">{translateText("UP NEXT · A POSSIBLE NEXT STEP", language)}</p>
+                <h3 id="journey-next-title">{translateText(currentNextStep?.title ?? "Check whether it was sent", language)}</h3>
+                <p>{translateText(currentNextStep?.detail ?? "", language)}</p>
+                <p className="journey-suggestion-note">
+                  {translateText("This suggestion uses the details you entered. Confirm the next step with the relevant office.", language)}
+                </p>
+                <div className="journey-next-actions">
+                  <button type="button" className="secondary-button" onClick={() => addUpdate()}>
+                    <Plus size={16} /> {translateText("Record an update", language)}
+                  </button>
+                  <button
+                    type="button"
+                    className="primary-button"
+                    onClick={() => startMessage("Call script", referral, latestReferralEvent?.id ?? null, "next-step")}
+                  >
+                    <Phone size={16} /> {translateText("Prepare a call script", language)}
+                  </button>
                 </div>
-              </li>
+                {inlineDraftId === referral.id && inlineDraftPlacement === "next-step" && (
+                  <InlineDraftPanel
+                    kind={messageKind}
+                    draft={messageDraft}
+                    copied={copied}
+                    contextual={inlineDraftContextId !== null}
+                    onKindChange={(kind) => startMessage(kind, referral, inlineDraftContextId, inlineDraftPlacement)}
+                    onDraftChange={setMessageDraft}
+                    onCopy={copyDraft}
+                    onContact={() => logContactAttempt(referral, draftContactRecipient(referral))}
+                    onClose={() => setInlineDraftId(null)}
+                  />
+                )}
+              </div>
+            </section>
+
+            <ol className="referral-journey-list" aria-label={translateText("Referral journey, newest updates first", language)}>
+              
               {[...referral.updates]
                 .filter((update) => !["Referral added to your tracker", "Specialist recommended"].includes(update.title))
-                .sort((a, b) => updateTimestamp(a) - updateTimestamp(b) || a.id - b.id)
+                .sort((a, b) => updateTimestamp(b) - updateTimestamp(a) || b.id - a.id)
                 .map((update) => (
                   <li className="journey-event" key={update.id}>
                     <span className="journey-event-marker" aria-hidden="true">
@@ -1412,44 +1477,18 @@ function ReferralNavigatorApp() {
                     </div>
                   </li>
                 ))}
+            <li className="journey-event journey-start">
+                <span className="journey-event-marker" aria-hidden="true"><Check size={15} /></span>
+                <div className="journey-event-body">
+                  <span className="journey-date">{referral.date}</span>
+                  <h3>{translateText("Recommendation", language)}</h3>
+                  <p>{translateText("A clinician recommended specialist care. This is the starting point for the referral you are tracking.", language)}</p>
+                  <span className="source-tag">{translateText("Starting point · You entered this", language)}</span>
+                </div>
+              </li>
             </ol>
 
-            <section className="journey-next" aria-labelledby="journey-next-title">
-              <div className="journey-next-marker" aria-hidden="true" />
-              <div className="journey-next-content">
-                <p className="eyebrow">{translateText("UP NEXT · A POSSIBLE NEXT STEP", language)}</p>
-                <h3 id="journey-next-title">{translateText(currentNextStep?.title ?? "Check whether it was sent", language)}</h3>
-                <p>{translateText(currentNextStep?.detail ?? "", language)}</p>
-                <p className="journey-suggestion-note">
-                  {translateText("This suggestion uses the details you entered. Confirm the next step with the relevant office.", language)}
-                </p>
-                <div className="journey-next-actions">
-                  <button type="button" className="secondary-button" onClick={() => addUpdate()}>
-                    <Plus size={16} /> {translateText("Record an update", language)}
-                  </button>
-                  <button
-                    type="button"
-                    className="primary-button"
-                    onClick={() => startMessage("Call script", referral, latestReferralEvent?.id ?? null, "next-step")}
-                  >
-                    <Phone size={16} /> {translateText("Prepare a call script", language)}
-                  </button>
-                </div>
-                {inlineDraftId === referral.id && inlineDraftPlacement === "next-step" && (
-                  <InlineDraftPanel
-                    kind={messageKind}
-                    draft={messageDraft}
-                    copied={copied}
-                    contextual={inlineDraftContextId !== null}
-                    onKindChange={(kind) => startMessage(kind, referral, inlineDraftContextId, inlineDraftPlacement)}
-                    onDraftChange={setMessageDraft}
-                    onCopy={copyDraft}
-                    onContact={() => logContactAttempt(referral, draftContactRecipient(referral))}
-                    onClose={() => setInlineDraftId(null)}
-                  />
-                )}
-              </div>
-            </section>
+            
           </section>
 
           <section className="section-card tools-card">
@@ -1545,10 +1584,28 @@ function ReferralNavigatorApp() {
                           ? updateMilestones.filter((item) => item !== value)
                           : [...updateMilestones, value];
                         setUpdateMilestones(next);
-                        setUpdateEventType(null);
-                        setOutcomeReason("");
-                        setOutcomeSuggestedNextStep("");
-                        setUpdateTitle(next.length > 1 ? translateText("Referral progress update", language) : next.length === 1 ? translateText(label, language) : "");
+                        const milestoneTitles: Record<Milestone, string> = {
+                          "referral-sent": "Referral sent",
+                          "referral-received": "Referral received",
+                          "ready-to-schedule": "Ready to schedule",
+                          "appointment-scheduled": "Appointment scheduled",
+                        };
+                        const eventTitles: Record<ReferralEventType, string> = {
+                          "records-requested": "Records requested",
+                          "records-sent": "Records sent",
+                          "follow-up-recommended": "Follow-up visit recommended",
+                          "visit-completed": "Visit completed",
+                          "specialist-declined": "Specialist could not accept",
+                          "insurance-denied": "Insurance authorization denied",
+                          "referral-redirected": "Referral redirected",
+                          "care-step": "Other care step",
+                        };
+                        setUpdateMilestones(next);
+                        setUpdateTitle([
+                          ...next.map((item) => translateText(milestoneTitles[item], language)),
+                          ...updateEventTypes.map((item) => translateText(eventTitles[item], language)),
+                        ].join(" · "));
+                        if (next.length > 1 || updateEventTypes.length > 0) setUpdateSource("You");
                       }}
                     >
                       {updateMilestones.includes(value) && <Check size={14} />}{translateText(label, language)}
@@ -1569,8 +1626,8 @@ function ReferralNavigatorApp() {
                   ] as const).map(([eventType, title]) => (
                     <button
                       type="button"
-                      aria-pressed={updateEventType === eventType}
-                      className={updateEventType === eventType ? "selected" : ""}
+                      aria-pressed={updateEventTypes.includes(eventType)}
+                      className={updateEventTypes.includes(eventType) ? "selected" : ""}
                       key={eventType}
                       onClick={() => addQuickEvent(eventType, title)}
                     >
@@ -1610,7 +1667,7 @@ function ReferralNavigatorApp() {
                     </div>
                   </details>
                 )}
-                {updateMilestones.length > 1 && <p className="quick-log-hint">{translateText("Use these together only when the same source confirmed each step. Record separate updates if different offices confirmed them.", language)}</p>}
+                {(updateMilestones.length > 1 || updateEventTypes.length > 1) && <p className="quick-log-hint">{translateText("Use these together only when the same source confirmed each item. Record separate updates if different offices confirmed them.", language)}</p>}
                 <label>
                   {translateText("Who did this update come from?", language)}
                   <select
@@ -2150,6 +2207,10 @@ function ReferralNavigatorApp() {
           ) : modal === "new" ? (
             <form className="form-body" onSubmit={createReferral}>
               <p className="modal-intro">{editingReferralId !== null ? "Update the referral details in your tracker." : "Add what you know after a clinician recommends specialist care. You can fill in the rest later."}</p>
+              <datalist id="referral-office-suggestions">
+                {[...new Set(referrals.flatMap((item) => [item.from, item.to]).filter((office) => office && !office.endsWith("not added")))]
+                  .map((office) => <option key={office} value={office} />)}
+              </datalist>
               <label>
                 Specialty or reason
                 <input
@@ -2164,6 +2225,7 @@ function ReferralNavigatorApp() {
                 Referring office
                 <input
                   value={newFrom}
+                  list="referral-office-suggestions"
                   onChange={(e) => setNewFrom(e.target.value)}
                   placeholder="Clinic or clinician name"
                 />
@@ -2172,6 +2234,7 @@ function ReferralNavigatorApp() {
                 Specialist office
                 <input
                   value={newTo}
+                  list="referral-office-suggestions"
                   onChange={(e) => setNewTo(e.target.value)}
                   placeholder="If you know it"
                 />
