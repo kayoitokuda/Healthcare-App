@@ -1008,7 +1008,7 @@ function ReferralNavigatorApp() {
     setModal("update");
   }
 
-  function addQuickEvent(eventType: ReferralEventType, title: string) {
+  function addQuickEvent(eventType: ReferralEventType) {
     const wasSelected = updateEventTypes.includes(eventType);
     let next = wasSelected
       ? updateEventTypes.filter((item) => item !== eventType)
@@ -1046,9 +1046,9 @@ function ReferralNavigatorApp() {
       setOutcomeSuggestedNextStep("");
     }
     setUpdateSource(next.length === 1 && updateMilestones.length === 0
-      ? eventType === "specialist-declined" ? "Specialist office"
-        : eventType === "insurance-denied" ? "Health plan"
-          : eventType === "referral-redirected" ? "Referring office" : "You"
+      ? primaryEvent === "specialist-declined" ? "Specialist office"
+        : primaryEvent === "insurance-denied" ? "Health plan"
+          : primaryEvent === "referral-redirected" ? "Referring office" : "You"
       : "You");
   }
 
@@ -1629,7 +1629,7 @@ function ReferralNavigatorApp() {
                       aria-pressed={updateEventTypes.includes(eventType)}
                       className={updateEventTypes.includes(eventType) ? "selected" : ""}
                       key={eventType}
-                      onClick={() => addQuickEvent(eventType, title)}
+                      onClick={() => addQuickEvent(eventType)}
                     >
                       {translateText(title, language)}
                     </button>
