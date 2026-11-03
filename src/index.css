@@ -5980,3 +5980,9 @@ body { min-width: 0; }
     overscroll-behavior-y: contain;
   }
 }
+
+@media (max-width: 760px) {
+  .dashboard-shell .welcome { display: block; }
+  .dashboard-shell .welcome > div:first-child { width: 100%; max-width: none; min-width: 0; }
+  .dashboard-shell .welcome h1 { width: 100%; max-width: none; text-wrap: wrap; }
+}
