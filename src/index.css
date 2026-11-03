@@ -5955,3 +5955,28 @@ body { min-width: 0; }
   .dashboard-shell :is(input, select, textarea) { min-width: 0; max-width: 100%; }
   .dashboard-shell .footer { flex-wrap: wrap; gap: 12px; }
 }
+
+/* Reserve the dock's measured height, including wrapped labels and device insets. */
+@media (max-width: 760px) {
+  .dashboard-shell { min-height: 100dvh; }
+  .dashboard-shell > .dashboard-wrap,
+  .dashboard-shell > .detail-wrap {
+    height: auto;
+    max-height: none;
+    padding-bottom: calc(var(--bottom-nav-height, 84px) + 48px + env(safe-area-inset-bottom, 0px));
+  }
+  .dashboard-shell :is(button, a, input, select, textarea) {
+    scroll-margin-bottom: calc(var(--bottom-nav-height, 84px) + 36px + env(safe-area-inset-bottom, 0px));
+  }
+  .dashboard-shell .scrim {
+    max-height: 100dvh;
+    padding: max(12px, env(safe-area-inset-top, 0px)) 12px max(12px, env(safe-area-inset-bottom, 0px));
+    overflow-y: auto;
+  }
+  .dashboard-shell .modal {
+    min-height: 0;
+    max-height: calc(100dvh - 24px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+  }
+}

@@ -351,12 +351,22 @@ function MobileBottomNav({ page, onNavigate }: {
   onNavigate: (page: DashboardPage) => void;
 }) {
   const { language } = useAppLanguage();
-  const items = [
+  const navRef = useRef<HTMLElement>(null);
+  useEffect(() => {
+    const nav = navRef.current;
+    const shell = nav?.closest<HTMLElement>(".dashboard-shell");
+    if (!nav || !shell) return;
+    const measure = () => shell.style.setProperty("--bottom-nav-height", `${nav.getBoundingClientRect().height}px`);
+    const observer = new ResizeObserver(measure);
+    observer.observe(nav);
+    measure();
+    return () => { observer.disconnect(); shell.style.removeProperty("--bottom-nav-height"); };
+  }, []);  const items = [
     { id: "overview", label: "Overview", Icon: Home },
     { id: "referrals", label: "My referrals", Icon: ClipboardList },
     { id: "next-steps", label: "Next steps", Icon: MessageCircle },
   ] as const;
-  return <nav className="mobile-bottom-nav" aria-label={translateText("Dashboard navigation", language)}>
+  return <nav ref={navRef} className="mobile-bottom-nav" aria-label={translateText("Dashboard navigation", language)}>
     {items.map(({ id, label, Icon }) => <button
       type="button" key={id}
       aria-current={page === id ? "page" : undefined}
