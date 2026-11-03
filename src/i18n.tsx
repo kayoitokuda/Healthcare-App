@@ -536,6 +536,23 @@ const rows: Array<[string, string, string, string, string]> = [
   ["Reason shared", "伝えられた理由", "对方给出的原因", "Motivo informado", "Lý do được thông báo"],
   ["Next step mentioned", "伝えられた次の手順", "对方提到的下一步", "Próximo paso mencionado", "Bước tiếp theo được đề cập"],
   ["Done", "完了", "完成", "Listo", "Xong"],
+
+  ["Your name", "お名前", "你的姓名", "Tu nombre", "Tên của bạn"],
+  ["Your email", "メールアドレス", "你的电子邮件", "Tu correo electrónico", "Email của bạn"],
+  ["Choose a password", "パスワードを設定", "设置密码", "Elige una contraseña", "Chọn mật khẩu"],
+  ["Continue", "続ける", "继续", "Continuar", "Tiếp tục"],
+  ["Back", "戻る", "返回", "Atrás", "Quay lại"],
+  ["Please enter your name.", "名前を入力してください。", "请输入姓名。", "Escribe tu nombre.", "Vui lòng nhập tên của bạn."],
+  ["Please enter your email address.", "メールアドレスを入力してください。", "请输入电子邮件地址。", "Escribe tu correo electrónico.", "Vui lòng nhập địa chỉ email."],
+  ["Please enter a valid email address.", "有効なメールアドレスを入力してください。", "请输入有效的电子邮件地址。", "Escribe un correo electrónico válido.", "Vui lòng nhập địa chỉ email hợp lệ."],
+  ["Please enter a password.", "パスワードを入力してください。", "请输入密码。", "Escribe una contraseña.", "Vui lòng nhập mật khẩu."],
+  ["Please check this field.", "この項目を確認してください。", "请检查此字段。", "Revisa este campo.", "Vui lòng kiểm tra trường này."],
+  ["This preview isn’t connected to Supabase yet. Check its Vercel environment variables.", "このプレビューはまだSupabaseに接続されていません。Vercelの環境変数を確認してください。", "此预览尚未连接到 Supabase。请检查 Vercel 环境变量。", "Esta vista previa aún no está conectada a Supabase. Revisa las variables de entorno de Vercel.", "Bản xem trước này chưa kết nối với Supabase. Hãy kiểm tra biến môi trường Vercel."],
+  ["Invalid email or password.", "メールアドレスまたはパスワードが正しくありません。", "电子邮件或密码不正确。", "El correo electrónico o la contraseña no son correctos.", "Email hoặc mật khẩu không chính xác."],
+  ["Please confirm your email before signing in.", "サインインする前にメールアドレスを確認してください。", "请先确认电子邮件地址，再登录。", "Confirma tu correo electrónico antes de iniciar sesión.", "Vui lòng xác nhận email trước khi đăng nhập."],
+  ["An account with this email already exists.", "このメールアドレスのアカウントはすでに存在します。", "此电子邮件地址已注册账户。", "Ya existe una cuenta con este correo electrónico.", "Đã có tài khoản dùng địa chỉ email này."],
+  ["Too many attempts. Please wait a moment and try again.", "試行回数が多すぎます。少し待ってからもう一度お試しください。", "尝试次数过多。请稍候再试。", "Demasiados intentos. Espera un momento e inténtalo de nuevo.", "Bạn đã thử quá nhiều lần. Vui lòng đợi một lúc rồi thử lại."],
+
 ];
 
 const dictionary = Object.fromEntries(
