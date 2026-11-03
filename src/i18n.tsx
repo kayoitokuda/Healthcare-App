@@ -875,11 +875,12 @@ export function useAppLanguage() {
 
 export function LanguageToggle({ onChange }: { onChange?: (language: AppLanguage) => void }) {
   const { language, setLanguage } = useAppLanguage();
+  const label = translateText("Language", language);
   return (
     <label className="language-toggle">
-      <span className="sr-only">Language</span>
+      <span className="sr-only">{label}</span>
       <select
-        aria-label="Language"
+        aria-label={label}
         value={language}
         onChange={(event) => {
           const next = event.target.value as AppLanguage;
