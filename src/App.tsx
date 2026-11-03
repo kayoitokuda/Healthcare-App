@@ -1,3 +1,4 @@
+import ReferralWizard from "./components/ReferralWizard";
 import {
   useEffect,
   useId,
@@ -345,6 +346,24 @@ function IconButton({
   );
 }
 
+function MobileBottomNav({ page, onNavigate }: {
+  page: DashboardPage;
+  onNavigate: (page: DashboardPage) => void;
+}) {
+  const { language } = useAppLanguage();
+  const items = [
+    { id: "overview", label: "Overview", Icon: Home },
+    { id: "referrals", label: "My referrals", Icon: ClipboardList },
+    { id: "next-steps", label: "Next steps", Icon: MessageCircle },
+  ] as const;
+  return <nav className="mobile-bottom-nav" aria-label={translateText("Dashboard navigation", language)}>
+    {items.map(({ id, label, Icon }) => <button
+      type="button" key={id}
+      aria-current={page === id ? "page" : undefined}
+      onClick={() => onNavigate(id)}
+    ><Icon size={21} aria-hidden="true" /><span>{translateText(label, language)}</span></button>)}
+  </nav>;
+}
 function HeaderMenu({
   open,
   menuRef,
@@ -1316,10 +1335,11 @@ function ReferralNavigatorApp() {
             <span className="privacy-chip" title="Your referral updates are saved to your account.">
               <CircleHelp size={14} /> Saved to your account
             </span>
-            <button type="button" className="account-signout" onClick={() => setModal("settings")}><Settings size={15} /> Settings</button>
-            <button type="button" className="account-signout" onClick={() => void signOut()}>
+            <button type="button" className="account-signout account-settings" aria-label={translateText("Settings", language)} title={translateText("Settings", language)} onClick={() => setModal("settings")}><Settings size={20} aria-hidden="true" /> <span className="account-button-label">Settings</span></button>
+            <button type="button" className="account-signout account-signout-action" onClick={() => void signOut()}>
               Sign out
             </button>
+            <button type="button" className="mobile-help-button icon-button" aria-label={translateText("How it works", language)} onClick={() => setModal("help")}><CircleHelp size={20} aria-hidden="true" /></button>
             <HeaderMenu
               open={menuOpen}
               menuRef={menuRef}
@@ -1333,6 +1353,7 @@ function ReferralNavigatorApp() {
             />
           </div>
         </header>
+        <MobileBottomNav page="referrals" onNavigate={navigateDashboard} />
         <main className="detail-wrap">
           {syncError && (
             <div className="storage-warning" role="alert">
@@ -1827,11 +1848,12 @@ function ReferralNavigatorApp() {
           <span className="privacy-chip" title="Your referral updates are saved to your account.">
             <CircleHelp size={14} /> Saved to your account
           </span>
-          <button type="button" className="account-signout" onClick={() => setModal("settings")}><Settings size={15} /> Settings</button>
-          <button type="button" className="account-signout" onClick={() => void signOut()}>
+          <button type="button" className="account-signout account-settings" aria-label={translateText("Settings", language)} title={translateText("Settings", language)} onClick={() => setModal("settings")}><Settings size={20} aria-hidden="true" /> <span className="account-button-label">Settings</span></button>
+          <button type="button" className="account-signout account-signout-action" onClick={() => void signOut()}>
             Sign out
           </button>
-          <HeaderMenu
+          <button type="button" className="mobile-help-button icon-button" aria-label={translateText("How it works", language)} onClick={() => setModal("help")}><CircleHelp size={20} aria-hidden="true" /></button>
+            <HeaderMenu
             open={menuOpen}
             menuRef={menuRef}
             onToggle={() => setMenuOpen((open) => !open)}
@@ -1850,6 +1872,7 @@ function ReferralNavigatorApp() {
           />
         </div>
       </header>
+      <MobileBottomNav page={dashboardPage} onNavigate={navigateDashboard} />
       <main className="dashboard-wrap" id="dashboard-overview">
         {dashboardPage !== "overview" && <div className="dashboard-page-heading">
           <div>
@@ -2199,58 +2222,20 @@ function ReferralNavigatorApp() {
                   {translateText("Referral details are saved to this account. The app doesn’t contact offices or verify referral status or insurance coverage.", language)}
                 </p>
               </section>
+              <button type="button" className="secondary-button full settings-signout" onClick={() => void signOut()}>{translateText("Sign out", language)}</button>
               {languageSaveState && <p className="settings-save-state" role="status" aria-live="polite">{translateText(languageSaveState, language)}</p>}
               <button type="button" className="primary-button full" onClick={() => setModal(null)}>
                 {translateText("Done", language)}
               </button>
             </div>
           ) : modal === "new" ? (
-            <form className="form-body" onSubmit={createReferral}>
-              <p className="modal-intro">{editingReferralId !== null ? "Update the referral details in your tracker." : "Add what you know after a clinician recommends specialist care. You can fill in the rest later."}</p>
-              <datalist id="referral-office-suggestions">
-                {[...new Set(referrals.flatMap((item) => [item.from, item.to]).filter((office) => office && !office.endsWith("not added")))]
-                  .map((office) => <option key={office} value={office} />)}
-              </datalist>
-              <label>
-                Specialty or reason
-                <input
-                  autoFocus
-                  required
-                  value={newSpecialty}
-                  onChange={(e) => setNewSpecialty(e.target.value)}
-                  placeholder="e.g. Cardiology"
-                />
-              </label>
-              <label>
-                Referring office
-                <input
-                  value={newFrom}
-                  list="referral-office-suggestions"
-                  onChange={(e) => setNewFrom(e.target.value)}
-                  placeholder="Clinic or clinician name"
-                />
-              </label>
-              <label>
-                Specialist office
-                <input
-                  value={newTo}
-                  list="referral-office-suggestions"
-                  onChange={(e) => setNewTo(e.target.value)}
-                  placeholder="If you know it"
-                />
-              </label>
-              {editingReferralId === null && <label>
-                Date recommended
-                <input type="date" value={newDate} onChange={(e) => setNewDate(e.target.value)} />
-              </label>}
-              <p className="helper-note">
-                <ShieldCheck size={15} /> Adding a referral only saves it in
-                your tracker. Nothing is sent to an office.
-              </p>
-              <button className="primary-button full" type="submit">
-                {editingReferralId !== null ? "Save changes" : "Add to my referrals"}
-              </button>
-            </form>
+            <ReferralWizard
+              editing={editingReferralId !== null}
+              values={[newSpecialty, newFrom, newTo, newDate]}
+              onChange={(index, value) => [setNewSpecialty, setNewFrom, setNewTo, setNewDate][index](value)}
+              offices={[...new Set(referrals.flatMap(item => [item.from, item.to]).filter(office => office && !office.endsWith("not added")))]}
+              onSave={createReferral}
+            />
           ) : (
             <div className="form-body">
               <p className="modal-intro">
