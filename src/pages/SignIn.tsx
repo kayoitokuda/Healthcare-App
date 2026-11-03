@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { HeartHandshake, ShieldCheck } from "lucide-react";
 import { useAuth } from "../auth/AuthContext";
 
@@ -11,6 +11,11 @@ export default function SignIn({
 }) {
   const { signIn, signUp, configured } = useAuth();
   const [mode, setMode] = useState<"sign-in" | "sign-up">(initialMode);
+  const [signupStep, setSignupStep] = useState(0);
+  const formRef = useRef<HTMLFormElement>(null);
+  useEffect(() => {
+    if (mode === "sign-up") formRef.current?.querySelector("input")?.focus();
+  }, [mode, signupStep]);
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -20,6 +25,10 @@ export default function SignIn({
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (mode === "sign-up" && signupStep < 2) {
+      setSignupStep(signupStep + 1);
+      return;
+    }
     setBusy(true);
     setError("");
     setNotice("");
@@ -44,6 +53,7 @@ export default function SignIn({
 
   function changeMode(nextMode: "sign-in" | "sign-up") {
     setMode(nextMode);
+    setSignupStep(0);
     setError("");
     setNotice("");
   }
@@ -76,8 +86,9 @@ export default function SignIn({
         {error && <p className="auth-alert" role="alert">{error}</p>}
         {notice && <p className="auth-notice" role="status">{notice}</p>}
 
-        <form className="auth-form" onSubmit={handleSubmit} aria-busy={busy}>
-          {mode === "sign-up" && (
+        {mode === "sign-up" && <p role="status">Step {signupStep + 1} of 3 · {['Your name', 'Your email', 'Choose a password'][signupStep]}</p>}
+        <form ref={formRef} className="auth-form" onSubmit={handleSubmit} aria-busy={busy}>
+          {mode === "sign-up" && signupStep === 0 && (
             <label>
               Name
               <input
@@ -88,7 +99,7 @@ export default function SignIn({
               />
             </label>
           )}
-          <label>
+          {(mode === "sign-in" || signupStep === 1) && <label>
             Email
             <input
               autoComplete="email"
@@ -97,8 +108,8 @@ export default function SignIn({
               onChange={(event) => setEmail(event.target.value)}
               required
             />
-          </label>
-          <label>
+          </label>}
+          {(mode === "sign-in" || signupStep === 2) && <label>
             Password
             <input
               autoComplete={mode === "sign-in" ? "current-password" : "new-password"}
@@ -110,10 +121,11 @@ export default function SignIn({
               required
             />
             {mode === "sign-up" && <small id="signup-password-hint">Use at least 8 characters.</small>}
-          </label>
+          </label>}
           <button className="auth-submit" type="submit" disabled={busy || !configured} aria-busy={busy}>
-            {busy ? "Please wait…" : mode === "sign-in" ? "Sign in" : "Create account"}
+            {busy ? "Please wait…" : mode === "sign-in" ? "Sign in" : signupStep < 2 ? "Continue" : "Create account"}
           </button>
+          {mode === "sign-up" && signupStep > 0 && <button className="auth-back" type="button" disabled={busy} onClick={() => setSignupStep(signupStep - 1)}>Back</button>}
           <span className="sr-only" role="status" aria-live="polite" aria-atomic="true">
             {busy ? "Please wait…" : ""}
           </span>
