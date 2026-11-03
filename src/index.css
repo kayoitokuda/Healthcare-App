@@ -3044,6 +3044,16 @@ button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-
   background: var(--white);
   box-shadow: var(--shadow);
 }
+.auth-brand-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.auth-brand-row .language-toggle {
+  margin-left: auto;
+}
 .auth-brand {
   display: inline-flex;
   align-items: center;
