@@ -5944,3 +5944,14 @@ html {
   .dashboard-shell .card-meta { flex-wrap: wrap; gap: 8px; }
   .dashboard-shell .route-line { overflow-wrap: anywhere; }
 }
+
+/* Size against the available viewport, including browser scrollbar space. */
+body { min-width: 0; }
+.app-shell, .dashboard-shell > main { min-width: 0; max-width: 100%; }
+@media (max-width: 760px) {
+  .dashboard-shell :is(.dashboard-stats, .dashboard-lower-grid, .referral-list-layout, .referral-grid, .overview-next-step, .next-step-card) > * { min-width: 0; }
+  .dashboard-shell :is(.toolkit-copy, .recent-update-copy, .overview-next-copy, .next-step-card-main, .next-step-card-main > div) { min-width: 0; overflow-wrap: anywhere; }
+  .dashboard-shell :is(.primary-button, .secondary-button, .text-button) { max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
+  .dashboard-shell :is(input, select, textarea) { min-width: 0; max-width: 100%; }
+  .dashboard-shell .footer { flex-wrap: wrap; gap: 12px; }
+}
