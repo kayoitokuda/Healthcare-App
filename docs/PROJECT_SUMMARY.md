@@ -1,5 +1,23 @@
 # Referral Navigator — project summary and decision status
 
+## November 2, 2026 — v0.4.4 mobile integration
+
+The canonical `v0.4.4-denial-next-steps` branch now includes `codex/mobile-referral-experience` through source commit `6f030a7`. This remains v0.4.4; the mobile branch is an implementation branch within that version family, not a new numbered release. GitHub `main` remains the v0.4.3 application baseline.
+
+- Guided account creation and referral entry, optional unknown details, reusable office selections, and review/edit before saving.
+- Mobile bottom navigation, consistent gold logo and serif wordmark, compact Help/Settings controls, and sign-out in Settings.
+- Full-width welcome heading, readable small-screen cards, horizontal overflow corrections, and measured bottom-navigation clearance.
+- The inherited October 31 changes also include office-name suggestions, newest-first journey entries, and multi-event update selection.
+
+Validation: production build passes. Browser checks confirmed no dashboard horizontal overflow at 320/360/390/768px and bottom-content clearance at 360 × 640. Lint retains existing warnings. Signup, persistence, account isolation, translation completeness, keyboard/device behavior, and human usability still need validation. The frozen v0.4.3 research baseline is unchanged.
+
+See [mobile implementation notes](MOBILE_EXPERIENCE.md). Fixed deployment snapshots and commit SHAs are tracked in the [Version Links spreadsheet](https://docs.google.com/spreadsheets/d/1g27l9rXK3zXs8UKRjBesg1XGpoZttiBm131HEvv1XRA/edit#gid=111403025).
+
+## Historical audit context
+
+The sections below describe the October 29 audit; the integration note above supersedes its implementation/backlog status where specified.
+
+
 Updated October 29, 2026. Reconciled with project decisions, planned validation, and repository code at v0.4.4 commit `3ca5b82120358c8d72c2e1117b762542af960b6b`.
 
 ## Purpose and scope

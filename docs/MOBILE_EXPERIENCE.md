@@ -24,3 +24,7 @@ This is an initial implementation, not a usability-validated release. No product
 - Mobile header keeps the shared gold logo and serif wordmark, with consistent Help and Settings buttons. Sign out is also available in Settings.
 - Below 480px, summary cards use full-width rows and next-step/toolkit descriptions receive more reading space.
 - Local Supabase configuration was verified against the auth settings endpoint; its settings file is ignored by Git. Authenticated persistence and visual browser QA remain unverified.
+
+## Integration and targeted QA — November 2, 2026
+
+Merged through source commit 6f030a7 into canonical v0.4.4-denial-next-steps. Browser control later became available: no dashboard horizontal overflow at 320/360/390/768px; footer bottom at 511.7px remains above dock top at 547.9px in a 360 × 640 viewport after scrolling to the bottom. Includes full-width mobile welcome heading. Earlier unavailable-browser notes describe the initial QA pass only. No human usability or full persistence validation is claimed.

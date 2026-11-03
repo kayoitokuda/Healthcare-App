@@ -6,7 +6,20 @@ Patients record what happened, when it happened, and who shared the information.
 
 This is an independent research prototype. It does not connect to clinic referral systems, send messages, verify insurance coverage, or independently confirm referral status. An office-attributed update is still entered by the patient. Adding a referral does not send it; logging contact does not prove that an office acted.
 
-## Current project status — October 29, 2026
+## November 2, 2026 — v0.4.4 mobile integration
+
+The canonical `v0.4.4-denial-next-steps` branch now includes `codex/mobile-referral-experience` through source commit `6f030a7`. This remains v0.4.4; the mobile branch is an implementation branch within that version family, not a new numbered release. GitHub `main` remains the v0.4.3 application baseline.
+
+- Guided account creation and referral entry, optional unknown details, reusable office selections, and review/edit before saving.
+- Mobile bottom navigation, consistent gold logo and serif wordmark, compact Help/Settings controls, and sign-out in Settings.
+- Full-width welcome heading, readable small-screen cards, horizontal overflow corrections, and measured bottom-navigation clearance.
+- The inherited October 31 changes also include office-name suggestions, newest-first journey entries, and multi-event update selection.
+
+Validation: production build passes. Browser checks confirmed no dashboard horizontal overflow at 320/360/390/768px and bottom-content clearance at 360 × 640. Lint retains existing warnings. Signup, persistence, account isolation, translation completeness, keyboard/device behavior, and human usability still need validation. The frozen v0.4.3 research baseline is unchanged.
+
+See [mobile implementation notes](docs/MOBILE_EXPERIENCE.md). Fixed deployment snapshots and commit SHAs are tracked in the [Version Links spreadsheet](https://docs.google.com/spreadsheets/d/1g27l9rXK3zXs8UKRjBesg1XGpoZttiBm131HEvv1XRA/edit#gid=111403025).
+
+## Earlier project status — October 29, 2026
 
 | Reference | Meaning |
 | --- | --- |
@@ -22,7 +35,7 @@ Documentation describes the current direction and labels branch-specific impleme
 1. **Public landing page → sign in or create account → dashboard.** Supabase supplies email/password authentication and account-scoped referral storage.
 2. **Overview, My Referrals, and Next Steps.** Separate views support orientation, managing referrals, and finding follow-up actions across referrals. How it works remains lightweight help; Settings includes language preference.
 3. **Referral journey.** Common checkpoints and patient-recorded events share one chronology. Records requests, additional imaging, visits, procedures, and follow-up can continue beyond appointment scheduling. This does not constitute an automated clinical workflow or a fully validated branching model.
-4. **Record what you know.** Updates carry a source and dates. Multiple common milestones can be recorded together when the same source confirmed them; common-event selection is still single-select.
+4. **Record what you know.** Updates carry a source and dates. Multiple common milestones can be recorded together when the same source confirmed them; multiple common events can also be selected together.
 5. **Prepare and review communication.** Drafts use deterministic templates and keyword/context rules, not a live generative AI service. Patients copy, review, and communicate outside the app, then separately record contact attempts.
 6. **v0.4.4 follow-up context.** Specialist decline, insurance authorization denial, and referral redirection have optional reason/next-step questions. Suggestions help patients ask an office or health plan for clarification; they do not determine eligibility, coverage, medical necessity, or appeal outcomes.
 
