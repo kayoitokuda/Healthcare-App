@@ -5996,3 +5996,79 @@ body { min-width: 0; }
   .dashboard-shell .welcome > div:first-child { width: 100%; max-width: none; min-width: 0; }
   .dashboard-shell .welcome h1 { width: 100%; max-width: none; text-wrap: wrap; }
 }
+
+/* Install prompt stays secondary to the account actions on the landing page. */
+.pwa-install {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px 16px;
+  width: min(100%, 470px);
+  margin-top: 18px;
+  padding: 12px 14px;
+  border: 1px solid #e3e7dd;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.74);
+  color: #29314c;
+}
+.pwa-install-copy,
+.pwa-install-actions {
+  display: flex;
+  align-items: center;
+}
+.pwa-install-copy { min-width: 0; gap: 10px; }
+.pwa-install-icon {
+  display: grid;
+  flex: 0 0 34px;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border-radius: 10px;
+  background: #fff3c7;
+  color: #47516b;
+}
+.pwa-install-copy > span:last-child { display: grid; gap: 2px; }
+.pwa-install-copy strong { font-size: 13px; line-height: 1.35; }
+.pwa-install-copy small { color: #707580; font-size: 12px; line-height: 1.4; }
+.pwa-install-actions { gap: 4px; }
+.pwa-install-button,
+.pwa-install-dismiss {
+  display: inline-flex;
+  min-height: 40px;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: #31564b;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+}
+.pwa-install-button { padding: 0 10px; }
+.pwa-install-button:hover { background: #edf3eb; }
+.pwa-install-dismiss { width: 40px; color: #707580; }
+.pwa-install-dismiss:hover { background: #f0f1ed; }
+.pwa-install-help {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #f4f6f0;
+  color: #49534d;
+  font-size: 13px;
+  line-height: 1.5;
+}
+.landing-page { min-height: 100dvh; padding-top: env(safe-area-inset-top, 0px); }
+@media (max-width: 520px) {
+  .pwa-install { grid-template-columns: minmax(0, 1fr) auto; margin-top: 16px; padding: 10px; }
+  .pwa-install-copy { gap: 8px; }
+  .pwa-install-copy strong { font-size: 12px; }
+  .pwa-install-copy small { font-size: 11px; }
+  .pwa-install-button { padding: 0 8px; font-size: 12px; }
+  .pwa-install-dismiss { width: 34px; min-height: 40px; }
+}
+@media (display-mode: standalone) {
+  html, body, #root { min-height: 100%; }
+  .landing-page { min-height: 100dvh; }
+}

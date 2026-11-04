@@ -1,0 +1,28 @@
+{
+  "id": "/",
+  "name": "Referral Navigator",
+  "short_name": "Referral Navigator",
+  "description": "A personal companion for tracking specialist referrals and next steps.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["standalone"],
+  "orientation": "any",
+  "background_color": "#f7f6f2",
+  "theme_color": "#f7f6f2",
+  "categories": ["health", "productivity"],
+  "icons": [
+    {
+      "src": "/icons/referral-navigator-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/referral-navigator-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

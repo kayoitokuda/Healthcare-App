@@ -36,6 +36,7 @@ import {
 } from "lucide-react";
 import { AuthProvider, useAuth } from "./auth/AuthContext";
 import SignIn from "./pages/SignIn";
+import PWAInstallPrompt from "./components/PWAInstallPrompt";
 import { supabase } from "./lib/supabase";
 import { LanguageProvider, LanguageToggle, localizedDraft, translateText, useAppLanguage, type AppLanguage } from "./i18n";
 
@@ -647,6 +648,7 @@ function LandingPage({
               You enter updates yourself. The app doesn’t contact offices or
               check their systems.
             </p>
+            <PWAInstallPrompt />
           </div>
 
           <div className="landing-preview-panel">
