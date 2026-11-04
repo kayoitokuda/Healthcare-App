@@ -553,6 +553,20 @@ const rows: Array<[string, string, string, string, string]> = [
   ["An account with this email already exists.", "このメールアドレスのアカウントはすでに存在します。", "此电子邮件地址已注册账户。", "Ya existe una cuenta con este correo electrónico.", "Đã có tài khoản dùng địa chỉ email này."],
   ["Too many attempts. Please wait a moment and try again.", "試行回数が多すぎます。少し待ってからもう一度お試しください。", "尝试次数过多。请稍候再试。", "Demasiados intentos. Espera un momento e inténtalo de nuevo.", "Bạn đã thử quá nhiều lần. Vui lòng đợi một lúc rồi thử lại."],
 
+  ["This guidance is based on the updates you recorded for this referral.","この案内は、この紹介について記録した更新内容に基づいています。","此指引根据你为这项转诊记录的更新整理。","Esta orientación se basa en las novedades que registraste para esta referencia.","Hướng dẫn này dựa trên các cập nhật bạn đã ghi cho giấy giới thiệu này."],
+  ["Latest update you recorded","あなたが記録した最新の更新","你记录的最新更新","Última novedad que registraste","Cập nhật gần nhất bạn đã ghi"],
+  ["Suggested next step","次に検討できる手順","建议的下一步","Siguiente paso sugerido","Bước tiếp theo được gợi ý"],
+  ["Who to contact","連絡先","联系对象","A quién contactar","Nơi cần liên hệ"],
+  ["A question you could ask","確認できる質問","可以询问的问题","Una pregunta que podrías hacer","Câu hỏi bạn có thể hỏi"],
+  ["This is a prompt to confirm details with the office or health plan. It is not a verified status, medical advice, or a coverage decision.","これは医療機関や保険会社に詳細を確認するための案内です。確認済みの状況、医療上の助言、保険適用の判断ではありません。","这是供你向诊所或健康保险计划确认详情的提示，并非已核实的状态、医疗建议或承保决定。","Es una sugerencia para confirmar los detalles con el consultorio o el plan de salud. No es un estado verificado, consejo médico ni una decisión de cobertura.","Đây là gợi ý để xác nhận thông tin với phòng khám hoặc chương trình bảo hiểm. Đây không phải trạng thái đã xác minh, lời khuyên y tế hay quyết định về quyền lợi bảo hiểm."],
+  ["A quick tour","クイックツアー","快速导览","Recorrido rápido","Hướng dẫn nhanh"],
+  ["Take a quick tour","クイックツアーを見る","查看快速导览","Ver el recorrido rápido","Xem hướng dẫn nhanh"],
+  ["Start the tour","ツアーを始める","开始导览","Iniciar recorrido","Bắt đầu hướng dẫn"],
+  ["NEW HERE?","初めてですか？","刚来这里？","¿ERES NUEVO/A?","BẠN MỚI DÙNG?"],
+  ["See how a referral, follow-up, and message draft fit together.","紹介状、フォローアップ、メッセージの下書きの流れを確認できます。","了解转诊、跟进和消息草稿如何配合使用。","Mira cómo se conectan una referencia, el seguimiento y un borrador de mensaje.","Tìm hiểu cách giấy giới thiệu, theo dõi và bản nháp tin nhắn kết hợp với nhau."],
+  ["Explore","見る","探索","Explorar","Khám phá"],
+  ["What you can track","記録できること","可跟踪的内容","Qué puedes registrar","Những gì bạn có thể theo dõi"],
+  ["Common questions","よくある質問","常见问题","Preguntas frecuentes","Câu hỏi thường gặp"],
 ];
 
 const dictionary = Object.fromEntries(
