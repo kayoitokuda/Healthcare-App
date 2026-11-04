@@ -6458,3 +6458,42 @@ body { min-width: 0; }
   .landing-step,
   .landing-example-next { transition: none; }
 }
+
+/* Prevent the legacy fixed-height hero from clipping its actions. */
+.landing-hero {
+  height: auto;
+  min-height: 600px;
+  overflow: visible;
+  grid-template-columns: minmax(0, 1.1fr) minmax(390px, .9fr);
+}
+.landing-hero-copy {
+  min-height: 0;
+  padding: 0;
+  gap: 0;
+  align-self: center;
+}
+.landing-hero h1 {
+  max-width: 680px;
+  font-size: clamp(46px, 4.2vw, 60px);
+  line-height: 1.04;
+}
+.landing-preview-panel { min-height: 0; padding: 0; }
+@media (max-width: 900px) {
+  .landing-hero {
+    width: calc(100% - 40px);
+    height: auto;
+    min-height: 0;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 28px;
+    padding: 42px clamp(24px, 6vw, 56px);
+  }
+  .landing-hero-copy { max-width: 760px; }
+  .landing-hero h1 { max-width: 760px; font-size: clamp(44px, 6vw, 58px); }
+  .landing-preview-panel { justify-items: center; }
+}
+@media (max-width: 760px) {
+  .landing-hero { width: calc(100% - 32px); padding: 32px 24px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .landing-preview { animation: none; }
+}
