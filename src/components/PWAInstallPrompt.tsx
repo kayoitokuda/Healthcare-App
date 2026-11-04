@@ -20,9 +20,10 @@ function isStandalone() {
 export default function PWAInstallPrompt() {
   const { language } = useAppLanguage();
   const [installEvent, setInstallEvent] = useState<BeforeInstallPromptEvent | null>(null);
-  const [showIOSHelp, setShowIOSHelp] = useState(false);
+  const [showInstallHelp, setShowIOSHelp] = useState(false);
   const [visible, setVisible] = useState(false);
   const ios = isIOS();
+  const hasBrowserInstallMenu = /Android|Chrome|Chromium|Edg/i.test(navigator.userAgent);
 
   useEffect(() => {
     if (isStandalone()) return;
@@ -45,11 +46,11 @@ export default function PWAInstallPrompt() {
     };
   }, []);
 
-  if (!visible || (!ios && !installEvent)) return null;
+  if (!visible || (!ios && !installEvent && !hasBrowserInstallMenu)) return null;
 
   const t = (copy: string) => translateText(copy, language);
   const install = async () => {
-    if (ios) {
+    if (ios || !installEvent) {
       setShowIOSHelp((current) => !current);
       return;
     }
@@ -73,7 +74,7 @@ export default function PWAInstallPrompt() {
       </div>
       <div className="pwa-install-actions">
         <button type="button" className="pwa-install-button" onClick={() => void install()}>
-          {t(ios ? "How to add" : "Install")}
+          {t(ios || !installEvent ? "How to add" : "Install")}
         </button>
         <button
           type="button"
@@ -84,9 +85,14 @@ export default function PWAInstallPrompt() {
           <X size={17} aria-hidden="true" />
         </button>
       </div>
-      {ios && showIOSHelp && (
+      {ios && showInstallHelp && (
         <p className="pwa-install-help" role="status">
           {t("In Safari, tap Share, then Add to Home Screen.")}
+        </p>
+      )}
+      {!ios && !installEvent && showInstallHelp && (
+        <p className="pwa-install-help" role="status">
+          {t("Open your browser menu and choose Install app or Add to Home Screen.")}
         </p>
       )}
     </aside>
