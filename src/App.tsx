@@ -608,9 +608,9 @@ function LandingPage({
   const { language } = useAppLanguage();
   const [exampleStep, setExampleStep] = useState(0);
   const exampleStates = [
-    { status: "Still checking", completed: 1, active: 1, next: "Ask whether the referral was sent", source: "You added this" },
-    { status: "Sent", completed: 2, active: 2, next: "Confirm the specialist received it", source: "Referring office shared this" },
-    { status: "Received", completed: 3, active: 3, next: "Ask what is needed before scheduling", source: "Specialist office shared this" },
+    { status: "Still checking", completed: 1, active: 1, next: "Ask whether the referral was sent" },
+    { status: "Sent", completed: 2, active: 2, next: "Confirm the specialist received it" },
+    { status: "Received", completed: 3, active: -1, next: "Ask what is needed before scheduling" },
   ];
   const example = exampleStates[exampleStep];
   const advanceExample = () => setExampleStep((current) => (current + 1) % exampleStates.length);
@@ -700,9 +700,9 @@ function LandingPage({
             <p className="landing-route">Primary care <span>→</span> Heart clinic</p>
             <div className="landing-progress" aria-live="polite">
               {[
-                { title: "Recommendation", source: exampleStep === 0 ? example.source : "You added this" },
-                { title: "Referral sent?", source: exampleStep >= 1 ? example.source : "Ask the referring office" },
-                { title: "Received?", source: exampleStep >= 2 ? example.source : "Confirm with the specialist" },
+                { title: "Recommendation", source: "You added this" },
+                { title: "Referral sent?", source: exampleStep >= 1 ? "The referring office confirmed it was sent" : "Ask the referring office" },
+                { title: "Received?", source: exampleStep >= 2 ? "The specialist office confirmed it arrived" : "Confirm with the specialist" },
               ].map((item, index) => {
                 const completed = index < example.completed;
                 const current = index === example.active;
