@@ -6623,3 +6623,36 @@ body { min-width: 0; }
     transition: none;
   }
 }
+
+@media (max-width: 760px) {
+  .guided-tour-dialog.is-mobile-dock {
+    top: auto !important;
+    right: 12px;
+    bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+    left: 12px !important;
+    width: auto !important;
+    max-height: min(46dvh, 390px);
+    padding: 16px;
+    border-radius: 20px;
+  }
+  .guided-tour-dialog.is-mobile-dock .guided-tour-progress {
+    margin: 10px 0 13px;
+  }
+  .guided-tour-dialog.is-mobile-dock .guided-tour-dialog h2 {
+    font-size: 21px;
+  }
+  .guided-tour-dialog.is-mobile-dock .guided-tour-actions {
+    position: sticky;
+    bottom: -16px;
+    margin: 14px -16px -16px;
+    padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px));
+    background: #fffdf9;
+    border-top: 1px solid rgba(35, 62, 66, 0.1);
+  }
+  .guided-tour-dialog:not(.is-mobile-dock) {
+    right: 12px;
+    left: 12px !important;
+    width: auto !important;
+    max-height: min(42dvh, 340px);
+  }
+}
