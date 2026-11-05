@@ -6832,3 +6832,23 @@ body { min-width: 0; }
 @media (prefers-reduced-motion: reduce) {
   .mobile-overview-stat { transition: none; }
 }
+
+
+/* Restore the v0.4 palette in the mobile dashboard: warm neutrals, indigo, and balanced status accents. */
+@media (max-width: 760px) {
+  .mobile-overview-card { border-color: #e5e4df; background: linear-gradient(110deg, #fff 0%, #f2f3fc 100%); }
+  .mobile-overview-greeting h1, .mobile-overview-section-heading h2,
+  .mobile-overview-stat strong, .mobile-overview-action-button,
+  .mobile-overview-action-button strong { color: #222630; }
+  .mobile-overview-add { background: #405bcb; }
+  .mobile-overview-section-heading > button, .mobile-overview-view-next,
+  .mobile-overview-stat > svg { color: #405bcb; }
+  .mobile-overview-stat:focus-visible, .mobile-overview-section-heading > button:focus-visible,
+  .mobile-overview-action-button:focus-visible, .mobile-overview-activity-row:focus-visible,
+  .mobile-overview-add:focus-visible { outline-color: rgba(64, 91, 203, .35); }
+  .mobile-stat-attention { border-color: #eadba9; background: #fff8e6; }
+  .mobile-stat-referrals { border-color: #edc9bd; background: #fbede7; }
+  .mobile-stat-offices { border-color: #d9d2ea; background: #f1eff9; }
+  .mobile-stat-messages { border-color: #cbd7ee; background: #edf1fa; }
+  .mobile-attention-badge { background: #fff3d0; color: #73571a; }
+}
