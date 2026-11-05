@@ -396,6 +396,7 @@ function MobileBottomNav({ page, onNavigate }: {
   return <nav ref={navRef} className="mobile-bottom-nav" aria-label={translateText("Dashboard navigation", language)}>
     {items.map(({ id, label, Icon }) => <button
       type="button" key={id}
+      data-tour={id === "referrals" ? "nav-referrals" : id === "next-steps" ? "nav-next-steps" : undefined}
       aria-current={page === id ? "page" : undefined}
       onClick={() => onNavigate(id)}
     ><Icon size={21} aria-hidden="true" /><span>{translateText(label, language)}</span></button>)}
@@ -944,7 +945,7 @@ function ReferralNavigatorApp() {
   const [showArchived, setShowArchived] = useState(false);
   const [editingReferralId, setEditingReferralId] = useState<number | null>(null);
   const [modal, setModal] = useState<
-    "new" | "update" | "notes" | "help" | "tour" | "settings" | null
+    "new" | "update" | "notes" | "help" | "settings" | null
   >(null);
   const [updateTitle, setUpdateTitle] = useState("");
   const [updateDetail, setUpdateDetail] = useState("");
@@ -965,6 +966,8 @@ function ReferralNavigatorApp() {
   const [newTo, setNewTo] = useState("");
   const [newDate, setNewDate] = useState("");
   const [toast, setToast] = useState("");
+  const [tourActive, setTourActive] = useState(false);
+  const [tourStepIndex, setTourStepIndex] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -1090,6 +1093,25 @@ function ReferralNavigatorApp() {
     )
     .sort((a, b) => b.update.id - a.update.id)
     .slice(0, 4);
+
+  function startTour() {
+    setModal(null);
+    setSelected(null);
+    setDashboardPage("overview");
+    setTourStepIndex(0);
+    setTourActive(true);
+  }
+
+  function handleTourStepChange(index: number, section: "overview" | "referrals" | "detail" | "next-steps") {
+    setTourStepIndex(index);
+    if (section === "detail" && referral) {
+      setSelected(referral.id);
+      setDashboardPage("overview");
+      return;
+    }
+    setSelected(null);
+    setDashboardPage(section === "detail" ? "overview" : section);
+  }
 
   function navigateDashboard(page: DashboardPage) {
     setSelected(null);
@@ -1412,6 +1434,7 @@ function ReferralNavigatorApp() {
             </button>
             <button
               className={dashboardPage === "referrals" ? "nav-active" : ""}
+              data-tour="nav-referrals"
               aria-current={dashboardPage === "referrals" ? "page" : undefined}
               onClick={() => navigateDashboard("referrals")}
             >
@@ -1420,6 +1443,7 @@ function ReferralNavigatorApp() {
             </button>
             <button
               className={dashboardPage === "next-steps" ? "nav-active" : ""}
+              data-tour="nav-next-steps"
               aria-current={dashboardPage === "next-steps" ? "page" : undefined}
               onClick={() => navigateDashboard("next-steps")}
             >
@@ -1463,7 +1487,7 @@ function ReferralNavigatorApp() {
           <button className="back-link" onClick={() => setSelected(null)}>
             <ArrowLeft size={17} /> All referrals
           </button>
-          <div className="detail-heading">
+          <div className="detail-heading" data-tour="detail-heading">
             <div>
               <p className="eyebrow">YOUR REFERRAL</p>
               <h1>{referral.specialty}</h1>
@@ -1488,7 +1512,7 @@ function ReferralNavigatorApp() {
             </p>
           </div>
 
-          <section className="section-card journey-card journey-combined">
+          <section className="section-card journey-card journey-combined" data-tour="journey">
             <div className="section-title-row journey-header">
               <div>
                 <p className="eyebrow">{translateText("THE HANDOFF", language)}</p>
@@ -1523,6 +1547,7 @@ function ReferralNavigatorApp() {
                   <button
                     type="button"
                     className="primary-button"
+                    data-tour="call-script"
                     onClick={() => startMessage("Call script", referral, latestReferralEvent?.id ?? null, "next-step")}
                   >
                     <Phone size={16} /> {translateText("Prepare a call script", language)}
@@ -1612,7 +1637,7 @@ function ReferralNavigatorApp() {
             
           </section>
 
-          <section className="section-card tools-card">
+          <section className="section-card tools-card" data-tour="detail-tools">
             <div className="tools-intro">
               <p className="eyebrow">KEEP THINGS TOGETHER</p>
               <h2>Helpful details for your next call</h2>
@@ -1662,9 +1687,7 @@ function ReferralNavigatorApp() {
                 ? "Record an update"
                 : modal === "notes"
                     ? "Visit notes & questions"
-                    : modal === "tour"
-                        ? "A quick tour"
-                        : "Help for this referral"
+                    : "Help for this referral"
             }
             onClose={() => setModal(null)}
           >
@@ -1844,7 +1867,6 @@ function ReferralNavigatorApp() {
                 }}
               />
             )}
-            {modal === "tour" && <OnboardingTutorial language={language} onClose={() => setModal(null)} />}
             {modal === "help" && (
               <>
                 <ReferralHelp
@@ -1856,12 +1878,13 @@ function ReferralNavigatorApp() {
                   onRecordUpdate={() => addUpdate()}
                 />
                 <div className="form-body tour-replay-row">
-                  <button type="button" className="text-button" onClick={() => setModal("tour")}>{translateText("Take a quick tour", language)} <ArrowRight size={15} aria-hidden="true" /></button>
+                  <button type="button" className="text-button" onClick={() => startTour()}>{translateText("Take a quick tour", language)} <ArrowRight size={15} aria-hidden="true" /></button>
                 </div>
               </>
             )}
           </Modal>
         )}
+        {tourActive && <OnboardingTutorial language={language} hasReferral={Boolean(referral)} stepIndex={tourStepIndex} onStepChange={handleTourStepChange} onClose={() => setTourActive(false)} />}
         {toast && (
           <div className="toast" role="status">
             <CheckCircle2 size={17} />
@@ -1954,10 +1977,10 @@ function ReferralNavigatorApp() {
             <h1>{dashboardPage === "referrals" ? "Your referrals" : "Next steps"}</h1>
             <p>{dashboardPage === "referrals" ? "Keep each specialist handoff and its updates together." : "Follow up across your referrals, at your own pace."}</p>
           </div>
-          {dashboardPage === "referrals" && <button className="primary-button add-button" onClick={openNewReferral}><Plus size={17} /> Add a referral</button>}
+          {dashboardPage === "referrals" && <button className="primary-button add-button" data-tour="add-referral" onClick={openNewReferral}><Plus size={17} /> Add a referral</button>}
         </div>}
         {dashboardPage === "overview" && <>
-        <section className="welcome">
+        <section className="welcome" data-tour="overview">
           <div>
             <p className="eyebrow">YOUR CARE, ORGANIZED</p>
             <h1>Keep your referral moving.</h1>
@@ -1981,7 +2004,7 @@ function ReferralNavigatorApp() {
         </section>
         {activeReferrals.length === 0 && !demoMode && <aside className="quick-tour-card">
           <div><p className="eyebrow">{translateText("NEW HERE?", language)}</p><strong>{translateText("Take a quick tour", language)}</strong><p>{translateText("See how a referral, follow-up, and message draft fit together.", language)}</p></div>
-          <button type="button" className="secondary-button" onClick={() => setModal("tour")}>{translateText("Start the tour", language)} <ArrowRight size={15} aria-hidden="true" /></button>
+          <button type="button" className="secondary-button" onClick={() => startTour()}>{translateText("Start the tour", language)} <ArrowRight size={15} aria-hidden="true" /></button>
         </aside>}
         {demoMode && (
           <aside className="demo-banner" aria-label="Sample tracker">
@@ -1994,7 +2017,7 @@ function ReferralNavigatorApp() {
             </button>
           </aside>
         )}
-        <section className="dashboard-stats" aria-label="Referral summary">
+        <section className="dashboard-stats" aria-label="Referral summary" data-tour="dashboard-summary">
           <article className="summary-card summary-coral">
             <div className="summary-card-top">
               <ClipboardList size={17} />
@@ -2028,7 +2051,7 @@ function ReferralNavigatorApp() {
             <p>Based on updates you recorded</p>
           </article>
         </section>
-        <section className="overview-next-step">
+        <section className="overview-next-step" data-tour="overview-next-step">
           <div className="overview-next-icon"><MessageCircle size={20} /></div>
           <div className="overview-next-copy">
             <p className="eyebrow">YOUR NEXT STEP</p>
@@ -2082,7 +2105,7 @@ function ReferralNavigatorApp() {
                     (u) => hasMilestone(u, "referral-sent"),
                   );
                   return (
-                    <article className="referral-card" key={r.id}>
+                    <article className="referral-card" key={r.id} data-tour={r.id === activeReferrals[0]?.id ? "referral-card" : undefined}>
                       <div className="card-top">
                         <span className="specialty-icon">
                           <Stethoscope size={19} />
@@ -2274,12 +2297,10 @@ function ReferralNavigatorApp() {
       </main>
       {modal && (
         <Modal
-          title={modal === "settings" ? "Settings" : modal === "new" ? editingReferralId !== null ? "Edit referral" : "Add a referral" : modal === "tour" ? "A quick tour" : "A little guidance"}
+          title={modal === "settings" ? "Settings" : modal === "new" ? editingReferralId !== null ? "Edit referral" : "Add a referral" : "A little guidance"}
           onClose={() => setModal(null)}
         >
-          {modal === "tour" ? (
-            <OnboardingTutorial language={language} onClose={() => setModal(null)} />
-          ) : modal === "settings" ? (
+          {modal === "settings" ? (
             <div className="form-body settings-body">
               <p className="modal-intro">
                 {translateText("Manage your language preference and the account that stores your referrals.", language)}
@@ -2349,7 +2370,7 @@ function ReferralNavigatorApp() {
                 </div>
               </div>
               <div className="help-actions">
-                <button type="button" className="secondary-button full" onClick={() => setModal("tour")}>{translateText("Take a quick tour", language)} <ArrowRight size={15} aria-hidden="true" /></button>
+                <button type="button" className="secondary-button full" onClick={() => startTour()}>{translateText("Take a quick tour", language)} <ArrowRight size={15} aria-hidden="true" /></button>
                 <button type="button" className="primary-button full" onClick={() => setModal(null)}>Got it</button>
               </div>
             </div>
