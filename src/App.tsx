@@ -1098,14 +1098,15 @@ function ReferralNavigatorApp() {
     setModal(null);
     setSelected(null);
     setDashboardPage("overview");
+    setShowArchived(false);
     setTourStepIndex(0);
     setTourActive(true);
   }
 
   function handleTourStepChange(index: number, section: "overview" | "referrals" | "detail" | "next-steps") {
     setTourStepIndex(index);
-    if (section === "detail" && referral) {
-      setSelected(referral.id);
+    if (section === "detail" && activeReferrals[0]) {
+      setSelected(activeReferrals[0].id);
       setDashboardPage("overview");
       return;
     }
@@ -1884,7 +1885,7 @@ function ReferralNavigatorApp() {
             )}
           </Modal>
         )}
-        {tourActive && <OnboardingTutorial language={language} hasReferral={Boolean(referral)} stepIndex={tourStepIndex} onStepChange={handleTourStepChange} onClose={() => setTourActive(false)} />}
+        {tourActive && <OnboardingTutorial language={language} hasReferral={Boolean(activeReferrals[0])} stepIndex={tourStepIndex} onStepChange={handleTourStepChange} onClose={() => setTourActive(false)} />}
         {toast && (
           <div className="toast" role="status">
             <CheckCircle2 size={17} />
