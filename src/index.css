@@ -6852,3 +6852,63 @@ body { min-width: 0; }
   .mobile-stat-messages { border-color: #cbd7ee; background: #edf1fa; }
   .mobile-attention-badge { background: #fff3d0; color: #73571a; }
 }
+
+
+/* Landing page restored to the earlier warm-neutral and indigo color direction. */
+.landing-page { background: #f7f6f2; color: #222630; }
+.landing-header { border-color: #e5e4df; }
+.landing-nav > button:first-child,
+.landing-nav > a { color: #707580; }
+.landing-nav > button:first-child:hover,
+.landing-nav > a:hover { color: #405bcb; }
+.landing-hero {
+  border-color: #e5e4df;
+  background: linear-gradient(110deg, #fff 0 49%, #f2f3fc 49% 100%);
+  box-shadow: 0 20px 54px rgba(34, 38, 48, .06);
+}
+.landing-label { border-color: #d9d2ea; background: #f1eff9; color: #405bcb; }
+.landing-hero-copy > .eyebrow,
+.landing-section-heading .eyebrow,
+.landing-track-heading > .eyebrow,
+.landing-faq-heading > .eyebrow { color: #707580; }
+.landing-hero h1, .landing-section-heading h2,
+.landing-track-heading h2, .landing-faq-heading h2,
+.landing-preview h2, .landing-step h3, .landing-track-grid h3 { color: #222630; }
+.landing-hero h1 em { color: #405bcb; }
+.landing-lede, .landing-section-heading > p:last-child,
+.landing-track-heading > p:last-child, .landing-faq-heading > p:last-child,
+.landing-route, .landing-progress-step small { color: #60697a; }
+.landing-actions .primary-button, .landing-page .primary-button {
+  background: #405bcb;
+  box-shadow: 0 8px 18px rgba(64, 91, 203, .16);
+}
+.landing-page .primary-button:hover { background: #344cae; box-shadow: 0 10px 24px rgba(64, 91, 203, .2); }
+.landing-page .secondary-button { border-color: #d5d7e2; color: #405bcb; }
+.landing-reassurance, .landing-step p, .landing-track-grid p,
+.landing-faq-list details p { color: #60697a; }
+.landing-preview { border-color: #e5e4df; box-shadow: 0 22px 54px rgba(34, 38, 48, .10); }
+.landing-preview-icon, .track-step-number { background: #f1eff9; color: #405bcb; }
+.landing-progress-step:not(:last-child)::before { background: #e0dfeb; }
+.landing-progress-step.is-complete .landing-progress-marker { border-color: #405bcb; background: #405bcb; }
+.landing-progress-step.is-current .landing-progress-marker { border-color: #d1a63b; background: #fff8e7; color: #73571a; }
+.landing-preview-note { border-color: #e5e4df; background: #f7f6f2; color: #50586a; }
+.landing-example-next { border-color: #d5d7e2; color: #405bcb; }
+.landing-example-next:hover { background: #f1eff9; }
+.landing-how { background: #fff; }
+.landing-step { border-color: #e5e4df; background: #fbfaf7; box-shadow: 0 8px 24px rgba(34, 38, 48, .04); }
+.landing-step:hover { border-color: #c9cce3; box-shadow: 0 16px 32px rgba(34, 38, 48, .1); }
+.landing-step > span { color: #a17a23; }
+.landing-step > svg { color: #405bcb; }
+.landing-track-section { border-color: #e1deeb; background: #f2f1f9; }
+.landing-track-grid article { border-color: #e5e4df; background: rgba(255,255,255,.86); }
+.landing-faq-list details { border-color: #e5e4df; }
+.landing-faq-list summary::after { color: #405bcb; }
+.landing-boundary { border-color: #e1deeb; background: #f2f1f9; }
+.landing-boundary-icon { background: #e8e5f4; color: #405bcb; }
+.landing-boundary strong { color: #30374a; }
+.landing-boundary p { color: #60697a; }
+.landing-footer { background: #252938; color: #f3f3f7; }
+.landing-footer-brand p { color: #d4d6df; }
+.landing-footer-column > strong { color: #f1d789; }
+.landing-footer-column a, .landing-footer-column button { color: #dfe1e8; }
+.landing-footer-bottom { border-color: rgba(223,225,232,.22); color: #c6c9d3; }
