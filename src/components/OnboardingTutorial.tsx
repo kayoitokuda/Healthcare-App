@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import { ArrowLeft, ArrowRight, X } from "lucide-react";
 import type { AppLanguage } from "../i18n";
 
@@ -203,7 +204,7 @@ export default function OnboardingTutorial({
   }, [index, steps, onClose, onStepChange]);
 
   const last = index === steps.length - 1;
-  return (
+  return createPortal(
     <div className="guided-tour-layer">
       <div className="guided-tour-scrim" aria-hidden="true" />
       {rect && (
@@ -234,6 +235,7 @@ export default function OnboardingTutorial({
           <button type="button" className="primary-button" onClick={() => last ? onClose() : onStepChange(index + 1, steps[index + 1].section)}>{last ? t.finish : t.next}{last ? <X size={15} /> : <ArrowRight size={15} />}</button>
         </div>
       </section>
-    </div>
+    </div>,
+    document.body,
   );
 }
