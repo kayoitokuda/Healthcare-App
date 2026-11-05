@@ -1090,6 +1090,10 @@ function ReferralNavigatorApp() {
     )
     .sort((a, b) => b.update.id - a.update.id)
     .slice(0, 4);
+  const officeUpdateCount = activeReferrals
+    .flatMap((item) => item.updates)
+    .filter((update) => update.source === "Referring office" || update.source === "Specialist office").length;
+  const nextActionCount = activeReferrals.length;
 
   function navigateDashboard(page: DashboardPage) {
     setSelected(null);
@@ -1960,10 +1964,9 @@ function ReferralNavigatorApp() {
         <section className="welcome">
           <div>
             <p className="eyebrow">YOUR CARE, ORGANIZED</p>
-            <h1>Keep your referral moving.</h1>
+            <h1>Your referral overview</h1>
             <p>
-              Know what you’ve heard, what’s still unclear, and who to contact
-              next.
+              See what needs attention, choose a next step, and review your latest updates.
             </p>
             <button className="primary-button overview-add-cta" onClick={openNewReferral}>
               <Plus size={18} /> Add a referral
@@ -1994,39 +1997,52 @@ function ReferralNavigatorApp() {
             </button>
           </aside>
         )}
-        <section className="dashboard-stats" aria-label="Referral summary">
-          <article className="summary-card summary-coral">
-            <div className="summary-card-top">
-              <ClipboardList size={17} />
-              <span>IN YOUR TRACKER</span>
+        <section className="overview-updates" aria-labelledby="overview-updates-heading">
+          <div className="overview-section-heading">
+            <div>
+              <p className="eyebrow">UPDATES</p>
+              <h2 id="overview-updates-heading">At a glance</h2>
             </div>
-            <strong>{activeReferrals.length}</strong>
-            <p>Referral{activeReferrals.length === 1 ? "" : "s"} in your tracker</p>
-          </article>
-          <article className="summary-card summary-gold">
-            <div className="summary-card-top">
-              <MessageCircle size={17} />
-              <span>FOLLOW-UP</span>
-            </div>
-            <strong>{followUpCount}</strong>
-            <p>Without a scheduling update</p>
-          </article>
-          <article className="summary-card summary-pink">
-            <div className="summary-card-top">
-              <CheckCircle2 size={17} />
-              <span>RECEIPT CONFIRMED</span>
-            </div>
-            <strong>{receiptConfirmedCount}</strong>
-            <p>Specialist office updates</p>
-          </article>
-          <article className="summary-card summary-blue">
-            <div className="summary-card-top">
-              <CalendarDays size={17} />
-              <span>READY TO SCHEDULE</span>
-            </div>
-            <strong>{readyToScheduleCount}</strong>
-            <p>Based on updates you recorded</p>
-          </article>
+            <span>Tap a count to explore</span>
+          </div>
+          <div className="dashboard-stats" aria-label="Referral summary">
+            <button type="button" className="summary-card summary-gold" aria-label={`${followUpCount} referrals without a scheduling update. View next steps.`} onClick={() => navigateDashboard("next-steps")}>
+              <div className="summary-card-top">
+                <MessageCircle size={17} />
+                <span>NEEDS ATTENTION</span>
+                <ArrowRight size={14} aria-hidden="true" />
+              </div>
+              <strong>{followUpCount}</strong>
+              <p>Without a scheduling update</p>
+            </button>
+            <button type="button" className="summary-card summary-coral" aria-label={`${activeReferrals.length} active referrals. View referrals.`} onClick={() => navigateDashboard("referrals")}>
+              <div className="summary-card-top">
+                <ClipboardList size={17} />
+                <span>IN YOUR TRACKER</span>
+                <ArrowRight size={14} aria-hidden="true" />
+              </div>
+              <strong>{activeReferrals.length}</strong>
+              <p>Referral{activeReferrals.length === 1 ? "" : "s"} in your tracker</p>
+            </button>
+            <button type="button" className="summary-card summary-pink" aria-label={`${officeUpdateCount} updates recorded from care offices. View recent activity.`} onClick={() => document.getElementById("overview-recent-activity")?.scrollIntoView({ behavior: motionSafeScrollBehavior(), block: "start" })}>
+              <div className="summary-card-top">
+                <Building2 size={17} />
+                <span>OFFICE UPDATES</span>
+                <ArrowRight size={14} aria-hidden="true" />
+              </div>
+              <strong>{officeUpdateCount}</strong>
+              <p>Recorded from care offices</p>
+            </button>
+            <button type="button" className="summary-card summary-blue" aria-label={`${nextActionCount} referrals with a next step. View next steps.`} onClick={() => navigateDashboard("next-steps")}>
+              <div className="summary-card-top">
+                <Phone size={17} />
+                <span>CALL / MESSAGE</span>
+                <ArrowRight size={14} aria-hidden="true" />
+              </div>
+              <strong>{nextActionCount}</strong>
+              <p>Referrals with a next step</p>
+            </button>
+          </div>
         </section>
         <section className="overview-next-step">
           <div className="overview-next-icon"><MessageCircle size={20} /></div>
@@ -2177,7 +2193,7 @@ function ReferralNavigatorApp() {
           })}
         </section>}
         {dashboardPage === "overview" && <section className="dashboard-lower-grid">
-          <article className="dashboard-lower-card">
+          <article className="dashboard-lower-card" id="overview-recent-activity">
             <div className="lower-card-heading">
               <div>
                 <p className="eyebrow">RECENT ACTIVITY</p>
