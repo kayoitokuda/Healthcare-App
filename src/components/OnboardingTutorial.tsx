@@ -150,6 +150,7 @@ export default function OnboardingTutorial({
   const [panelTop, setPanelTop] = useState(16);
   const [panelLeft, setPanelLeft] = useState(16);
   const [panelWidth, setPanelWidth] = useState(360);
+  const [mobileDock, setMobileDock] = useState(false);
 
   useEffect(() => {
     const findTarget = () => {
@@ -159,12 +160,26 @@ export default function OnboardingTutorial({
         setRect(null);
         return;
       }
-      target.scrollIntoView({ behavior: window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "center", inline: "nearest" });
+      const isMobile = window.innerWidth <= 760;
+      const isBottomNavigation = Boolean(target.closest(".mobile-bottom-nav"));
+      if (isMobile && !isBottomNavigation) {
+        target.scrollIntoView({ behavior: "auto", block: "start", inline: "nearest" });
+        window.scrollBy({ top: -88, behavior: "auto" });
+      } else {
+        target.scrollIntoView({ behavior: window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "center", inline: "nearest" });
+      }
+      setMobileDock(isMobile && !isBottomNavigation);
       const measure = () => {
         const box = target.getBoundingClientRect();
         setRect(new DOMRect(box.x, box.y, box.width, box.height));
+        if (window.innerWidth <= 760) {
+          setPanelWidth(window.innerWidth - 24);
+          setPanelLeft(12);
+          setPanelTop(isBottomNavigation ? 16 : window.innerHeight - 320);
+          return;
+        }
         const width = Math.min(360, window.innerWidth - 32);
-        const heightEstimate = window.innerWidth < 560 ? 250 : 230;
+        const heightEstimate = 230;
         const left = Math.max(16, Math.min(box.left, window.innerWidth - width - 16));
         const below = box.bottom + 16 + heightEstimate <= window.innerHeight;
         const top = below
@@ -215,7 +230,7 @@ export default function OnboardingTutorial({
         />
       )}
       <section
-        className="guided-tour-dialog"
+        className={`guided-tour-dialog${mobileDock ? " is-mobile-dock" : ""}`}
         role="dialog"
         aria-modal="true"
         aria-label={`${t.eyebrow}: ${step.title}`}
