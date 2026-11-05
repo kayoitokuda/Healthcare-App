@@ -1068,16 +1068,6 @@ function ReferralNavigatorApp() {
     if (sentRecorded) return "Waiting for receipt";
     return "Not confirmed yet";
   }, [confirmedReceived, receiptRecorded, sentRecorded]);
-  const receiptConfirmedCount = activeReferrals.filter((item) =>
-    item.updates.some(
-      (update) =>
-        hasMilestone(update, "referral-received") &&
-        update.source === "Specialist office",
-    ),
-  ).length;
-  const readyToScheduleCount = activeReferrals.filter((item) =>
-    item.updates.some((update) => hasMilestone(update, "ready-to-schedule")),
-  ).length;
   const followUpCount = activeReferrals.filter(
     (item) =>
       !item.updates.some((update) => hasMilestone(update, "ready-to-schedule")),
