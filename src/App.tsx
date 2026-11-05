@@ -1080,6 +1080,10 @@ function ReferralNavigatorApp() {
     )
     .sort((a, b) => b.update.id - a.update.id)
     .slice(0, 4);
+  const greetingName = (() => {
+    const name = user?.user_metadata?.full_name ?? user?.user_metadata?.name;
+    return typeof name === "string" && name.trim() ? name.trim().split(/\s+/)[0] : "there";
+  })();
   const officeUpdateCount = activeReferrals
     .flatMap((item) => item.updates)
     .filter((update) => update.source === "Referring office" || update.source === "Specialist office").length;
@@ -1954,9 +1958,9 @@ function ReferralNavigatorApp() {
         <section className="welcome">
           <div>
             <p className="eyebrow">YOUR CARE, ORGANIZED</p>
-            <h1>Your referral overview</h1>
+            <h1>Hi, {greetingName}</h1>
             <p>
-              See what needs attention, choose a next step, and review your latest updates.
+              Here’s your referral overview. See what needs attention, choose a next step, and review your latest updates.
             </p>
             <button className="primary-button overview-add-cta" onClick={openNewReferral}>
               <Plus size={18} /> Add a referral
