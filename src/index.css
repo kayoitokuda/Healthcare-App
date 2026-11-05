@@ -6912,3 +6912,23 @@ body { min-width: 0; }
 .landing-footer-column > strong { color: #f1d789; }
 .landing-footer-column a, .landing-footer-column button { color: #dfe1e8; }
 .landing-footer-bottom { border-color: rgba(223,225,232,.22); color: #c6c9d3; }
+
+/* Give the landing hero copy and preview consistent vertical breathing room. */
+.landing-hero-copy { gap: 0; }
+.landing-hero-copy > .eyebrow { margin-bottom: 10px; }
+.landing-hero h1 { margin-bottom: 0; }
+.landing-lede { margin-top: 20px; }
+.landing-actions { margin-top: 28px; }
+.landing-reassurance { margin-top: 10px; line-height: 1.5; }
+.landing-progress-step { min-height: 72px; }
+.landing-progress-step:not(:last-child)::before { height: 48px; }
+.landing-preview-note { margin-top: 16px; }
+.landing-example-caption { margin-top: 16px; }
+@media (max-width: 760px) {
+  .landing-hero-copy > .eyebrow { margin-bottom: 8px; }
+  .landing-lede { margin-top: 16px; }
+  .landing-actions { margin-top: 22px; }
+  .landing-reassurance { margin-top: 8px; }
+  .landing-progress-step { min-height: 68px; }
+  .landing-preview-note, .landing-example-caption { margin-top: 12px; }
+}
