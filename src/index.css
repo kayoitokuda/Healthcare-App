@@ -6956,3 +6956,15 @@ body { min-width: 0; }
   .landing-reassurance { margin-top: 5px; font-size: 12px; }
   .landing-preview { padding: 18px 15px 14px; }
 }
+
+
+/* Mobile hero copy: separate the badge, eyebrow, and headline into clear beats. */
+@media (max-width: 760px) {
+  .landing-hero-copy > .landing-label { margin-bottom: 16px; }
+  .landing-hero-copy > .eyebrow { margin-bottom: 18px; }
+  .landing-hero-copy > h1 { margin-top: 0; }
+}
+@media (max-width: 420px) {
+  .landing-hero-copy > .landing-label { margin-bottom: 14px; }
+  .landing-hero-copy > .eyebrow { margin-bottom: 16px; }
+}
