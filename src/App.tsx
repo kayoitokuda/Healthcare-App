@@ -1105,6 +1105,37 @@ function ReferralNavigatorApp() {
     setTourActive(true);
   }
 
+  // First sign-in: start the guided tour once, then remember it per account
+  // (in the account's metadata, with a local fallback). Help can replay it.
+  const tourSeenKey = ownerId ? `rn-onboarding-tour-seen:${ownerId}` : null;
+  const tourAutoStarted = useRef(false);
+  useEffect(() => {
+    if (!dataReady || !tourSeenKey || tourAutoStarted.current) return;
+    tourAutoStarted.current = true;
+    let seenLocally = false;
+    try {
+      seenLocally = window.localStorage.getItem(tourSeenKey) === "true";
+    } catch {
+      seenLocally = false;
+    }
+    if (user?.user_metadata?.onboarding_tour_seen === true || seenLocally) return;
+    startTour();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dataReady, tourSeenKey]);
+
+  function closeTour() {
+    setTourActive(false);
+    if (!tourSeenKey) return;
+    try {
+      window.localStorage.setItem(tourSeenKey, "true");
+    } catch {
+      // Storage can be unavailable (private mode); the account flag still applies.
+    }
+    if (supabase && user?.user_metadata?.onboarding_tour_seen !== true) {
+      void supabase.auth.updateUser({ data: { onboarding_tour_seen: true } });
+    }
+  }
+
   function handleTourStepChange(index: number, section: "overview" | "referrals" | "detail" | "next-steps") {
     setTourStepIndex(index);
     if (section === "detail" && activeReferrals[0]) {
@@ -1407,7 +1438,7 @@ function ReferralNavigatorApp() {
   }
 
   const tourLayer = tourActive ? (
-    <OnboardingTutorial language={language} hasReferral={Boolean(activeReferrals[0])} stepIndex={tourStepIndex} onStepChange={handleTourStepChange} onClose={() => setTourActive(false)} />
+    <OnboardingTutorial language={language} hasReferral={Boolean(activeReferrals[0])} stepIndex={tourStepIndex} onStepChange={handleTourStepChange} onClose={closeTour} />
   ) : null;
 
   if (!dataReady)
