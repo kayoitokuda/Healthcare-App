@@ -1071,16 +1071,6 @@ function ReferralNavigatorApp() {
     if (sentRecorded) return "Waiting for receipt";
     return "Not confirmed yet";
   }, [confirmedReceived, receiptRecorded, sentRecorded]);
-  const receiptConfirmedCount = activeReferrals.filter((item) =>
-    item.updates.some(
-      (update) =>
-        hasMilestone(update, "referral-received") &&
-        update.source === "Specialist office",
-    ),
-  ).length;
-  const readyToScheduleCount = activeReferrals.filter((item) =>
-    item.updates.some((update) => hasMilestone(update, "ready-to-schedule")),
-  ).length;
   const followUpCount = activeReferrals.filter(
     (item) =>
       !item.updates.some((update) => hasMilestone(update, "ready-to-schedule")),
@@ -1097,6 +1087,14 @@ function ReferralNavigatorApp() {
         b.update.id - a.update.id,
     )
     .slice(0, 4);
+  const greetingName = (() => {
+    const name = user?.user_metadata?.full_name ?? user?.user_metadata?.name;
+    return typeof name === "string" && name.trim() ? name.trim().split(/\s+/)[0] : "there";
+  })();
+  const officeUpdateCount = activeReferrals
+    .flatMap((item) => item.updates)
+    .filter((update) => update.source === "Referring office" || update.source === "Specialist office").length;
+  const nextActionCount = activeReferrals.length;
 
   function startTour() {
     setModal(null);
@@ -1989,13 +1987,96 @@ function ReferralNavigatorApp() {
           {dashboardPage === "referrals" && <button className="primary-button add-button" data-tour="add-referral" onClick={openNewReferral}><Plus size={17} /> Add a referral</button>}
         </div>}
         {dashboardPage === "overview" && <>
+        <div className="mobile-overview-v045">
+          <section className="mobile-overview-card" data-tour="overview" aria-labelledby="mobile-overview-greeting">
+            <div className="mobile-overview-greeting">
+              <div className="mobile-overview-greeting-copy">
+                <p className="eyebrow">YOUR CARE, ORGANIZED</p>
+                <h1 id="mobile-overview-greeting">Hi, {greetingName}</h1>
+                <p>Here’s what needs your attention.</p>
+              </div>
+              <button type="button" className="primary-button mobile-overview-add" onClick={openNewReferral}>
+                <Plus size={17} aria-hidden="true" /> Add referral
+              </button>
+            </div>
+            <section className="mobile-overview-updates" aria-labelledby="mobile-overview-updates-title">
+              <div className="mobile-overview-section-heading">
+                <h2 id="mobile-overview-updates-title">Updates</h2>
+                <button type="button" onClick={() => navigateDashboard("referrals")}>View all <ArrowRight size={14} aria-hidden="true" /></button>
+              </div>
+              <div className="mobile-overview-stat-list" data-tour="dashboard-summary">
+                <button type="button" className="mobile-overview-stat mobile-stat-attention" aria-label={`${followUpCount} referrals need attention. View next steps.`} onClick={() => navigateDashboard("next-steps")}>
+                  <strong>{followUpCount}</strong><span>NEEDS ATTENTION</span><ArrowRight size={16} aria-hidden="true" />
+                </button>
+                <button type="button" className="mobile-overview-stat mobile-stat-referrals" aria-label={`${activeReferrals.length} referrals in your tracker. View referrals.`} onClick={() => navigateDashboard("referrals")}>
+                  <strong>{activeReferrals.length}</strong><span>REFERRALS</span><ArrowRight size={16} aria-hidden="true" />
+                </button>
+                <button type="button" className="mobile-overview-stat mobile-stat-offices" aria-label={`${officeUpdateCount} updates recorded from offices. View recent activity.`} onClick={() => document.getElementById("mobile-overview-activity")?.scrollIntoView({ behavior: motionSafeScrollBehavior(), block: "start" })}>
+                  <strong>{officeUpdateCount}</strong><span>OFFICE UPDATES</span><ArrowRight size={16} aria-hidden="true" />
+                </button>
+                <button type="button" className="mobile-overview-stat mobile-stat-messages" aria-label={`${nextActionCount} call or message actions available.`} onClick={() => nextReferral ? startMessage("Call script", nextReferral) : openNewReferral()}>
+                  <strong>{nextActionCount}</strong><span>CALL / MESSAGE</span><ArrowRight size={16} aria-hidden="true" />
+                </button>
+              </div>
+            </section>
+          </section>
+          {activeReferrals.length === 0 && !demoMode && <aside className="quick-tour-card mobile-overview-tour">
+            <div><p className="eyebrow">{translateText("NEW HERE?", language)}</p><strong>{translateText("Take a quick tour", language)}</strong><p>{translateText("See how a referral, follow-up, and message draft fit together.", language)}</p></div>
+            <button type="button" className="secondary-button" onClick={() => startTour()}>{translateText("Start the tour", language)} <ArrowRight size={15} aria-hidden="true" /></button>
+          </aside>}
+          {demoMode && <aside className="demo-banner mobile-overview-demo" aria-label="Sample tracker">
+            <span className="demo-banner-copy"><strong>Sample referral</strong><span>Explore the tracker, then start your own when you’re ready.</span></span>
+            <button className="secondary-button" onClick={openNewReferral}>Start your own <ArrowRight size={15} /></button>
+          </aside>}
+          <section className="mobile-overview-next" data-tour="overview-next-step" aria-labelledby="mobile-overview-next-title">
+            <div className="mobile-overview-section-heading mobile-next-heading">
+              <h2 id="mobile-overview-next-title">Next steps</h2>
+              <span className="mobile-attention-badge">{followUpCount} {followUpCount === 1 ? "needs attention" : "need attention"}</span>
+            </div>
+            {activeReferrals.length === 0 ? (
+              <div className="mobile-overview-empty">
+                <p>Add a referral to see the next action for each specialist handoff.</p>
+                <button type="button" className="primary-button" onClick={openNewReferral}><Plus size={16} /> Add a referral</button>
+              </div>
+            ) : (
+              <div className="mobile-overview-action-list">
+                {activeReferrals.slice(0, 2).map((item) => {
+                  const action = nextStepFor(item);
+                  const latestItemEvent = [...item.updates]
+                    .filter((update) => update.eventType || update.milestone || update.milestones?.length)
+                    .sort((a, b) => b.id - a.id)[0];
+                  return <div className="mobile-overview-action" key={item.id}>
+                    <button type="button" className="mobile-overview-action-button" onClick={() => startMessage("Call script", item, latestItemEvent?.id, "next-step")} aria-label={`Prepare a call script for ${item.specialty}: ${action.title}`}>
+                      <span><strong>{action.title}</strong><small>{item.specialty} · {action.detail}</small></span>
+                      <ArrowRight size={16} aria-hidden="true" />
+                    </button>
+                    {inlineDraftId === item.id && inlineDraftPlacement === "next-step" && <InlineDraftPanel kind={messageKind} draft={messageDraft} copied={copied} contextual={inlineDraftContextId !== null} onKindChange={(kind) => startMessage(kind, item, latestItemEvent?.id, "next-step")} onDraftChange={setMessageDraft} onCopy={copyDraft} onContact={() => logContactAttempt(item)} onClose={() => setInlineDraftId(null)} />}
+                  </div>;
+                })}
+                {activeReferrals.length > 2 && <button type="button" className="mobile-overview-view-next" onClick={() => navigateDashboard("next-steps")}>All next steps <ArrowRight size={15} aria-hidden="true" /></button>}
+              </div>
+            )}
+          </section>
+          <section className="mobile-overview-activity" id="mobile-overview-activity" aria-labelledby="mobile-overview-activity-title">
+            <div className="mobile-overview-section-heading">
+              <h2 id="mobile-overview-activity-title">Recent activity</h2>
+              <button type="button" onClick={() => activeReferrals[0] ? setSelected(activeReferrals[0].id) : navigateDashboard("referrals")}>View activity <ArrowRight size={14} aria-hidden="true" /></button>
+            </div>
+            {latestUpdates.length ? <div className="mobile-overview-activity-list">
+              {latestUpdates.slice(0, 2).map(({ referral: item, update }) => <button type="button" className="mobile-overview-activity-row" key={item.id + "-" + update.id} onClick={() => setSelected(item.id)}>
+                <span className="mobile-overview-activity-dot" aria-hidden="true" />
+                <span className="mobile-overview-activity-copy"><strong>{update.title}</strong><small>{item.specialty}</small></span>
+                <time>{update.date}</time>
+              </button>)}
+            </div> : <p className="mobile-overview-no-activity">Your saved updates will appear here.</p>}
+          </section>
+        </div>
         <section className="welcome" data-tour="overview">
           <div>
             <p className="eyebrow">YOUR CARE, ORGANIZED</p>
-            <h1>Keep your referral moving.</h1>
+            <h1>Hi, {greetingName}</h1>
             <p>
-              Know what you’ve heard, what’s still unclear, and who to contact
-              next.
+              Here’s your referral overview. See what needs attention, choose a next step, and review your latest updates.
             </p>
             <button className="primary-button overview-add-cta" onClick={openNewReferral}>
               <Plus size={18} /> Add a referral
@@ -2026,39 +2107,52 @@ function ReferralNavigatorApp() {
             </button>
           </aside>
         )}
-        <section className="dashboard-stats" aria-label="Referral summary" data-tour="dashboard-summary">
-          <article className="summary-card summary-coral">
-            <div className="summary-card-top">
-              <ClipboardList size={17} />
-              <span>IN YOUR TRACKER</span>
+        <section className="overview-updates" aria-labelledby="overview-updates-heading">
+          <div className="overview-section-heading">
+            <div>
+              <p className="eyebrow">UPDATES</p>
+              <h2 id="overview-updates-heading">At a glance</h2>
             </div>
-            <strong>{activeReferrals.length}</strong>
-            <p>Referral{activeReferrals.length === 1 ? "" : "s"} in your tracker</p>
-          </article>
-          <article className="summary-card summary-gold">
-            <div className="summary-card-top">
-              <MessageCircle size={17} />
-              <span>FOLLOW-UP</span>
-            </div>
-            <strong>{followUpCount}</strong>
-            <p>Without a scheduling update</p>
-          </article>
-          <article className="summary-card summary-pink">
-            <div className="summary-card-top">
-              <CheckCircle2 size={17} />
-              <span>RECEIPT CONFIRMED</span>
-            </div>
-            <strong>{receiptConfirmedCount}</strong>
-            <p>Specialist office updates</p>
-          </article>
-          <article className="summary-card summary-blue">
-            <div className="summary-card-top">
-              <CalendarDays size={17} />
-              <span>READY TO SCHEDULE</span>
-            </div>
-            <strong>{readyToScheduleCount}</strong>
-            <p>Based on updates you recorded</p>
-          </article>
+            <span>Tap a count to explore</span>
+          </div>
+          <div className="dashboard-stats" aria-label="Referral summary" data-tour="dashboard-summary">
+            <button type="button" className="summary-card summary-gold" aria-label={`${followUpCount} referrals without a scheduling update. View next steps.`} onClick={() => navigateDashboard("next-steps")}>
+              <div className="summary-card-top">
+                <MessageCircle size={17} />
+                <span>NEEDS ATTENTION</span>
+                <ArrowRight size={14} aria-hidden="true" />
+              </div>
+              <strong>{followUpCount}</strong>
+              <p>Without a scheduling update</p>
+            </button>
+            <button type="button" className="summary-card summary-coral" aria-label={`${activeReferrals.length} active referrals. View referrals.`} onClick={() => navigateDashboard("referrals")}>
+              <div className="summary-card-top">
+                <ClipboardList size={17} />
+                <span>IN YOUR TRACKER</span>
+                <ArrowRight size={14} aria-hidden="true" />
+              </div>
+              <strong>{activeReferrals.length}</strong>
+              <p>Referral{activeReferrals.length === 1 ? "" : "s"} in your tracker</p>
+            </button>
+            <button type="button" className="summary-card summary-pink" aria-label={`${officeUpdateCount} updates recorded from care offices. View recent activity.`} onClick={() => document.getElementById("overview-recent-activity")?.scrollIntoView({ behavior: motionSafeScrollBehavior(), block: "start" })}>
+              <div className="summary-card-top">
+                <Building2 size={17} />
+                <span>OFFICE UPDATES</span>
+                <ArrowRight size={14} aria-hidden="true" />
+              </div>
+              <strong>{officeUpdateCount}</strong>
+              <p>Recorded from care offices</p>
+            </button>
+            <button type="button" className="summary-card summary-blue" aria-label={`${nextActionCount} referrals with a next step. View next steps.`} onClick={() => navigateDashboard("next-steps")}>
+              <div className="summary-card-top">
+                <Phone size={17} />
+                <span>CALL / MESSAGE</span>
+                <ArrowRight size={14} aria-hidden="true" />
+              </div>
+              <strong>{nextActionCount}</strong>
+              <p>Referrals with a next step</p>
+            </button>
+          </div>
         </section>
         <section className="overview-next-step" data-tour="overview-next-step">
           <div className="overview-next-icon"><MessageCircle size={20} /></div>
@@ -2209,7 +2303,7 @@ function ReferralNavigatorApp() {
           })}
         </section>}
         {dashboardPage === "overview" && <section className="dashboard-lower-grid">
-          <article className="dashboard-lower-card">
+          <article className="dashboard-lower-card" id="overview-recent-activity">
             <div className="lower-card-heading">
               <div>
                 <p className="eyebrow">RECENT ACTIVITY</p>
