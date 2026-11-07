@@ -245,6 +245,8 @@ const rows: Array<[string, string, string, string, string]> = [
   ["Specialist office", "専門医療機関", "专科诊所", "Consultorio especialista", "Phòng khám chuyên khoa"],
   ["Health plan", "保険プラン", "保险计划", "Plan de salud", "Chương trình bảo hiểm"],
   ["Notes", "メモ", "备注", "Notas", "Ghi chú"],
+  ["Settings", "設定", "设置", "Configuración", "Cài đặt"],
+  ["Sign out", "ログアウト", "退出登录", "Cerrar sesión", "Đăng xuất"],
   ["Office updates mean you recorded what an office told you; Referral Navigator doesn’t verify them.", "医療機関からの更新は、あなたが聞いた内容を記録したものです。Referral Navigator が確認した情報ではありません。", "诊所更新表示你记录了诊所告知的内容；Referral Navigator 不会核实这些信息。", "Las actualizaciones de consultorios reflejan lo que te dijeron; Referral Navigator no las verifica.", "Cập nhật từ phòng khám là thông tin bạn ghi lại; Referral Navigator không xác minh chúng."],
   ["Save update", "更新を保存", "保存更新", "Guardar actualización", "Lưu cập nhật"],
   ["Referral Navigator is your personal organizer. It doesn’t connect to clinic or insurance systems.", "Referral Navigator は個人用の整理ツールです。医療機関や保険のシステムには接続しません。", "Referral Navigator 是你的个人整理工具，不会连接诊所或保险系统。", "Referral Navigator es tu organizador personal. No se conecta a sistemas clínicos ni de seguros.", "Referral Navigator là công cụ sắp xếp cá nhân. Công cụ không kết nối với hệ thống phòng khám hoặc bảo hiểm."],

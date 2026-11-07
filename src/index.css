@@ -6656,3 +6656,22 @@ body { min-width: 0; }
     max-height: min(42dvh, 340px);
   }
 }
+
+/* v0.4.5 patch: let the example steps size to their content so the last step
+   no longer runs under the "Next up" note, give the hero badge and eyebrow
+   room to breathe, and center the Settings icon with its label. */
+.landing-progress {
+  height: auto;
+}
+.landing-hero-copy > .landing-label {
+  margin-bottom: 16px;
+}
+.landing-hero-copy > .eyebrow {
+  margin-bottom: 14px;
+}
+.account-settings {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}

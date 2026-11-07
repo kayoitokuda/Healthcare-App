@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { ArrowLeft, ArrowRight, X } from "lucide-react";
 import type { AppLanguage } from "../i18n";
@@ -7,7 +7,7 @@ type Section = "overview" | "referrals" | "detail" | "next-steps";
 type TourStep = { target: string; section: Section; title: string; body: string };
 type Copy = {
   eyebrow: string; stepLabel: (current: number, total: number) => string;
-  next: string; back: string; finish: string; exit: string; progress: string;
+  next: string; back: string; finish: string; exit: string; progress: string; outsideView: string;
   guidedSteps: TourStep[]; emptySteps: TourStep[];
 };
 
@@ -15,7 +15,7 @@ const copy: Record<AppLanguage, Copy> = {
   en: {
     eyebrow: "APP TOUR",
     stepLabel: (current, total) => `Step ${current} of ${total}`,
-    next: "Next", back: "Back", finish: "Finish tour", exit: "Exit tour", progress: "Tour progress",
+    next: "Next", back: "Back", finish: "Finish tour", exit: "Exit tour", progress: "Tour progress", outsideView: "This area is outside the current view. Continue to the next section to explore the tour.",
     guidedSteps: [
       { target: '[data-tour="overview"]', section: "overview", title: "Your overview", body: "This is your home base. The summary cards show what you’ve recorded, and the next-step panel turns those updates into a question you can verify with an office." },
       { target: '[data-tour="nav-referrals"]', section: "referrals", title: "My referrals", body: "Open this section to see each specialist referral, its current recorded status, and the offices involved. Choose a referral to open its full record." },
@@ -38,7 +38,7 @@ const copy: Record<AppLanguage, Copy> = {
   ja: {
     eyebrow: "アプリのツアー",
     stepLabel: (current, total) => `${total}ステップ中 ${current}ステップ目`,
-    next: "次へ", back: "戻る", finish: "ツアーを終了", exit: "ツアーを終了", progress: "ツアーの進行状況",
+    next: "次へ", back: "戻る", finish: "ツアーを終了", exit: "ツアーを終了", progress: "ツアーの進行状況", outsideView: "この項目は現在の画面にありません。次へ進んでツアーを続けてください。",
     guidedSteps: [
       { target: '[data-tour="overview"]', section: "overview", title: "概要", body: "ここがホーム画面です。サマリーには記録した内容が表示され、「次のステップ」では、医療機関に確認できる質問を確認できます。" },
       { target: '[data-tour="nav-referrals"]', section: "referrals", title: "紹介状", body: "専門医への紹介状、記録した状況、関係する医療機関を確認できます。紹介状を選ぶと詳細が開きます。" },
@@ -61,7 +61,7 @@ const copy: Record<AppLanguage, Copy> = {
   zh: {
     eyebrow: "应用导览",
     stepLabel: (current, total) => `第 ${current} 步，共 ${total} 步`,
-    next: "下一步", back: "上一步", finish: "完成导览", exit: "退出导览", progress: "导览进度",
+    next: "下一步", back: "上一步", finish: "完成导览", exit: "退出导览", progress: "导览进度", outsideView: "此区域不在当前视图中。请继续下一步浏览导览。",
     guidedSteps: [
       { target: '[data-tour="overview"]', section: "overview", title: "总览", body: "这里是你的主页。摘要卡片显示你记录的情况，“下一步”区域会根据这些记录提供可向诊所确认的问题。" },
       { target: '[data-tour="nav-referrals"]', section: "referrals", title: "我的转诊", body: "在这里查看每个专科转诊、记录的状态以及相关诊所。选择一个转诊可查看完整记录。" },
@@ -84,7 +84,7 @@ const copy: Record<AppLanguage, Copy> = {
   es: {
     eyebrow: "RECORRIDO POR LA APP",
     stepLabel: (current, total) => `Paso ${current} de ${total}`,
-    next: "Siguiente", back: "Atrás", finish: "Terminar recorrido", exit: "Salir del recorrido", progress: "Progreso del recorrido",
+    next: "Siguiente", back: "Atrás", finish: "Terminar recorrido", exit: "Salir del recorrido", progress: "Progreso del recorrido", outsideView: "Esta sección no está en la vista actual. Continúa al siguiente paso para seguir el recorrido.",
     guidedSteps: [
       { target: '[data-tour="overview"]', section: "overview", title: "Tu resumen", body: "Esta es tu página principal. Las tarjetas muestran lo que registraste y el panel del siguiente paso ofrece una pregunta que puedes confirmar con un consultorio." },
       { target: '[data-tour="nav-referrals"]', section: "referrals", title: "Mis referidos", body: "Aquí ves cada referido a un especialista, el estado que registraste y los consultorios involucrados. Selecciona uno para abrir su registro." },
@@ -107,7 +107,7 @@ const copy: Record<AppLanguage, Copy> = {
   vi: {
     eyebrow: "HƯỚNG DẪN ỨNG DỤNG",
     stepLabel: (current, total) => `Bước ${current} / ${total}`,
-    next: "Tiếp theo", back: "Quay lại", finish: "Kết thúc hướng dẫn", exit: "Thoát hướng dẫn", progress: "Tiến trình hướng dẫn",
+    next: "Tiếp theo", back: "Quay lại", finish: "Kết thúc hướng dẫn", exit: "Thoát hướng dẫn", progress: "Tiến trình hướng dẫn", outsideView: "Phần này không nằm trong màn hình hiện tại. Hãy tiếp tục sang bước tiếp theo để xem hướng dẫn.",
     guidedSteps: [
       { target: '[data-tour="overview"]', section: "overview", title: "Tổng quan", body: "Đây là trang chính. Các thẻ tóm tắt những gì bạn đã ghi lại; phần bước tiếp theo gợi ý câu hỏi để bạn xác nhận với phòng khám." },
       { target: '[data-tour="nav-referrals"]', section: "referrals", title: "Giới thiệu của tôi", body: "Xem từng lần giới thiệu đến bác sĩ chuyên khoa, trạng thái bạn ghi lại và các phòng khám liên quan. Chọn một mục để mở hồ sơ." },
@@ -151,6 +151,7 @@ export default function OnboardingTutorial({
   const [panelLeft, setPanelLeft] = useState(16);
   const [panelWidth, setPanelWidth] = useState(360);
   const [mobileDock, setMobileDock] = useState(false);
+  const dialogRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
     const findTarget = () => {
@@ -179,7 +180,8 @@ export default function OnboardingTutorial({
           return;
         }
         const width = Math.min(360, window.innerWidth - 32);
-        const heightEstimate = 230;
+        // Use the rendered dialog height so long steps never run off-screen.
+        const heightEstimate = dialogRef.current?.offsetHeight || 320;
         const left = Math.max(16, Math.min(box.left, window.innerWidth - width - 16));
         const below = box.bottom + 16 + heightEstimate <= window.innerHeight;
         const top = below
@@ -230,6 +232,7 @@ export default function OnboardingTutorial({
         />
       )}
       <section
+        ref={dialogRef}
         className={`guided-tour-dialog${mobileDock ? " is-mobile-dock" : ""}`}
         role="dialog"
         aria-modal="true"
@@ -244,7 +247,7 @@ export default function OnboardingTutorial({
         <progress className="guided-tour-progress" max={steps.length} value={index + 1} aria-label={t.progress} />
         <h2>{step.title}</h2>
         <p id="guided-tour-description">{step.body}</p>
-        {!rect && <p className="guided-tour-note">This area is outside the current view. Continue to the next section to explore the tour.</p>}
+        {!rect && <p className="guided-tour-note">{t.outsideView}</p>}
         <div className="guided-tour-actions">
           {index > 0 ? <button type="button" className="secondary-button" onClick={() => onStepChange(index - 1, steps[index - 1].section)}><ArrowLeft size={15} />{t.back}</button> : <span />}
           <button type="button" className="primary-button" onClick={() => last ? onClose() : onStepChange(index + 1, steps[index + 1].section)}>{last ? t.finish : t.next}{last ? <X size={15} /> : <ArrowRight size={15} />}</button>

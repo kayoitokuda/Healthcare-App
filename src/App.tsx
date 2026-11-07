@@ -1091,7 +1091,11 @@ function ReferralNavigatorApp() {
     .flatMap((item) =>
       item.updates.map((update) => ({ referral: item, update })),
     )
-    .sort((a, b) => b.update.id - a.update.id)
+    .sort(
+      (a, b) =>
+        updateTimestamp(b.update) - updateTimestamp(a.update) ||
+        b.update.id - a.update.id,
+    )
     .slice(0, 4);
 
   function startTour() {
@@ -1404,6 +1408,10 @@ function ReferralNavigatorApp() {
     flash("Referral added.");
   }
 
+  const tourLayer = tourActive ? (
+    <OnboardingTutorial language={language} hasReferral={Boolean(activeReferrals[0])} stepIndex={tourStepIndex} onStepChange={handleTourStepChange} onClose={() => setTourActive(false)} />
+  ) : null;
+
   if (!dataReady)
     return (
       <main className="auth-loading" role="status">
@@ -1460,9 +1468,9 @@ function ReferralNavigatorApp() {
             <span className="privacy-chip" title="Your referral updates are saved to your account.">
               <CircleHelp size={14} /> Saved to your account
             </span>
-            <button type="button" className="account-signout account-settings" aria-label={translateText("Settings", language)} title={translateText("Settings", language)} onClick={() => setModal("settings")}><Settings size={20} aria-hidden="true" /> <span className="account-button-label">Settings</span></button>
+            <button type="button" className="account-signout account-settings" aria-label={translateText("Settings", language)} title={translateText("Settings", language)} onClick={() => setModal("settings")}><Settings size={20} aria-hidden="true" /> <span className="account-button-label">{translateText("Settings", language)}</span></button>
             <button type="button" className="account-signout account-signout-action" onClick={() => void signOut()}>
-              Sign out
+              {translateText("Sign out", language)}
             </button>
             <button type="button" className="mobile-help-button icon-button" aria-label={translateText("How it works", language)} onClick={() => setModal("help")}><CircleHelp size={20} aria-hidden="true" /></button>
             <HeaderMenu
@@ -1885,7 +1893,7 @@ function ReferralNavigatorApp() {
             )}
           </Modal>
         )}
-        {tourActive && <OnboardingTutorial language={language} hasReferral={Boolean(activeReferrals[0])} stepIndex={tourStepIndex} onStepChange={handleTourStepChange} onClose={() => setTourActive(false)} />}
+        {tourLayer}
         {toast && (
           <div className="toast" role="status">
             <CheckCircle2 size={17} />
@@ -1946,9 +1954,9 @@ function ReferralNavigatorApp() {
           <span className="privacy-chip" title="Your referral updates are saved to your account.">
             <CircleHelp size={14} /> Saved to your account
           </span>
-          <button type="button" className="account-signout account-settings" aria-label={translateText("Settings", language)} title={translateText("Settings", language)} onClick={() => setModal("settings")}><Settings size={20} aria-hidden="true" /> <span className="account-button-label">Settings</span></button>
+          <button type="button" className="account-signout account-settings" aria-label={translateText("Settings", language)} title={translateText("Settings", language)} onClick={() => setModal("settings")}><Settings size={20} aria-hidden="true" /> <span className="account-button-label">{translateText("Settings", language)}</span></button>
           <button type="button" className="account-signout account-signout-action" onClick={() => void signOut()}>
-            Sign out
+            {translateText("Sign out", language)}
           </button>
           <button type="button" className="mobile-help-button icon-button" aria-label={translateText("How it works", language)} onClick={() => setModal("help")}><CircleHelp size={20} aria-hidden="true" /></button>
             <HeaderMenu
@@ -2378,6 +2386,7 @@ function ReferralNavigatorApp() {
           )}
         </Modal>
       )}
+      {tourLayer}
       {toast && (
         <div className="toast" role="status">
           <CheckCircle2 size={17} />
@@ -2395,25 +2404,25 @@ function NotesForm({
   value: string;
   onSave: (v: string) => void;
 }) {
+  const { language } = useAppLanguage();
   const [notes, setNotes] = useState(value);
   return (
     <div className="form-body">
       <p className="modal-intro">
-        Save your own visit recap or questions for your next conversation. This
-        tool won’t interpret symptoms or recommend treatment.
+        {translateText("Save your own visit recap or questions for your next conversation. This tool won’t interpret symptoms or recommend treatment.", language)}
       </p>
       <label>
-        Notes
+        {translateText("Notes", language)}
         <textarea
           autoFocus
           rows={6}
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
-          placeholder="What did your clinician recommend? What would you like to ask next time?"
+          placeholder={translateText("What did your clinician recommend? What would you like to ask next time?", language)}
         />
       </label>
       <button className="primary-button full" onClick={() => onSave(notes)}>
-        Save notes
+        {translateText("Save notes", language)}
       </button>
     </div>
   );
