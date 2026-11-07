@@ -6675,3 +6675,213 @@ body { min-width: 0; }
   justify-content: center;
   gap: 8px;
 }
+
+/* ------------------------------------------------------------------
+   Landing page refresh (v0.4.5 patch)
+   - Color: warm neutrals + the dashboard's indigo instead of green.
+   - Layout: every section shares one content width, the example card
+     sits on the hero without the hard-edged yellow panel, and the
+     feature cards are a static grid aligned with their heading.
+   ------------------------------------------------------------------ */
+.landing-page {
+  --landing-width: min(1200px, calc(100% - 48px));
+  --landing-ink: #222630;
+  --landing-muted: #60697a;
+  --landing-line: #e5e4df;
+  --landing-indigo: #405bcb;
+  --landing-indigo-dark: #344cae;
+  --landing-indigo-soft: #f1f2fb;
+  --landing-indigo-line: #d9ddf2;
+  background: #f7f6f2;
+  color: var(--landing-ink);
+}
+
+/* Shared content width */
+.landing-hero,
+.landing-section-heading,
+.landing-steps,
+.landing-track-section,
+.landing-faq,
+.landing-boundary,
+.landing-footer {
+  box-sizing: border-box;
+  width: var(--landing-width);
+  max-width: none;
+  margin-right: auto;
+  margin-left: auto;
+}
+
+/* Header */
+.landing-header { border-color: var(--landing-line); }
+.landing-nav > button:first-child,
+.landing-nav > a { color: #707580; }
+.landing-nav > button:first-child:hover,
+.landing-nav > a:hover { color: var(--landing-indigo); }
+
+/* Hero */
+.landing-hero {
+  border-color: var(--landing-line);
+  background: linear-gradient(110deg, #fff 0 52%, var(--landing-indigo-soft) 52% 100%);
+  box-shadow: 0 20px 54px rgba(34, 38, 48, .06);
+}
+.landing-label {
+  border-color: var(--landing-indigo-line);
+  background: var(--landing-indigo-soft);
+  color: var(--landing-indigo);
+}
+.landing-hero h1 { color: var(--landing-ink); }
+.landing-hero h1 em { color: var(--landing-indigo); }
+.landing-lede,
+.landing-reassurance { color: var(--landing-muted); }
+.landing-reassurance { margin-top: 14px; }
+.landing-page .primary-button,
+.landing-actions .primary-button {
+  border-color: var(--landing-indigo);
+  background: var(--landing-indigo);
+  box-shadow: 0 8px 18px rgba(64, 91, 203, .16);
+}
+.landing-page .primary-button:hover {
+  border-color: var(--landing-indigo-dark);
+  background: var(--landing-indigo-dark);
+}
+.landing-page .secondary-button {
+  border-color: #d5d7e2;
+  color: var(--landing-indigo);
+}
+
+/* Example card: no separate yellow panel behind it */
+.landing-preview-panel {
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+}
+.landing-preview-panel::before,
+.landing-preview-panel::after { display: none; }
+.landing-preview {
+  border-color: var(--landing-line);
+  box-shadow: 0 22px 54px rgba(34, 38, 48, .10);
+}
+.landing-preview h2 { color: var(--landing-ink); }
+.landing-card-eyebrow { color: #707580; }
+.landing-route,
+.landing-progress-step small { color: var(--landing-muted); }
+.landing-progress-step strong { color: #30374a; }
+.landing-preview-icon { background: var(--landing-indigo-soft); color: var(--landing-indigo); }
+.landing-progress-step:not(:last-child)::before { background: #e0e2ee; }
+.landing-progress-step.is-complete .landing-progress-marker {
+  border-color: var(--landing-indigo);
+  background: var(--landing-indigo);
+  color: #fff;
+}
+.landing-preview-note {
+  border-color: var(--landing-line);
+  background: #f7f6f2;
+  color: #50586a;
+}
+.landing-example-next { border-color: #d5d7e2; color: var(--landing-indigo); }
+.landing-example-next:hover { background: var(--landing-indigo-soft); }
+
+/* Section headings */
+.landing-hero-copy > .eyebrow,
+.landing-section-heading .eyebrow,
+.landing-track-heading > .eyebrow,
+.landing-faq-heading > .eyebrow { color: #707580; }
+.landing-section-heading h2,
+.landing-track-heading h2,
+.landing-faq-heading h2,
+.landing-step h3,
+.landing-track-grid h3 { color: var(--landing-ink); }
+.landing-section-heading > p:last-child,
+.landing-track-heading > p:last-child,
+.landing-faq-heading > p:last-child,
+.landing-step p,
+.landing-track-grid p,
+.landing-faq-list details p { color: var(--landing-muted); }
+.landing-section-heading { padding-right: 0; padding-left: 0; }
+.landing-section-heading > * { max-width: 720px; }
+
+/* Feature cards: static grid, aligned with the heading above */
+.landing-page .landing-how {
+  padding-right: 0;
+  padding-left: 0;
+  background: #fff;
+}
+.landing-page .landing-how > .landing-section-heading,
+.landing-page .landing-how > .landing-steps {
+  inset: auto;
+  width: var(--landing-width);
+  margin-right: auto;
+  margin-left: auto;
+  padding-right: 0;
+  padding-left: 0;
+}
+.landing-steps { overflow: visible; }
+.landing-steps-track {
+  width: 100%;
+  transform: none;
+  animation: none;
+}
+.landing-steps-group,
+.landing-steps-group[aria-hidden="true"] {
+  display: grid;
+  width: 100%;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+.landing-step {
+  width: auto;
+  min-height: 0;
+  flex-basis: auto;
+  padding: 24px;
+  border-color: var(--landing-line);
+  background: #fbfaf7;
+  box-shadow: 0 8px 24px rgba(34, 38, 48, .04);
+}
+.landing-step:hover {
+  border-color: #c9cce3;
+  box-shadow: 0 16px 32px rgba(34, 38, 48, .08);
+}
+.landing-step > span { color: #a17a23; }
+.landing-step > svg { color: var(--landing-indigo); }
+
+/* "Questions between appointments" panel */
+.landing-track-section {
+  border-color: #e1e3f0;
+  background: #f2f3fa;
+}
+.landing-track-grid article {
+  border-color: var(--landing-line);
+  background: rgba(255, 255, 255, .9);
+}
+.track-step-number { background: var(--landing-indigo-soft); color: var(--landing-indigo); }
+
+/* FAQ, boundary note, footer */
+.landing-faq-list details { border-color: var(--landing-line); }
+.landing-faq-list summary { color: #30374a; }
+.landing-faq-list summary::after { color: var(--landing-indigo); }
+.landing-boundary {
+  border-color: #e1e3f0;
+  background: #f2f3fa;
+}
+.landing-boundary-icon { background: #e6e9f7; color: var(--landing-indigo); }
+.landing-boundary strong { color: #30374a; }
+.landing-boundary p { color: var(--landing-muted); }
+.landing-footer { background: #252938; color: #f3f3f7; }
+.landing-footer-brand p { color: #d4d6df; }
+.landing-footer-column > strong { color: #f1d789; }
+.landing-footer-column a,
+.landing-footer-column button { color: #dfe1e8; }
+.landing-footer-bottom { border-color: rgba(223, 225, 232, .22); color: #c6c9d3; }
+
+@media (max-width: 760px) {
+  .landing-steps-group,
+  .landing-steps-group[aria-hidden="true"] { grid-template-columns: 1fr; gap: 12px; }
+}
+@media (max-width: 760px) {
+  .landing-page { --landing-width: calc(100% - 32px); }
+  .landing-hero {
+    background: linear-gradient(170deg, #fff 0 56%, var(--landing-indigo-soft) 56% 100%);
+  }
+  .landing-step { padding: 20px; }
+}
