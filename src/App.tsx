@@ -608,244 +608,280 @@ function LandingPage({
 }) {
   const { language } = useAppLanguage();
   const [exampleStep, setExampleStep] = useState(0);
+  // The example card in the hero (Figma v0.4.5 · 01 Landing). "I already did this"
+  // walks the example forward so visitors can see how the next step changes.
   const exampleStates = [
-    { status: "Still checking", completed: 1, active: 1, next: "Ask whether the referral was sent" },
-    { status: "Sent", completed: 2, active: 2, next: "Confirm the specialist received it" },
-    { status: "Received", completed: 3, active: -1, next: "Ask what is needed before scheduling" },
+    { status: "Waiting on clinic · day 6", completed: 1, active: 1, next: ["Call to confirm they ", "got it."] },
+    { status: "Sent · waiting on specialist", completed: 2, active: 2, next: ["Confirm the specialist ", "received it."] },
+    { status: "Received · ready to schedule", completed: 3, active: -1, next: ["Ask what they need ", "before booking."] },
   ];
   const example = exampleStates[exampleStep];
+  const isLastExample = exampleStep === exampleStates.length - 1;
   const advanceExample = () => setExampleStep((current) => (current + 1) % exampleStates.length);
+  const exampleSteps = [
+    { title: "Recommendation", source: "You added this" },
+    { title: "Referral sent?", source: exampleStep >= 1 ? "The referring office confirmed it was sent" : "Ask the referring office" },
+    { title: "Received?", source: exampleStep >= 2 ? "The specialist office confirmed it arrived" : "Confirm with the specialist" },
+  ];
+  const scrollToSection = (id: string) => {
+    const section = document.getElementById(id);
+    if (!section) return;
+    window.history.replaceState(null, "", `#${id}`);
+    const top = section.getBoundingClientRect().top + window.scrollY - 12;
+    window.scrollTo({ top, behavior: motionSafeScrollBehavior() });
+  };
+  const faqs = [
+    {
+      question: "Does the app contact offices or check referral status?",
+      answer: "No. You contact offices yourself and record what they tell you. The app doesn’t connect to clinic or insurance systems.",
+    },
+    {
+      question: "What if I don’t know every detail yet?",
+      answer: "Start with what you know. You can leave optional details blank and edit the referral later.",
+    },
+    {
+      question: "Can I keep tracking after an appointment is scheduled?",
+      answer: "Yes. Record requests, documents sent, visits, procedures, and follow-ups as your care continues.",
+    },
+    {
+      question: "Does Referral Navigator provide medical or coverage advice?",
+      answer: "No. It can help you prepare questions, but confirm medical details with your clinician and coverage details with your health plan.",
+    },
+  ];
+  const features = [
+    { number: "01", icon: "/landing/feature-save.svg", title: "Save what you know", body: "Note the specialist, referring office, and what your clinician recommended." },
+    { number: "02", icon: "/landing/feature-follow-up.svg", title: "Follow up with confidence", body: "See a practical next step and prepare a call script or message to review." },
+    { number: "03", icon: "/landing/feature-record.svg", title: "Record what you hear", body: "Add the response and label whether it came from you or an office." },
+  ];
+  const handoffSteps = [
+    { number: "01", title: "Was it sent?", body: "Record what the referring office tells you and when." },
+    { number: "02", title: "Did it arrive?", body: "Keep the specialist office’s response and any requests together." },
+    { number: "03", title: "What happens next?", body: "Prepare a question, follow up, and add what you learn." },
+  ];
+
   return (
-    <div className="landing-page">
-      <header className="landing-header">
-        <button
-          type="button"
-          className="brand brand-home"
-          aria-label="Referral Navigator home"
-          onClick={() => {
-            window.history.replaceState(
-              null,
-              "",
-              window.location.pathname + window.location.search,
-            );
-            window.scrollTo({ top: 0, behavior: motionSafeScrollBehavior() });
-          }}
-        >
-          <span className="brand-mark">
-            <HeartHandshake size={20} />
-          </span>
-          <span>Referral Navigator</span>
-        </button>
-        <nav className="landing-nav" aria-label="Main navigation">
-          <LanguageToggle />
-          <a
-            href="#landing-how-it-works"
-            onClick={(event) => {
-              event.preventDefault();
-              const section = document.getElementById("landing-how-it-works");
-              if (!section) return;
-              window.history.replaceState(null, "", "#landing-how-it-works");
-              const top = section.getBoundingClientRect().top + window.scrollY;
-              const behavior = window.matchMedia("(prefers-reduced-motion: reduce)").matches
-                ? "auto"
-                : "smooth";
-              window.scrollTo({ top, behavior });
+    <div className="rn-landing">
+      <header className="rn-header">
+        <div className="rn-header-inner">
+          <button
+            type="button"
+            className="rn-brand"
+            aria-label="Referral Navigator home"
+            onClick={() => {
+              window.history.replaceState(null, "", window.location.pathname + window.location.search);
+              window.scrollTo({ top: 0, behavior: motionSafeScrollBehavior() });
             }}
           >
-            How it works
-          </a>
-          <button type="button" className="landing-signin" onClick={onSignIn}>
-            Sign in
+            <span className="rn-brand-mark" aria-hidden="true">
+              <img src="/landing/heart-handshake.svg" width="23" height="23" alt="" />
+            </span>
+            <span className="rn-brand-wordmark">Referral Navigator</span>
           </button>
-        </nav>
+          <nav className="rn-nav" aria-label="Main navigation">
+            <LanguageToggle />
+            <a
+              href="#landing-how-it-works"
+              className="rn-nav-link"
+              onClick={(event) => {
+                event.preventDefault();
+                scrollToSection("landing-how-it-works");
+              }}
+            >
+              How it works
+            </a>
+            <button type="button" className="rn-nav-link" onClick={onSignIn}>
+              Sign in
+            </button>
+          </nav>
+        </div>
       </header>
 
       <main>
-        <section className="landing-hero">
-          <div className="landing-hero-copy">
-            <span className="landing-label">
-              <ShieldCheck size={14} /> A patient-owned referral companion
-            </span>
-            <p className="eyebrow">FROM RECOMMENDATION TO NEXT STEP</p>
-            <h1>Keep your specialist <em>referral moving.</em></h1>
-            <p className="landing-lede">
-              Referral handoffs can get complicated. Keep each update, unanswered question, and follow-up in one patient-owned place.
-            </p>
-            <div className="landing-actions">
-              <button className="primary-button" onClick={onGetStarted}>
-                Create an account <ArrowRight size={16} />
-              </button>
-              <button className="secondary-button" onClick={onSignIn}>
-                Sign in
-              </button>
-            </div>
-            <p className="landing-reassurance">
-              You enter updates yourself. The app doesn’t contact offices or
-              check their systems.
-            </p>
-          </div>
-
-          <div className="landing-preview-panel">
-            <div className="landing-preview" aria-label="Example referral progress">
-            <div className="landing-preview-top">
-              <span className="landing-preview-icon">
-                <Stethoscope size={18} />
-              </span>
-              <span className={`status-pill ${exampleStep === 2 ? "status-green" : "status-amber"}`}>
-                <span className="status-dot" />
-                {example.status}
-              </span>
-            </div>
-            <p className="landing-card-eyebrow">YOUR REFERRAL</p>
-            <h2>Cardiology</h2>
-            <p className="landing-route">Primary care <span>→</span> Heart clinic</p>
-            <div className="landing-progress" aria-live="polite">
-              {[
-                { title: "Recommendation", source: "You added this" },
-                { title: "Referral sent?", source: exampleStep >= 1 ? "The referring office confirmed it was sent" : "Ask the referring office" },
-                { title: "Received?", source: exampleStep >= 2 ? "The specialist office confirmed it arrived" : "Confirm with the specialist" },
-              ].map((item, index) => {
-                const completed = index < example.completed;
-                const current = index === example.active;
-                return (
-                  <div className={`landing-progress-step ${completed ? "is-complete" : ""} ${current ? "is-current" : ""}`} key={item.title}>
-                    <span className="landing-progress-marker">{completed ? <Check size={14} aria-hidden="true" /> : index + 1}</span>
-                    <div><strong>{item.title}</strong><small>{item.source}</small></div>
-                  </div>
-                );
-              })}
-            </div>
-            <div className="landing-preview-note" aria-live="polite">
-              <MessageCircle size={16} aria-hidden="true" />
-              <span>Next up: {example.next}</span>
-              <button type="button" className="landing-example-next" onClick={advanceExample} aria-label="Show the next example update">
-                <ArrowRight size={16} aria-hidden="true" />
-              </button>
-            </div>
-            <p className="landing-example-caption">Example only · Updates are entered by the patient</p>
-            </div>
-          </div>
-        </section>
-
-        <section className="landing-how" id="landing-how-it-works">
-          <div className="landing-section-heading">
-            <p className="eyebrow">A CLEARER HANDOFF</p>
-            <h2>Know what’s confirmed—and what to ask next.</h2>
-            <p>
-              Referral Navigator helps you keep the details straight while you
-              follow up at your own pace.
-            </p>
-          </div>
-          <div className="landing-steps">
-            <div className="landing-steps-track">
-              <div className="landing-steps-group">
-            <article className="landing-step">
-              <span>01</span>
-              <ClipboardList size={20} />
-              <h3>Save what you know</h3>
-              <p>
-                Note the specialist, referring office, and what your clinician
-                recommended.
+        <div className="rn-hero-outer">
+          <section className="rn-hero" aria-labelledby="landing-hero-title">
+            <div className="rn-hero-copy">
+              <div className="rn-hero-heading">
+                <span className="rn-tag">
+                  <img src="/landing/tag-shield.svg" width="14" height="14" alt="" />
+                  A patient-owned referral companion
+                </span>
+                <h1 id="landing-hero-title">
+                  Keep your specialist <em>referral moving.</em>
+                </h1>
+                <p className="rn-eyebrow">FROM RECOMMENDATION TO NEXT STEP</p>
+              </div>
+              <p className="rn-hero-lede">
+                Referral handoffs can get complicated. Keep each update, unanswered question, and follow-up in one patient-owned place.
               </p>
-            </article>
-            <article className="landing-step">
-              <span>02</span>
-              <MessageCircle size={20} />
-              <h3>Follow up with confidence</h3>
-              <p>
-                See a practical next step and prepare a call script or message
-                to review.
+              <div className="rn-hero-actions">
+                <button type="button" className="rn-button-primary" onClick={onGetStarted}>
+                  Create an account
+                  <img src="/landing/arrow-right.svg" width="16" height="16" alt="" />
+                </button>
+                <button type="button" className="rn-button-secondary" onClick={onSignIn}>
+                  Sign in
+                </button>
+              </div>
+              <p className="rn-hero-reassurance">
+                You enter updates yourself. The app doesn’t contact offices or check their systems.
               </p>
-            </article>
-            <article className="landing-step">
-              <span>03</span>
-              <CheckCircle2 size={20} />
-              <h3>Record what you hear</h3>
-              <p>
-                Add the response and label whether it came from you or an
-                office.
-              </p>
-            </article>
-          </div>
             </div>
-          </div>
-        </section>
 
-        <section className="landing-track-section" aria-labelledby="landing-track-title">
-          <div className="landing-track-heading">
-            <p className="eyebrow">THE QUESTIONS BETWEEN APPOINTMENTS</p>
-            <h2 id="landing-track-title">Keep the handoff clear, even when it takes a few calls.</h2>
-            <p>A referral can pause while offices send information, request records, or clarify what comes next. Keep those details in one patient-owned place.</p>
-          </div>
-          <div className="landing-track-grid">
-            <article><span className="track-step-number">01</span><h3>Was it sent?</h3><p>Record what the referring office tells you and when.</p></article>
-            <article><span className="track-step-number">02</span><h3>Did it arrive?</h3><p>Keep the specialist office’s response and any requests together.</p></article>
-            <article><span className="track-step-number">03</span><h3>What happens next?</h3><p>Prepare a question, follow up, and add what you learn.</p></article>
-          </div>
-        </section>
+            <div className="rn-hero-preview">
+              <img className="rn-route-wash" src="/landing/soft-route-wash.svg" width="653" height="652" alt="" />
+              <span className="rn-floating-tag rn-floating-tag--letter" aria-hidden="true">Referral letter</span>
+              <span className="rn-floating-tag rn-floating-tag--auth" aria-hidden="true">Prior auth</span>
+              <span className="rn-floating-tag rn-floating-tag--imaging" aria-hidden="true">Imaging · MRI</span>
+              <span className="rn-floating-tag rn-floating-tag--callback" aria-hidden="true">Clinic called back</span>
 
-        <section className="landing-faq" aria-labelledby="landing-faq-title">
-          <div className="landing-faq-heading">
-            <p className="eyebrow">GOOD TO KNOW</p>
-            <h2 id="landing-faq-title">A few questions, answered.</h2>
-            <p>Referral Navigator helps you keep information organized while you follow up at your own pace.</p>
-          </div>
-          <div className="landing-faq-list">
-            <details>
-              <summary>Does the app contact offices or check referral status?</summary>
-              <p>No. You contact offices yourself and record what they tell you. The app doesn’t connect to clinic or insurance systems.</p>
-            </details>
-            <details>
-              <summary>What if I don’t know every detail yet?</summary>
-              <p>Start with what you know. You can leave optional details blank and edit the referral later.</p>
-            </details>
-            <details>
-              <summary>Can I keep tracking after an appointment is scheduled?</summary>
-              <p>Yes. Record requests, documents sent, visits, procedures, and follow-ups as your care continues.</p>
-            </details>
-            <details>
-              <summary>Does Referral Navigator provide medical or coverage advice?</summary>
-              <p>No. It can help you prepare questions, but confirm medical details with your clinician and coverage details with your health plan.</p>
-            </details>
-          </div>
-        </section>
-
-        <section className="landing-boundary">
-          <span className="landing-boundary-icon">
-            <ShieldCheck size={19} />
-          </span>
-          <div>
-            <strong>Your tracker is yours to update.</strong>
-            <p>
-              This tool can’t verify referral status, give medical advice, or
-              determine insurance coverage. Confirm details with the relevant
-              office or your health plan.
-            </p>
-          </div>
-          
-        </section>
-      </main>
-      <footer className="landing-footer">
-        <div className="landing-footer-main">
-          <div className="landing-footer-brand">
-            <span className="brand-mark"><HeartHandshake size={20} aria-hidden="true" /></span>
-            <div><strong>Referral Navigator</strong><p>A patient-owned companion for tracking specialist referrals and planning follow-ups.</p></div>
-          </div>
-          <div className="landing-footer-column">
-            <strong>{translateText("Explore", language)}</strong>
-            <a href="#landing-how-it-works">{translateText("How it works", language)}</a>
-            <a href="#landing-track-title">{translateText("What you can track", language)}</a>
-            <a href="#landing-faq-title">{translateText("Common questions", language)}</a>
-          </div>
-          <div className="landing-footer-column">
-            <strong>{translateText("Your account", language)}</strong>
-            <button type="button" onClick={onSignIn}>{translateText("Sign in", language)}</button>
-            <button type="button" onClick={onGetStarted}>{translateText("Create an account", language)}</button>
-          </div>
+              <div className="rn-referral-card" aria-label="Example referral">
+                <span className="rn-status" aria-live="polite">
+                  <img src="/landing/status-dot.svg" width="8" height="8" alt="" />
+                  {example.status}
+                </span>
+                <h2>Cardiology</h2>
+                <p className="rn-route">Dr. Alvarez <span aria-hidden="true">→</span> Bay Heart Clinic</p>
+                <ol className="rn-steps">
+                  {exampleSteps.map((item, index) => {
+                    const state = index < example.completed ? "complete" : index === example.active ? "current" : "upcoming";
+                    return (
+                      <li className={`rn-step is-${state}`} key={item.title}>
+                        <span className="rn-step-marker">
+                          {state === "complete" ? (
+                            <img src="/landing/step-check.svg" width="13" height="12" alt="Done" />
+                          ) : (
+                            index + 1
+                          )}
+                        </span>
+                        <span className="rn-step-copy">
+                          <strong>{item.title}</strong>
+                          <small>{item.source}</small>
+                        </span>
+                      </li>
+                    );
+                  })}
+                </ol>
+                <hr className="rn-card-divider" />
+                <p className="rn-card-eyebrow">YOUR NEXT STEP</p>
+                <p className="rn-next-step" aria-live="polite">
+                  {example.next[0]}
+                  <em>{example.next[1]}</em>
+                </p>
+                <div className="rn-card-actions">
+                  <button type="button" className="rn-card-primary" onClick={onGetStarted}>
+                    Draft what to say
+                  </button>
+                  <button type="button" className="rn-card-secondary" onClick={advanceExample}>
+                    {isLastExample ? "Start the example over" : "I already did this"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </section>
         </div>
-        <div className="landing-footer-bottom">
-          <span>© {new Date().getFullYear()} Referral Navigator · Research prototype</span>
-          <span>This tool does not connect to medical offices or verify referral status or coverage.</span>
+
+        <section className="rn-features" id="landing-how-it-works" aria-labelledby="landing-how-title">
+          <div className="rn-section-header">
+            <p className="rn-eyebrow">A CLEARER HANDOFF</p>
+            <h2 className="rn-h2" id="landing-how-title">Know what’s confirmed, and what to ask next.</h2>
+            <p>Referral Navigator helps you keep the details straight while you follow up at your own pace.</p>
+          </div>
+          <div className="rn-feature-row">
+            {features.map((feature) => (
+              <article className="rn-feature-card" key={feature.number}>
+                <div className="rn-feature-top">
+                  <span className="rn-feature-icon">
+                    <img src={feature.icon} width="20" height="20" alt="" />
+                  </span>
+                  <span className="rn-feature-number">{feature.number}</span>
+                </div>
+                <h3>{feature.title}</h3>
+                <p>{feature.body}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <div className="rn-lower">
+          <section className="rn-handoff" aria-labelledby="landing-track-title">
+            <div className="rn-handoff-copy">
+              <p className="rn-eyebrow">THE QUESTIONS BETWEEN APPOINTMENTS</p>
+              <h2 className="rn-h2" id="landing-track-title">Keep the handoff clear, even when it takes a few calls.</h2>
+              <p>A referral can pause while offices send information, request records, or clarify what comes next. Keep those details in one patient-owned place.</p>
+            </div>
+            <ol className="rn-handoff-steps">
+              {handoffSteps.map((step) => (
+                <li key={step.number}>
+                  <span className="rn-handoff-number">{step.number}</span>
+                  <span className="rn-handoff-text">
+                    <strong>{step.title}</strong>
+                    <span>{step.body}</span>
+                  </span>
+                </li>
+              ))}
+            </ol>
+          </section>
+
+          <section className="rn-faq" aria-labelledby="landing-faq-title">
+            <div className="rn-faq-copy">
+              <p className="rn-eyebrow">GOOD TO KNOW</p>
+              <h2 className="rn-h2" id="landing-faq-title">A few questions, answered.</h2>
+            </div>
+            <div className="rn-faq-list">
+              {faqs.map((faq, index) => (
+                <details key={faq.question} open={index === 0}>
+                  <summary>
+                    <span>{faq.question}</span>
+                    <span className="rn-faq-indicator" aria-hidden="true" />
+                  </summary>
+                  <p>{faq.answer}</p>
+                </details>
+              ))}
+            </div>
+          </section>
+
+          <section className="rn-safety" aria-label="About this tool">
+            <span className="rn-safety-icon">
+              <img src="/landing/safety-note.svg" width="19" height="19" alt="" />
+            </span>
+            <p>
+              <strong>Your tracker is yours to update.</strong>
+              <span>This tool can’t verify referral status, give medical advice, or determine insurance coverage. Confirm details with the relevant office or your health plan.</span>
+            </p>
+          </section>
+        </div>
+      </main>
+
+      <footer className="rn-footer">
+        <div className="rn-footer-inner">
+          <div className="rn-footer-top">
+            <div className="rn-footer-brand">
+              <span className="rn-brand-mark rn-brand-mark--footer" aria-hidden="true">
+                <img src="/landing/heart-handshake-footer.svg" width="28" height="28" alt="" />
+              </span>
+              <div>
+                <strong>Referral Navigator</strong>
+                <p>A patient-owned companion for tracking specialist referrals and planning follow-ups.</p>
+              </div>
+            </div>
+            <div className="rn-footer-links">
+              <div className="rn-footer-column">
+                <strong>{translateText("Explore", language)}</strong>
+                <a href="#landing-how-it-works" onClick={(event) => { event.preventDefault(); scrollToSection("landing-how-it-works"); }}>{translateText("How it works", language)}</a>
+                <a href="#landing-track-title" onClick={(event) => { event.preventDefault(); scrollToSection("landing-track-title"); }}>{translateText("What you can track", language)}</a>
+                <a href="#landing-faq-title" onClick={(event) => { event.preventDefault(); scrollToSection("landing-faq-title"); }}>{translateText("Common questions", language)}</a>
+              </div>
+              <div className="rn-footer-column">
+                <strong>{translateText("Your account", language)}</strong>
+                <button type="button" onClick={onSignIn}>{translateText("Sign in", language)}</button>
+                <button type="button" onClick={onGetStarted}>{translateText("Create an account", language)}</button>
+              </div>
+            </div>
+          </div>
+          <div className="rn-footer-bottom">
+            <span>© {new Date().getFullYear()} Referral Navigator · Research prototype</span>
+            <span>This tool does not connect to medical offices or verify referral status or coverage.</span>
+          </div>
         </div>
       </footer>
     </div>
