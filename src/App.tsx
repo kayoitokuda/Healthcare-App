@@ -608,16 +608,59 @@ function LandingPage({
 }) {
   const { language } = useAppLanguage();
   const [exampleStep, setExampleStep] = useState(0);
-  // The example card in the hero (Figma v0.4.5 · 01 Landing). "I already did this"
-  // walks the example forward so visitors can see how the next step changes.
+  const [showDraft, setShowDraft] = useState(false);
+  // Keep keyboard focus in the card when the next-step and draft panels swap.
+  const draftPanelRef = useRef<HTMLDivElement>(null);
+  const draftButtonRef = useRef<HTMLButtonElement>(null);
+  const draftToggled = useRef(false);
+  useEffect(() => {
+    if (!draftToggled.current) return;
+    draftToggled.current = false;
+    (showDraft ? draftPanelRef.current : draftButtonRef.current)?.focus({ preventScroll: true });
+  }, [showDraft]);
+  const toggleDraft = (next: boolean) => {
+    draftToggled.current = true;
+    setShowDraft(next);
+  };
+  const [headerRaised, setHeaderRaised] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setHeaderRaised(window.scrollY > 8);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+  // Hero example card (Figma v0.4.5 · 01 Landing). Each state's next step and
+  // draft match the step that is currently open, so the card never asks about
+  // a later step before the earlier one is confirmed.
   const exampleStates = [
-    { status: "Waiting on clinic · day 6", completed: 1, active: 1, next: ["Call to confirm they ", "got it."] },
-    { status: "Sent · waiting on specialist", completed: 2, active: 2, next: ["Confirm the specialist ", "received it."] },
-    { status: "Received · ready to schedule", completed: 3, active: -1, next: ["Ask what they need ", "before booking."] },
+    {
+      status: "Waiting on clinic · day 6",
+      completed: 1,
+      active: 1,
+      next: ["Call to check it was", "sent."],
+      draft: "Hi, I’m calling about my cardiology referral to Bay Heart Clinic. Could you tell me whether it was sent, and on what date?",
+    },
+    {
+      status: "Sent · waiting on specialist",
+      completed: 2,
+      active: 2,
+      next: ["Call to confirm they", "got it."],
+      draft: "Hi, I’m checking on a cardiology referral from Dr. Alvarez. Could you confirm you received it and whether you need anything else from me?",
+    },
+    {
+      status: "Received · ready to schedule",
+      completed: 3,
+      active: -1,
+      next: ["Ask what they need", "before booking."],
+      draft: "Hi, you received my cardiology referral from Dr. Alvarez. What do you need from me before I can book a visit?",
+    },
   ];
   const example = exampleStates[exampleStep];
   const isLastExample = exampleStep === exampleStates.length - 1;
-  const advanceExample = () => setExampleStep((current) => (current + 1) % exampleStates.length);
+  const advanceExample = () => {
+    setShowDraft(false);
+    setExampleStep((current) => (current + 1) % exampleStates.length);
+  };
   const exampleSteps = [
     { title: "Recommendation", source: "You added this" },
     { title: "Referral sent?", source: exampleStep >= 1 ? "The referring office confirmed it was sent" : "Ask the referring office" },
@@ -627,7 +670,8 @@ function LandingPage({
     const section = document.getElementById(id);
     if (!section) return;
     window.history.replaceState(null, "", `#${id}`);
-    const top = section.getBoundingClientRect().top + window.scrollY - 12;
+    const headerHeight = document.querySelector(".rn-header")?.getBoundingClientRect().height ?? 0;
+    const top = section.getBoundingClientRect().top + window.scrollY - headerHeight - 16;
     window.scrollTo({ top, behavior: motionSafeScrollBehavior() });
   };
   const faqs = [
@@ -661,7 +705,7 @@ function LandingPage({
 
   return (
     <div className="rn-landing">
-      <header className="rn-header">
+      <header className={`rn-header${headerRaised ? " is-raised" : ""}`}>
         <div className="rn-header-inner">
           <button
             type="button"
@@ -734,13 +778,13 @@ function LandingPage({
               <span className="rn-floating-tag rn-floating-tag--imaging" aria-hidden="true">Imaging · MRI</span>
               <span className="rn-floating-tag rn-floating-tag--callback" aria-hidden="true">Clinic called back</span>
 
-              <div className="rn-referral-card" aria-label="Example referral">
+              <div className={`rn-referral-card${showDraft ? " is-drafting" : ""}`} aria-label="Example referral">
                 <span className="rn-status" aria-live="polite">
                   <img src="/landing/status-dot.svg" width="8" height="8" alt="" />
                   {example.status}
                 </span>
                 <h2>Cardiology</h2>
-                <p className="rn-route">Dr. Alvarez <span aria-hidden="true">→</span> Bay Heart Clinic</p>
+                <p className="rn-route" data-no-translate>Dr. Alvarez <span aria-hidden="true">→</span> Bay Heart Clinic</p>
                 <ol className="rn-steps">
                   {exampleSteps.map((item, index) => {
                     const state = index < example.completed ? "complete" : index === example.active ? "current" : "upcoming";
@@ -762,19 +806,40 @@ function LandingPage({
                   })}
                 </ol>
                 <hr className="rn-card-divider" />
-                <p className="rn-card-eyebrow">YOUR NEXT STEP</p>
-                <p className="rn-next-step" aria-live="polite">
-                  {example.next[0]}
-                  <em>{example.next[1]}</em>
-                </p>
-                <div className="rn-card-actions">
-                  <button type="button" className="rn-card-primary" onClick={onGetStarted}>
-                    Draft what to say
-                  </button>
-                  <button type="button" className="rn-card-secondary" onClick={advanceExample}>
-                    {isLastExample ? "Start the example over" : "I already did this"}
-                  </button>
-                </div>
+                {showDraft ? (
+                  <div className="rn-card-panel rn-card-draft" ref={draftPanelRef} tabIndex={-1} role="group" aria-label="Example message to the office">
+                    <p className="rn-card-eyebrow">WHAT TO SAY</p>
+                    <blockquote className="rn-draft-quote">{example.draft}</blockquote>
+                    <p className="rn-draft-note">Example only. You review every draft before you use it.</p>
+                    <div className="rn-card-actions">
+                      <button type="button" className="rn-card-primary" onClick={onGetStarted}>
+                        Save drafts with an account
+                      </button>
+                      <button type="button" className="rn-card-secondary" onClick={() => toggleDraft(false)}>
+                        Back to next step
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="rn-card-panel">
+                    <p className="rn-card-eyebrow">YOUR NEXT STEP</p>
+                    <p className="rn-next-step" aria-live="polite">
+                      <span className="rn-next-step-text" key={exampleStep}>
+                        {example.next[0]}
+                        <span className="rn-word-gap"> </span>
+                        <em>{example.next[1]}</em>
+                      </span>
+                    </p>
+                    <div className="rn-card-actions">
+                      <button type="button" className="rn-card-primary" ref={draftButtonRef} onClick={() => toggleDraft(true)}>
+                        Draft what to say
+                      </button>
+                      <button type="button" className="rn-card-secondary" onClick={advanceExample}>
+                        {isLastExample ? "Start the example over" : "I already did this"}
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           </section>
