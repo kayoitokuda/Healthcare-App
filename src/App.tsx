@@ -1002,6 +1002,7 @@ function InlineDraftPanel({
   });
   const [improving, setImproving] = useState(false);
   const [improveError, setImproveError] = useState("");
+  const [aiRetryable, setAiRetryable] = useState(false);
   const [aiSuggestions, setAiSuggestions] = useState<string[]>([]);
   const autoGenerationKey = useRef("");
   const userEditedDraft = useRef(false);
@@ -1010,6 +1011,7 @@ function InlineDraftPanel({
     if (improving || !aiAvailable) return;
     setImproving(true);
     setImproveError("");
+    setAiRetryable(false);
     setAiSuggestions([]);
     try {
       const sessionResult = await supabase?.auth.getSession();
@@ -1041,7 +1043,10 @@ function InlineDraftPanel({
         body: JSON.stringify({ kind, language, currentQuestion, referral: referralContext }),
       });
       const result = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(result.error || "AI draft assist is unavailable.");
+      if (!response.ok) {
+        setAiRetryable(result.retryable === true);
+        throw new Error(result.error || "AI draft assist is unavailable.");
+      }
       if (typeof result.draft !== "string" || !result.draft.trim() || !Array.isArray(result.suggestions)) {
         throw new Error("The AI response was incomplete. Please retry.");
       }
@@ -1151,7 +1156,7 @@ function InlineDraftPanel({
       {improveError && (
         <div className="helper-note" role="status" aria-live="polite">
           <span>{improveError}</span>
-          {aiEnabled && <button className="text-button" type="button" onClick={retryAI} disabled={improving}>
+          {aiEnabled && aiRetryable && <button className="text-button" type="button" onClick={retryAI} disabled={improving}>
             {translateText("Retry AI suggestions", language)}
           </button>}
         </div>
