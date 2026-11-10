@@ -396,6 +396,7 @@ function MobileBottomNav({ page, onNavigate }: {
   return <nav ref={navRef} className="mobile-bottom-nav" aria-label={translateText("Dashboard navigation", language)}>
     {items.map(({ id, label, Icon }) => <button
       type="button" key={id}
+      data-tour={id === "referrals" ? "nav-referrals" : id === "next-steps" ? "nav-next-steps" : undefined}
       aria-current={page === id ? "page" : undefined}
       onClick={() => onNavigate(id)}
     ><Icon size={21} aria-hidden="true" /><span>{translateText(label, language)}</span></button>)}
@@ -607,242 +608,345 @@ function LandingPage({
 }) {
   const { language } = useAppLanguage();
   const [exampleStep, setExampleStep] = useState(0);
+  const [showDraft, setShowDraft] = useState(false);
+  // Keep keyboard focus in the card when the next-step and draft panels swap.
+  const draftPanelRef = useRef<HTMLDivElement>(null);
+  const draftButtonRef = useRef<HTMLButtonElement>(null);
+  const draftToggled = useRef(false);
+  useEffect(() => {
+    if (!draftToggled.current) return;
+    draftToggled.current = false;
+    (showDraft ? draftPanelRef.current : draftButtonRef.current)?.focus({ preventScroll: true });
+  }, [showDraft]);
+  const toggleDraft = (next: boolean) => {
+    draftToggled.current = true;
+    setShowDraft(next);
+  };
+  const [headerRaised, setHeaderRaised] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setHeaderRaised(window.scrollY > 8);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+  // Hero example card (Figma v0.4.5 · 01 Landing). Each state's next step and
+  // draft match the step that is currently open, so the card never asks about
+  // a later step before the earlier one is confirmed.
   const exampleStates = [
-    { status: "Still checking", completed: 1, active: 1, next: "Ask whether the referral was sent" },
-    { status: "Sent", completed: 2, active: 2, next: "Confirm the specialist received it" },
-    { status: "Received", completed: 3, active: -1, next: "Ask what is needed before scheduling" },
+    {
+      status: "Waiting on clinic · day 6",
+      completed: 1,
+      active: 1,
+      next: ["Call to check it was", "sent."],
+      draft: "Hi, I’m calling about my cardiology referral to Bay Heart Clinic. Could you tell me whether it was sent, and on what date?",
+    },
+    {
+      status: "Sent · waiting on specialist",
+      completed: 2,
+      active: 2,
+      next: ["Call to confirm they", "got it."],
+      draft: "Hi, I’m checking on a cardiology referral from Dr. Alvarez. Could you confirm you received it and whether you need anything else from me?",
+    },
+    {
+      status: "Received · ready to schedule",
+      completed: 3,
+      active: -1,
+      next: ["Ask what they need", "before booking."],
+      draft: "Hi, you received my cardiology referral from Dr. Alvarez. What do you need from me before I can book a visit?",
+    },
   ];
   const example = exampleStates[exampleStep];
-  const advanceExample = () => setExampleStep((current) => (current + 1) % exampleStates.length);
+  const isLastExample = exampleStep === exampleStates.length - 1;
+  const advanceExample = () => {
+    setShowDraft(false);
+    setExampleStep((current) => (current + 1) % exampleStates.length);
+  };
+  const exampleSteps = [
+    { title: "Recommendation", source: "You added this" },
+    { title: "Referral sent?", source: exampleStep >= 1 ? "The referring office confirmed it was sent" : "Ask the referring office" },
+    { title: "Received?", source: exampleStep >= 2 ? "The specialist office confirmed it arrived" : "Confirm with the specialist" },
+  ];
+  const scrollToSection = (id: string) => {
+    const section = document.getElementById(id);
+    if (!section) return;
+    window.history.replaceState(null, "", `#${id}`);
+    const headerHeight = document.querySelector(".rn-header")?.getBoundingClientRect().height ?? 0;
+    const top = section.getBoundingClientRect().top + window.scrollY - headerHeight - 16;
+    window.scrollTo({ top, behavior: motionSafeScrollBehavior() });
+  };
+  const faqs = [
+    {
+      question: "Does the app contact offices or check referral status?",
+      answer: "No. You contact offices yourself and record what they tell you. The app doesn’t connect to clinic or insurance systems.",
+    },
+    {
+      question: "What if I don’t know every detail yet?",
+      answer: "Start with what you know. You can leave optional details blank and edit the referral later.",
+    },
+    {
+      question: "Can I keep tracking after an appointment is scheduled?",
+      answer: "Yes. Record requests, documents sent, visits, procedures, and follow-ups as your care continues.",
+    },
+    {
+      question: "Does Referral Navigator provide medical or coverage advice?",
+      answer: "No. It can help you prepare questions, but confirm medical details with your clinician and coverage details with your health plan.",
+    },
+  ];
+  const features = [
+    { number: "01", icon: "/landing/feature-save.svg", title: "Save what you know", body: "Note the specialist, referring office, and what your clinician recommended." },
+    { number: "02", icon: "/landing/feature-follow-up.svg", title: "Follow up with confidence", body: "See a practical next step and prepare a call script or message to review." },
+    { number: "03", icon: "/landing/feature-record.svg", title: "Record what you hear", body: "Add the response and label whether it came from you or an office." },
+  ];
+  const handoffSteps = [
+    { number: "01", title: "Was it sent?", body: "Record what the referring office tells you and when." },
+    { number: "02", title: "Did it arrive?", body: "Keep the specialist office’s response and any requests together." },
+    { number: "03", title: "What happens next?", body: "Prepare a question, follow up, and add what you learn." },
+  ];
+
   return (
-    <div className="landing-page">
-      <header className="landing-header">
-        <button
-          type="button"
-          className="brand brand-home"
-          aria-label="Referral Navigator home"
-          onClick={() => {
-            window.history.replaceState(
-              null,
-              "",
-              window.location.pathname + window.location.search,
-            );
-            window.scrollTo({ top: 0, behavior: motionSafeScrollBehavior() });
-          }}
-        >
-          <span className="brand-mark"><img className="brand-mark-image" src="/brand-mark.svg" alt="" /></span>
-          <span>Referral Navigator</span>
-        </button>
-        <nav className="landing-nav" aria-label="Main navigation">
-          <LanguageToggle />
-          <a
-            href="#landing-how-it-works"
-            onClick={(event) => {
-              event.preventDefault();
-              const section = document.getElementById("landing-how-it-works");
-              if (!section) return;
-              window.history.replaceState(null, "", "#landing-how-it-works");
-              const top = section.getBoundingClientRect().top + window.scrollY;
-              const behavior = window.matchMedia("(prefers-reduced-motion: reduce)").matches
-                ? "auto"
-                : "smooth";
-              window.scrollTo({ top, behavior });
+    <div className="rn-landing">
+      <header className={`rn-header${headerRaised ? " is-raised" : ""}`}>
+        <div className="rn-header-inner">
+          <button
+            type="button"
+            className="rn-brand"
+            aria-label="Referral Navigator home"
+            onClick={() => {
+              window.history.replaceState(null, "", window.location.pathname + window.location.search);
+              window.scrollTo({ top: 0, behavior: motionSafeScrollBehavior() });
             }}
           >
-            How it works
-          </a>
-          <button type="button" className="landing-signin" onClick={onSignIn}>
-            Sign in
+            <span className="rn-brand-mark" aria-hidden="true">
+              <img className="brand-mark-image" src="/brand-mark.svg" width="23" height="23" alt="" />
+            </span>
+            <span className="rn-brand-wordmark">Referral Navigator</span>
           </button>
-        </nav>
+          <nav className="rn-nav" aria-label="Main navigation">
+            <LanguageToggle />
+            <a
+              href="#landing-how-it-works"
+              className="rn-nav-link"
+              onClick={(event) => {
+                event.preventDefault();
+                scrollToSection("landing-how-it-works");
+              }}
+            >
+              How it works
+            </a>
+            <button type="button" className="rn-nav-link" onClick={onSignIn}>
+              Sign in
+            </button>
+          </nav>
+        </div>
       </header>
 
       <main>
-        <section className="landing-hero">
-          <div className="landing-hero-copy">
-            <span className="landing-label">
-              <ShieldCheck size={14} /> A patient-owned referral companion
-            </span>
-            <p className="eyebrow">FROM RECOMMENDATION TO NEXT STEP</p>
-            <h1>Keep your specialist <em>referral moving.</em></h1>
-            <p className="landing-lede">
-              Referral handoffs can get complicated. Keep each update, unanswered question, and follow-up in one patient-owned place.
-            </p>
-            <div className="landing-actions">
-              <button className="primary-button" onClick={onGetStarted}>
-                Create an account <ArrowRight size={16} />
-              </button>
-              <button className="secondary-button" onClick={onSignIn}>
-                Sign in
-              </button>
+        <div className="rn-hero-outer">
+          <section className="rn-hero" aria-labelledby="landing-hero-title">
+            <div className="rn-hero-copy">
+              <div className="rn-hero-heading">
+                <span className="rn-tag">
+                  <img src="/landing/tag-shield.svg" width="14" height="14" alt="" />
+                  A patient-owned referral companion
+                </span>
+                <h1 id="landing-hero-title">
+                  Keep your specialist <em>referral moving.</em>
+                </h1>
+                <p className="rn-eyebrow">FROM RECOMMENDATION TO NEXT STEP</p>
+              </div>
+              <p className="rn-hero-lede">
+                Referral handoffs can get complicated. Keep each update, unanswered question, and follow-up in one patient-owned place.
+              </p>
+              <div className="rn-hero-actions">
+                <button type="button" className="rn-button-primary" onClick={onGetStarted}>
+                  Create an account
+                  <img src="/landing/arrow-right.svg" width="16" height="16" alt="" />
+                </button>
+                <button type="button" className="rn-button-secondary" onClick={onSignIn}>
+                  Sign in
+                </button>
+              </div>
+              <p className="rn-hero-reassurance">
+                You enter updates yourself. The app doesn’t contact offices or check their systems.
+              </p>
             </div>
-            <p className="landing-reassurance">
-              You enter updates yourself. The app doesn’t contact offices or
-              check their systems.
-            </p>
-          </div>
 
-          <div className="landing-preview-panel">
-            <div className="landing-preview" aria-label="Example referral progress">
-            <div className="landing-preview-top">
-              <span className="landing-preview-icon">
-                <Stethoscope size={18} />
-              </span>
-              <span className={`status-pill ${exampleStep === 2 ? "status-green" : "status-amber"}`}>
-                <span className="status-dot" />
-                {example.status}
-              </span>
-            </div>
-            <p className="landing-card-eyebrow">YOUR REFERRAL</p>
-            <h2>Cardiology</h2>
-            <p className="landing-route">Primary care <span>→</span> Heart clinic</p>
-            <div className="landing-progress" aria-live="polite">
-              {[
-                { title: "Recommendation", source: "You added this" },
-                { title: "Referral sent?", source: exampleStep >= 1 ? "The referring office confirmed it was sent" : "Ask the referring office" },
-                { title: "Received?", source: exampleStep >= 2 ? "The specialist office confirmed it arrived" : "Confirm with the specialist" },
-              ].map((item, index) => {
-                const completed = index < example.completed;
-                const current = index === example.active;
-                return (
-                  <div className={`landing-progress-step ${completed ? "is-complete" : ""} ${current ? "is-current" : ""}`} key={item.title}>
-                    <span className="landing-progress-marker">{completed ? <Check size={14} aria-hidden="true" /> : index + 1}</span>
-                    <div><strong>{item.title}</strong><small>{item.source}</small></div>
+            <div className="rn-hero-preview">
+              <img className="rn-route-wash" src="/landing/soft-route-wash.svg" width="653" height="652" alt="" />
+              <span className="rn-floating-tag rn-floating-tag--letter" aria-hidden="true">Referral letter</span>
+              <span className="rn-floating-tag rn-floating-tag--auth" aria-hidden="true">Prior auth</span>
+              <span className="rn-floating-tag rn-floating-tag--imaging" aria-hidden="true">Imaging · MRI</span>
+              <span className="rn-floating-tag rn-floating-tag--callback" aria-hidden="true">Clinic called back</span>
+
+              <div className={`rn-referral-card${showDraft ? " is-drafting" : ""}`} aria-label="Example referral">
+                <span className="rn-status" aria-live="polite">
+                  <img src="/landing/status-dot.svg" width="8" height="8" alt="" />
+                  {example.status}
+                </span>
+                <h2>Cardiology</h2>
+                <p className="rn-route" data-no-translate>Dr. Alvarez <span aria-hidden="true">→</span> Bay Heart Clinic</p>
+                <ol className="rn-steps">
+                  {exampleSteps.map((item, index) => {
+                    const state = index < example.completed ? "complete" : index === example.active ? "current" : "upcoming";
+                    return (
+                      <li className={`rn-step is-${state}`} key={item.title}>
+                        <span className="rn-step-marker">
+                          {state === "complete" ? (
+                            <img src="/landing/step-check.svg" width="13" height="12" alt="Done" />
+                          ) : (
+                            index + 1
+                          )}
+                        </span>
+                        <span className="rn-step-copy">
+                          <strong>{item.title}</strong>
+                          <small>{item.source}</small>
+                        </span>
+                      </li>
+                    );
+                  })}
+                </ol>
+                <hr className="rn-card-divider" />
+                {showDraft ? (
+                  <div className="rn-card-panel rn-card-draft" ref={draftPanelRef} tabIndex={-1} role="group" aria-label="Example message to the office">
+                    <p className="rn-card-eyebrow">WHAT TO SAY</p>
+                    <blockquote className="rn-draft-quote">{example.draft}</blockquote>
+                    <p className="rn-draft-note">Example only. You review every draft before you use it.</p>
+                    <div className="rn-card-actions">
+                      <button type="button" className="rn-card-primary" onClick={onGetStarted}>
+                        Save drafts with an account
+                      </button>
+                      <button type="button" className="rn-card-secondary" onClick={() => toggleDraft(false)}>
+                        Back to next step
+                      </button>
+                    </div>
                   </div>
-                );
-              })}
+                ) : (
+                  <div className="rn-card-panel">
+                    <p className="rn-card-eyebrow">YOUR NEXT STEP</p>
+                    <p className="rn-next-step" aria-live="polite">
+                      <span className="rn-next-step-text" key={exampleStep}>
+                        {example.next[0]}
+                        <span className="rn-word-gap"> </span>
+                        <em>{example.next[1]}</em>
+                      </span>
+                    </p>
+                    <div className="rn-card-actions">
+                      <button type="button" className="rn-card-primary" ref={draftButtonRef} onClick={() => toggleDraft(true)}>
+                        Draft what to say
+                      </button>
+                      <button type="button" className="rn-card-secondary" onClick={advanceExample}>
+                        {isLastExample ? "Start the example over" : "I already did this"}
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
-            <div className="landing-preview-note" aria-live="polite">
-              <MessageCircle size={16} aria-hidden="true" />
-              <span>Next up: {example.next}</span>
-              <button type="button" className="landing-example-next" onClick={advanceExample} aria-label="Show the next example update">
-                <ArrowRight size={16} aria-hidden="true" />
-              </button>
-            </div>
-            <p className="landing-example-caption">Example only · Updates are entered by the patient</p>
-            </div>
-          </div>
-        </section>
-
-        <section className="landing-how" id="landing-how-it-works">
-          <div className="landing-section-heading">
-            <p className="eyebrow">A CLEARER HANDOFF</p>
-            <h2>Know what’s confirmed—and what to ask next.</h2>
-            <p>
-              Referral Navigator helps you keep the details straight while you
-              follow up at your own pace.
-            </p>
-          </div>
-          <div className="landing-steps">
-            <div className="landing-steps-track">
-              <div className="landing-steps-group">
-            <article className="landing-step">
-              <span>01</span>
-              <ClipboardList size={20} />
-              <h3>Save what you know</h3>
-              <p>
-                Note the specialist, referring office, and what your clinician
-                recommended.
-              </p>
-            </article>
-            <article className="landing-step">
-              <span>02</span>
-              <MessageCircle size={20} />
-              <h3>Follow up with confidence</h3>
-              <p>
-                See a practical next step and prepare a call script or message
-                to review.
-              </p>
-            </article>
-            <article className="landing-step">
-              <span>03</span>
-              <CheckCircle2 size={20} />
-              <h3>Record what you hear</h3>
-              <p>
-                Add the response and label whether it came from you or an
-                office.
-              </p>
-            </article>
-          </div>
-            </div>
-          </div>
-        </section>
-
-        <section className="landing-track-section" aria-labelledby="landing-track-title">
-          <div className="landing-track-heading">
-            <p className="eyebrow">THE QUESTIONS BETWEEN APPOINTMENTS</p>
-            <h2 id="landing-track-title">Keep the handoff clear, even when it takes a few calls.</h2>
-            <p>A referral can pause while offices send information, request records, or clarify what comes next. Keep those details in one patient-owned place.</p>
-          </div>
-          <div className="landing-track-grid">
-            <article><span className="track-step-number">01</span><h3>Was it sent?</h3><p>Record what the referring office tells you and when.</p></article>
-            <article><span className="track-step-number">02</span><h3>Did it arrive?</h3><p>Keep the specialist office’s response and any requests together.</p></article>
-            <article><span className="track-step-number">03</span><h3>What happens next?</h3><p>Prepare a question, follow up, and add what you learn.</p></article>
-          </div>
-        </section>
-
-        <section className="landing-faq" aria-labelledby="landing-faq-title">
-          <div className="landing-faq-heading">
-            <p className="eyebrow">GOOD TO KNOW</p>
-            <h2 id="landing-faq-title">A few questions, answered.</h2>
-            <p>Referral Navigator helps you keep information organized while you follow up at your own pace.</p>
-          </div>
-          <div className="landing-faq-list">
-            <details>
-              <summary>Does the app contact offices or check referral status?</summary>
-              <p>No. You contact offices yourself and record what they tell you. The app doesn’t connect to clinic or insurance systems.</p>
-            </details>
-            <details>
-              <summary>What if I don’t know every detail yet?</summary>
-              <p>Start with what you know. You can leave optional details blank and edit the referral later.</p>
-            </details>
-            <details>
-              <summary>Can I keep tracking after an appointment is scheduled?</summary>
-              <p>Yes. Record requests, documents sent, visits, procedures, and follow-ups as your care continues.</p>
-            </details>
-            <details>
-              <summary>Does Referral Navigator provide medical or coverage advice?</summary>
-              <p>No. It can help you prepare questions, but confirm medical details with your clinician and coverage details with your health plan.</p>
-            </details>
-          </div>
-        </section>
-
-        <section className="landing-boundary">
-          <span className="landing-boundary-icon">
-            <ShieldCheck size={19} />
-          </span>
-          <div>
-            <strong>Your tracker is yours to update.</strong>
-            <p>
-              This tool can’t verify referral status, give medical advice, or
-              determine insurance coverage. Confirm details with the relevant
-              office or your health plan.
-            </p>
-          </div>
-          
-        </section>
-      </main>
-      <footer className="landing-footer">
-        <div className="landing-footer-main">
-          <div className="landing-footer-brand">
-            <span className="brand-mark"><img className="brand-mark-image" src="/brand-mark.svg" alt="" /></span>
-            <div><strong>Referral Navigator</strong><p>A patient-owned companion for tracking specialist referrals and planning follow-ups.</p></div>
-          </div>
-          <div className="landing-footer-column">
-            <strong>{translateText("Explore", language)}</strong>
-            <a href="#landing-how-it-works">{translateText("How it works", language)}</a>
-            <a href="#landing-track-title">{translateText("What you can track", language)}</a>
-            <a href="#landing-faq-title">{translateText("Common questions", language)}</a>
-          </div>
-          <div className="landing-footer-column">
-            <strong>{translateText("Your account", language)}</strong>
-            <button type="button" onClick={onSignIn}>{translateText("Sign in", language)}</button>
-            <button type="button" onClick={onGetStarted}>{translateText("Create an account", language)}</button>
-          </div>
+          </section>
         </div>
-        <div className="landing-footer-bottom">
-          <span>© {new Date().getFullYear()} Referral Navigator · Research prototype</span>
-          <span>This tool does not connect to medical offices or verify referral status or coverage.</span>
+
+        <section className="rn-features" id="landing-how-it-works" aria-labelledby="landing-how-title">
+          <div className="rn-section-header">
+            <p className="rn-eyebrow">A CLEARER HANDOFF</p>
+            <h2 className="rn-h2" id="landing-how-title">Know what’s confirmed, and what to ask next.</h2>
+            <p>Referral Navigator helps you keep the details straight while you follow up at your own pace.</p>
+          </div>
+          <div className="rn-feature-row">
+            {features.map((feature) => (
+              <article className="rn-feature-card" key={feature.number}>
+                <div className="rn-feature-top">
+                  <span className="rn-feature-icon">
+                    <img src={feature.icon} width="20" height="20" alt="" />
+                  </span>
+                  <span className="rn-feature-number">{feature.number}</span>
+                </div>
+                <h3>{feature.title}</h3>
+                <p>{feature.body}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <div className="rn-lower">
+          <section className="rn-handoff" aria-labelledby="landing-track-title">
+            <div className="rn-handoff-copy">
+              <p className="rn-eyebrow">THE QUESTIONS BETWEEN APPOINTMENTS</p>
+              <h2 className="rn-h2" id="landing-track-title">Keep the handoff clear, even when it takes a few calls.</h2>
+              <p>A referral can pause while offices send information, request records, or clarify what comes next. Keep those details in one patient-owned place.</p>
+            </div>
+            <ol className="rn-handoff-steps">
+              {handoffSteps.map((step) => (
+                <li key={step.number}>
+                  <span className="rn-handoff-number">{step.number}</span>
+                  <span className="rn-handoff-text">
+                    <strong>{step.title}</strong>
+                    <span>{step.body}</span>
+                  </span>
+                </li>
+              ))}
+            </ol>
+          </section>
+
+          <section className="rn-faq" aria-labelledby="landing-faq-title">
+            <div className="rn-faq-copy">
+              <p className="rn-eyebrow">GOOD TO KNOW</p>
+              <h2 className="rn-h2" id="landing-faq-title">A few questions, answered.</h2>
+            </div>
+            <div className="rn-faq-list">
+              {faqs.map((faq, index) => (
+                <details key={faq.question} open={index === 0}>
+                  <summary>
+                    <span>{faq.question}</span>
+                    <span className="rn-faq-indicator" aria-hidden="true" />
+                  </summary>
+                  <p>{faq.answer}</p>
+                </details>
+              ))}
+            </div>
+          </section>
+
+          <section className="rn-safety" aria-label="About this tool">
+            <span className="rn-safety-icon">
+              <img src="/landing/safety-note.svg" width="19" height="19" alt="" />
+            </span>
+            <p>
+              <strong>Your tracker is yours to update.</strong>
+              <span>This tool can’t verify referral status, give medical advice, or determine insurance coverage. Confirm details with the relevant office or your health plan.</span>
+            </p>
+          </section>
+        </div>
+      </main>
+
+      <footer className="rn-footer">
+        <div className="rn-footer-inner">
+          <div className="rn-footer-top">
+            <div className="rn-footer-brand">
+              <span className="rn-brand-mark rn-brand-mark--footer" aria-hidden="true">
+                <img className="brand-mark-image" src="/brand-mark-dark.svg" width="28" height="28" alt="" />
+              </span>
+              <div>
+                <strong>Referral Navigator</strong>
+                <p>A patient-owned companion for tracking specialist referrals and planning follow-ups.</p>
+              </div>
+            </div>
+            <div className="rn-footer-links">
+              <div className="rn-footer-column">
+                <strong>{translateText("Explore", language)}</strong>
+                <a href="#landing-how-it-works" onClick={(event) => { event.preventDefault(); scrollToSection("landing-how-it-works"); }}>{translateText("How it works", language)}</a>
+                <a href="#landing-track-title" onClick={(event) => { event.preventDefault(); scrollToSection("landing-track-title"); }}>{translateText("What you can track", language)}</a>
+                <a href="#landing-faq-title" onClick={(event) => { event.preventDefault(); scrollToSection("landing-faq-title"); }}>{translateText("Common questions", language)}</a>
+              </div>
+              <div className="rn-footer-column">
+                <strong>{translateText("Your account", language)}</strong>
+                <button type="button" onClick={onSignIn}>{translateText("Sign in", language)}</button>
+                <button type="button" onClick={onGetStarted}>{translateText("Create an account", language)}</button>
+              </div>
+            </div>
+          </div>
+          <div className="rn-footer-bottom">
+            <span>© {new Date().getFullYear()} Referral Navigator · Research prototype</span>
+            <span>This tool does not connect to medical offices or verify referral status or coverage.</span>
+          </div>
         </div>
       </footer>
     </div>
@@ -942,7 +1046,7 @@ function ReferralNavigatorApp() {
   const [showArchived, setShowArchived] = useState(false);
   const [editingReferralId, setEditingReferralId] = useState<number | null>(null);
   const [modal, setModal] = useState<
-    "new" | "update" | "notes" | "help" | "tour" | "settings" | null
+    "new" | "update" | "notes" | "help" | "settings" | null
   >(null);
   const [updateTitle, setUpdateTitle] = useState("");
   const [updateDetail, setUpdateDetail] = useState("");
@@ -963,6 +1067,8 @@ function ReferralNavigatorApp() {
   const [newTo, setNewTo] = useState("");
   const [newDate, setNewDate] = useState("");
   const [toast, setToast] = useState("");
+  const [tourActive, setTourActive] = useState(false);
+  const [tourStepIndex, setTourStepIndex] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -1076,7 +1182,11 @@ function ReferralNavigatorApp() {
     .flatMap((item) =>
       item.updates.map((update) => ({ referral: item, update })),
     )
-    .sort((a, b) => b.update.id - a.update.id)
+    .sort(
+      (a, b) =>
+        updateTimestamp(b.update) - updateTimestamp(a.update) ||
+        b.update.id - a.update.id,
+    )
     .slice(0, 4);
   const greetingName = (() => {
     const name = user?.user_metadata?.full_name ?? user?.user_metadata?.name;
@@ -1086,6 +1196,57 @@ function ReferralNavigatorApp() {
     .flatMap((item) => item.updates)
     .filter((update) => update.source === "Referring office" || update.source === "Specialist office").length;
   const nextActionCount = activeReferrals.length;
+
+  function startTour() {
+    setModal(null);
+    setSelected(null);
+    setDashboardPage("overview");
+    setShowArchived(false);
+    setTourStepIndex(0);
+    setTourActive(true);
+  }
+
+  // First sign-in: start the guided tour once, then remember it per account
+  // (in the account's metadata, with a local fallback). Help can replay it.
+  const tourSeenKey = ownerId ? `rn-onboarding-tour-seen:${ownerId}` : null;
+  const tourAutoStarted = useRef(false);
+  useEffect(() => {
+    if (!dataReady || !tourSeenKey || tourAutoStarted.current) return;
+    tourAutoStarted.current = true;
+    let seenLocally = false;
+    try {
+      seenLocally = window.localStorage.getItem(tourSeenKey) === "true";
+    } catch {
+      seenLocally = false;
+    }
+    if (user?.user_metadata?.onboarding_tour_seen === true || seenLocally) return;
+    startTour();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dataReady, tourSeenKey]);
+
+  function closeTour() {
+    setTourActive(false);
+    if (!tourSeenKey) return;
+    try {
+      window.localStorage.setItem(tourSeenKey, "true");
+    } catch {
+      // Storage can be unavailable (private mode); the account flag still applies.
+    }
+    if (supabase && user?.user_metadata?.onboarding_tour_seen !== true) {
+      void supabase.auth.updateUser({ data: { onboarding_tour_seen: true } });
+    }
+  }
+
+  function handleTourStepChange(index: number, section: "overview" | "referrals" | "detail" | "next-steps") {
+    setTourStepIndex(index);
+    if (section === "detail" && activeReferrals[0]) {
+      setSelected(activeReferrals[0].id);
+      setDashboardPage("overview");
+      return;
+    }
+    setSelected(null);
+    setDashboardPage(section === "detail" ? "overview" : section);
+  }
 
   function navigateDashboard(page: DashboardPage) {
     setSelected(null);
@@ -1377,6 +1538,10 @@ function ReferralNavigatorApp() {
     flash("Referral added.");
   }
 
+  const tourLayer = tourActive ? (
+    <OnboardingTutorial language={language} hasReferral={Boolean(activeReferrals[0])} stepIndex={tourStepIndex} onStepChange={handleTourStepChange} onClose={closeTour} />
+  ) : null;
+
   if (!dataReady)
     return (
       <main className="auth-loading" role="status">
@@ -1408,6 +1573,7 @@ function ReferralNavigatorApp() {
             </button>
             <button
               className={dashboardPage === "referrals" ? "nav-active" : ""}
+              data-tour="nav-referrals"
               aria-current={dashboardPage === "referrals" ? "page" : undefined}
               onClick={() => navigateDashboard("referrals")}
             >
@@ -1416,6 +1582,7 @@ function ReferralNavigatorApp() {
             </button>
             <button
               className={dashboardPage === "next-steps" ? "nav-active" : ""}
+              data-tour="nav-next-steps"
               aria-current={dashboardPage === "next-steps" ? "page" : undefined}
               onClick={() => navigateDashboard("next-steps")}
             >
@@ -1431,9 +1598,9 @@ function ReferralNavigatorApp() {
             <span className="privacy-chip" title="Your referral updates are saved to your account.">
               <CircleHelp size={14} /> Saved to your account
             </span>
-            <button type="button" className="account-signout account-settings" aria-label={translateText("Settings", language)} title={translateText("Settings", language)} onClick={() => setModal("settings")}><Settings size={20} aria-hidden="true" /> <span className="account-button-label">Settings</span></button>
+            <button type="button" className="account-signout account-settings" aria-label={translateText("Settings", language)} title={translateText("Settings", language)} onClick={() => setModal("settings")}><Settings size={20} aria-hidden="true" /> <span className="account-button-label">{translateText("Settings", language)}</span></button>
             <button type="button" className="account-signout account-signout-action" onClick={() => void signOut()}>
-              Sign out
+              {translateText("Sign out", language)}
             </button>
             <button type="button" className="mobile-help-button icon-button" aria-label={translateText("How it works", language)} onClick={() => setModal("help")}><CircleHelp size={20} aria-hidden="true" /></button>
             <HeaderMenu
@@ -1459,7 +1626,7 @@ function ReferralNavigatorApp() {
           <button className="back-link" onClick={() => setSelected(null)}>
             <ArrowLeft size={17} /> All referrals
           </button>
-          <div className="detail-heading">
+          <div className="detail-heading" data-tour="detail-heading">
             <div>
               <p className="eyebrow">YOUR REFERRAL</p>
               <h1>{referral.specialty}</h1>
@@ -1484,7 +1651,7 @@ function ReferralNavigatorApp() {
             </p>
           </div>
 
-          <section className="section-card journey-card journey-combined">
+          <section className="section-card journey-card journey-combined" data-tour="journey">
             <div className="section-title-row journey-header">
               <div>
                 <p className="eyebrow">{translateText("THE HANDOFF", language)}</p>
@@ -1519,6 +1686,7 @@ function ReferralNavigatorApp() {
                   <button
                     type="button"
                     className="primary-button"
+                    data-tour="call-script"
                     onClick={() => startMessage("Call script", referral, latestReferralEvent?.id ?? null, "next-step")}
                   >
                     <Phone size={16} /> {translateText("Prepare a call script", language)}
@@ -1608,7 +1776,7 @@ function ReferralNavigatorApp() {
             
           </section>
 
-          <section className="section-card tools-card">
+          <section className="section-card tools-card" data-tour="detail-tools">
             <div className="tools-intro">
               <p className="eyebrow">KEEP THINGS TOGETHER</p>
               <h2>Helpful details for your next call</h2>
@@ -1658,9 +1826,7 @@ function ReferralNavigatorApp() {
                 ? "Record an update"
                 : modal === "notes"
                     ? "Visit notes & questions"
-                    : modal === "tour"
-                        ? "A quick tour"
-                        : "Help for this referral"
+                    : "Help for this referral"
             }
             onClose={() => setModal(null)}
           >
@@ -1840,7 +2006,6 @@ function ReferralNavigatorApp() {
                 }}
               />
             )}
-            {modal === "tour" && <OnboardingTutorial language={language} onClose={() => setModal(null)} />}
             {modal === "help" && (
               <>
                 <ReferralHelp
@@ -1852,12 +2017,13 @@ function ReferralNavigatorApp() {
                   onRecordUpdate={() => addUpdate()}
                 />
                 <div className="form-body tour-replay-row">
-                  <button type="button" className="text-button" onClick={() => setModal("tour")}>{translateText("Take a quick tour", language)} <ArrowRight size={15} aria-hidden="true" /></button>
+                  <button type="button" className="text-button" onClick={() => startTour()}>{translateText("Take a quick tour", language)} <ArrowRight size={15} aria-hidden="true" /></button>
                 </div>
               </>
             )}
           </Modal>
         )}
+        {tourLayer}
         {toast && (
           <div className="toast" role="status">
             <CheckCircle2 size={17} />
@@ -1916,9 +2082,9 @@ function ReferralNavigatorApp() {
           <span className="privacy-chip" title="Your referral updates are saved to your account.">
             <CircleHelp size={14} /> Saved to your account
           </span>
-          <button type="button" className="account-signout account-settings" aria-label={translateText("Settings", language)} title={translateText("Settings", language)} onClick={() => setModal("settings")}><Settings size={20} aria-hidden="true" /> <span className="account-button-label">Settings</span></button>
+          <button type="button" className="account-signout account-settings" aria-label={translateText("Settings", language)} title={translateText("Settings", language)} onClick={() => setModal("settings")}><Settings size={20} aria-hidden="true" /> <span className="account-button-label">{translateText("Settings", language)}</span></button>
           <button type="button" className="account-signout account-signout-action" onClick={() => void signOut()}>
-            Sign out
+            {translateText("Sign out", language)}
           </button>
           <button type="button" className="mobile-help-button icon-button" aria-label={translateText("How it works", language)} onClick={() => setModal("help")}><CircleHelp size={20} aria-hidden="true" /></button>
             <HeaderMenu
@@ -1948,11 +2114,11 @@ function ReferralNavigatorApp() {
             <h1>{dashboardPage === "referrals" ? "Your referrals" : "Next steps"}</h1>
             <p>{dashboardPage === "referrals" ? "Keep each specialist handoff and its updates together." : "Follow up across your referrals, at your own pace."}</p>
           </div>
-          {dashboardPage === "referrals" && <button className="primary-button add-button" onClick={openNewReferral}><Plus size={17} /> Add a referral</button>}
+          {dashboardPage === "referrals" && <button className="primary-button add-button" data-tour="add-referral" onClick={openNewReferral}><Plus size={17} /> Add a referral</button>}
         </div>}
         {dashboardPage === "overview" && <>
         <div className="mobile-overview-v045">
-          <section className="mobile-overview-card" aria-labelledby="mobile-overview-greeting">
+          <section className="mobile-overview-card" data-tour="overview" aria-labelledby="mobile-overview-greeting">
             <div className="mobile-overview-greeting">
               <div className="mobile-overview-greeting-copy">
                 <p className="eyebrow">YOUR CARE, ORGANIZED</p>
@@ -1968,7 +2134,7 @@ function ReferralNavigatorApp() {
                 <h2 id="mobile-overview-updates-title">Updates</h2>
                 <button type="button" onClick={() => navigateDashboard("referrals")}>View all <ArrowRight size={14} aria-hidden="true" /></button>
               </div>
-              <div className="mobile-overview-stat-list">
+              <div className="mobile-overview-stat-list" data-tour="dashboard-summary">
                 <button type="button" className="mobile-overview-stat mobile-stat-attention" aria-label={`${followUpCount} referrals need attention. View next steps.`} onClick={() => navigateDashboard("next-steps")}>
                   <strong>{followUpCount}</strong><span>NEEDS ATTENTION</span><ArrowRight size={16} aria-hidden="true" />
                 </button>
@@ -1986,13 +2152,13 @@ function ReferralNavigatorApp() {
           </section>
           {activeReferrals.length === 0 && !demoMode && <aside className="quick-tour-card mobile-overview-tour">
             <div><p className="eyebrow">{translateText("NEW HERE?", language)}</p><strong>{translateText("Take a quick tour", language)}</strong><p>{translateText("See how a referral, follow-up, and message draft fit together.", language)}</p></div>
-            <button type="button" className="secondary-button" onClick={() => setModal("tour")}>{translateText("Start the tour", language)} <ArrowRight size={15} aria-hidden="true" /></button>
+            <button type="button" className="secondary-button" onClick={() => startTour()}>{translateText("Start the tour", language)} <ArrowRight size={15} aria-hidden="true" /></button>
           </aside>}
           {demoMode && <aside className="demo-banner mobile-overview-demo" aria-label="Sample tracker">
             <span className="demo-banner-copy"><strong>Sample referral</strong><span>Explore the tracker, then start your own when you’re ready.</span></span>
             <button className="secondary-button" onClick={openNewReferral}>Start your own <ArrowRight size={15} /></button>
           </aside>}
-          <section className="mobile-overview-next" aria-labelledby="mobile-overview-next-title">
+          <section className="mobile-overview-next" data-tour="overview-next-step" aria-labelledby="mobile-overview-next-title">
             <div className="mobile-overview-section-heading mobile-next-heading">
               <h2 id="mobile-overview-next-title">Next steps</h2>
               <span className="mobile-attention-badge">{followUpCount} {followUpCount === 1 ? "needs attention" : "need attention"}</span>
@@ -2035,7 +2201,7 @@ function ReferralNavigatorApp() {
             </div> : <p className="mobile-overview-no-activity">Your saved updates will appear here.</p>}
           </section>
         </div>
-        <section className="welcome">
+        <section className="welcome" data-tour="overview">
           <div>
             <p className="eyebrow">YOUR CARE, ORGANIZED</p>
             <h1>Hi, {greetingName}</h1>
@@ -2058,7 +2224,7 @@ function ReferralNavigatorApp() {
         </section>
         {activeReferrals.length === 0 && !demoMode && <aside className="quick-tour-card">
           <div><p className="eyebrow">{translateText("NEW HERE?", language)}</p><strong>{translateText("Take a quick tour", language)}</strong><p>{translateText("See how a referral, follow-up, and message draft fit together.", language)}</p></div>
-          <button type="button" className="secondary-button" onClick={() => setModal("tour")}>{translateText("Start the tour", language)} <ArrowRight size={15} aria-hidden="true" /></button>
+          <button type="button" className="secondary-button" onClick={() => startTour()}>{translateText("Start the tour", language)} <ArrowRight size={15} aria-hidden="true" /></button>
         </aside>}
         {demoMode && (
           <aside className="demo-banner" aria-label="Sample tracker">
@@ -2079,7 +2245,7 @@ function ReferralNavigatorApp() {
             </div>
             <span>Tap a count to explore</span>
           </div>
-          <div className="dashboard-stats" aria-label="Referral summary">
+          <div className="dashboard-stats" aria-label="Referral summary" data-tour="dashboard-summary">
             <button type="button" className="summary-card summary-gold" aria-label={`${followUpCount} referrals without a scheduling update. View next steps.`} onClick={() => navigateDashboard("next-steps")}>
               <div className="summary-card-top">
                 <MessageCircle size={17} />
@@ -2118,7 +2284,7 @@ function ReferralNavigatorApp() {
             </button>
           </div>
         </section>
-        <section className="overview-next-step">
+        <section className="overview-next-step" data-tour="overview-next-step">
           <div className="overview-next-icon"><MessageCircle size={20} /></div>
           <div className="overview-next-copy">
             <p className="eyebrow">YOUR NEXT STEP</p>
@@ -2172,7 +2338,7 @@ function ReferralNavigatorApp() {
                     (u) => hasMilestone(u, "referral-sent"),
                   );
                   return (
-                    <article className="referral-card" key={r.id}>
+                    <article className="referral-card" key={r.id} data-tour={r.id === activeReferrals[0]?.id ? "referral-card" : undefined}>
                       <div className="card-top">
                         <span className="specialty-icon">
                           <Stethoscope size={19} />
@@ -2364,12 +2530,10 @@ function ReferralNavigatorApp() {
       </main>
       {modal && (
         <Modal
-          title={modal === "settings" ? "Settings" : modal === "new" ? editingReferralId !== null ? "Edit referral" : "Add a referral" : modal === "tour" ? "A quick tour" : "A little guidance"}
+          title={modal === "settings" ? "Settings" : modal === "new" ? editingReferralId !== null ? "Edit referral" : "Add a referral" : "A little guidance"}
           onClose={() => setModal(null)}
         >
-          {modal === "tour" ? (
-            <OnboardingTutorial language={language} onClose={() => setModal(null)} />
-          ) : modal === "settings" ? (
+          {modal === "settings" ? (
             <div className="form-body settings-body">
               <p className="modal-intro">
                 {translateText("Manage your language preference and the account that stores your referrals.", language)}
@@ -2439,13 +2603,14 @@ function ReferralNavigatorApp() {
                 </div>
               </div>
               <div className="help-actions">
-                <button type="button" className="secondary-button full" onClick={() => setModal("tour")}>{translateText("Take a quick tour", language)} <ArrowRight size={15} aria-hidden="true" /></button>
+                <button type="button" className="secondary-button full" onClick={() => startTour()}>{translateText("Take a quick tour", language)} <ArrowRight size={15} aria-hidden="true" /></button>
                 <button type="button" className="primary-button full" onClick={() => setModal(null)}>Got it</button>
               </div>
             </div>
           )}
         </Modal>
       )}
+      {tourLayer}
       {toast && (
         <div className="toast" role="status">
           <CheckCircle2 size={17} />
@@ -2463,25 +2628,25 @@ function NotesForm({
   value: string;
   onSave: (v: string) => void;
 }) {
+  const { language } = useAppLanguage();
   const [notes, setNotes] = useState(value);
   return (
     <div className="form-body">
       <p className="modal-intro">
-        Save your own visit recap or questions for your next conversation. This
-        tool won’t interpret symptoms or recommend treatment.
+        {translateText("Save your own visit recap or questions for your next conversation. This tool won’t interpret symptoms or recommend treatment.", language)}
       </p>
       <label>
-        Notes
+        {translateText("Notes", language)}
         <textarea
           autoFocus
           rows={6}
           value={notes}
           onChange={(e) => setNotes(e.target.value)}
-          placeholder="What did your clinician recommend? What would you like to ask next time?"
+          placeholder={translateText("What did your clinician recommend? What would you like to ask next time?", language)}
         />
       </label>
       <button className="primary-button full" onClick={() => onSave(notes)}>
-        Save notes
+        {translateText("Save notes", language)}
       </button>
     </div>
   );
