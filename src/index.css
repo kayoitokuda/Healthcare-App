@@ -8482,3 +8482,23 @@ body { min-width: 0; }
 @media (min-width: 641px) {
   :lang(ja) .rn-hero h1, :lang(zh) .rn-hero h1 { font-size: clamp(36px, 3.1vw, 44px); }
 }
+
+
+/* Keep the AI consent and suggestions readable inside the flexible helper note. */
+.ai-disclosure {
+  display: block;
+  width: 100%;
+}
+.ai-consent-toggle {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  width: 100%;
+}
+.ai-consent-toggle input {
+  flex: 0 0 auto;
+  margin: 3px 0 0;
+}
+.ai-disclosure > p { margin: 8px 0 0; }
+.ai-suggestions { display: block; }
+.ai-suggestions ul { margin: 8px 0 0; padding-left: 20px; }
