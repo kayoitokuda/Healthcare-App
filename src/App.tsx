@@ -630,9 +630,7 @@ function LandingPage({
             window.scrollTo({ top: 0, behavior: motionSafeScrollBehavior() });
           }}
         >
-          <span className="brand-mark">
-            <HeartHandshake size={20} />
-          </span>
+          <span className="brand-mark"><img className="brand-mark-image" src="/brand-mark.svg" alt="" /></span>
           <span>Referral Navigator</span>
         </button>
         <nav className="landing-nav" aria-label="Main navigation">
@@ -827,7 +825,7 @@ function LandingPage({
       <footer className="landing-footer">
         <div className="landing-footer-main">
           <div className="landing-footer-brand">
-            <span className="brand-mark"><HeartHandshake size={20} aria-hidden="true" /></span>
+            <span className="brand-mark"><img className="brand-mark-image" src="/brand-mark.svg" alt="" /></span>
             <div><strong>Referral Navigator</strong><p>A patient-owned companion for tracking specialist referrals and planning follow-ups.</p></div>
           </div>
           <div className="landing-footer-column">
@@ -1396,7 +1394,7 @@ function ReferralNavigatorApp() {
             aria-label="Referral Navigator home"
             onClick={() => navigateDashboard("overview")}
           >
-            <span className="brand-mark"><HeartHandshake size={20} /></span>
+            <span className="brand-mark"><img className="brand-mark-image" src="/brand-mark.svg" alt="" /></span>
             <span>Referral Navigator</span>
           </button>
           <nav className="nav dashboard-nav" aria-label="Dashboard navigation">
@@ -1878,9 +1876,7 @@ function ReferralNavigatorApp() {
           aria-label="Referral Navigator home"
             onClick={() => navigateDashboard("overview")}
         >
-          <span className="brand-mark">
-            <HeartHandshake size={20} />
-          </span>
+          <span className="brand-mark"><img className="brand-mark-image" src="/brand-mark.svg" alt="" /></span>
           <span>Referral Navigator</span>
         </button>
         <nav className="nav dashboard-nav" aria-label="Dashboard navigation">

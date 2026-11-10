@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { HeartHandshake, ShieldCheck } from "lucide-react";
+import { ShieldCheck } from "lucide-react";
 import { useAuth } from "../auth/AuthContext";
 import { LanguageToggle, translateText, useAppLanguage, type AppLanguage } from "../i18n";
 
@@ -116,7 +116,7 @@ export default function SignIn({
       <section className="auth-card" aria-labelledby="auth-title">
         <div className="auth-brand-row">
           <a className="brand auth-brand" href="/" aria-label={translateText("Referral Navigator", language)}>
-            <span className="brand-mark auth-brand-mark"><HeartHandshake size={20} /></span>
+            <span className="brand-mark auth-brand-mark"><img className="brand-mark-image" src="/brand-mark.svg" alt="" /></span>
             <span>Referral Navigator</span>
           </a>
           <LanguageToggle />
