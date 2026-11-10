@@ -7365,7 +7365,8 @@ body { min-width: 0; }
 .rn-landing {
   --rn-ink: #212633;
   --rn-ink-deep: #1a2140;
-  --rn-muted: #667085;
+  /* Darker than the earlier #667085 so small text clears WCAG AA (≈6.3:1 on paper). */
+  --rn-muted: #525b6b;
   --rn-line: #e5e4df;
   --rn-paper: #f7f6f2;
   --rn-indigo: #405bcb;
@@ -7373,18 +7374,19 @@ body { min-width: 0; }
   --rn-blue-soft: #e5f0fa;
   --rn-navy: #29314c;
   --rn-gold: #f4c847;
-  --rn-gold-text: #96720e;
+  /* #96720e measured ~4.1:1 on paper; this gold is ~5.5:1. */
+  --rn-gold-text: #7d5f0b;
   --rn-content: min(1200px, calc(100% - 48px));
   min-height: 100vh;
   background: var(--rn-paper);
   color: var(--rn-ink);
   font-family: "Source Sans Pro", Arial, sans-serif;
 }
-:where(.rn-landing) :where(h1, h2, h3, p, ol) {
+:where(.rn-landing) :where(h1, h2, h3, p, ol, ul) {
   margin: 0;
   padding: 0;
 }
-:where(.rn-landing) :where(ol) { list-style: none; }
+:where(.rn-landing) :where(ol, ul) { list-style: none; }
 .rn-landing button { font-family: inherit; }
 .rn-landing img { display: block; flex: none; }
 .rn-landing h1,
@@ -7604,11 +7606,13 @@ body { min-width: 0; }
 .rn-card-primary:active { transform: translateY(0) scale(0.98); }
 .rn-card-primary { transition: background-color 160ms ease, transform 120ms ease; }
 .rn-hero-reassurance {
+  max-width: 440px;
   padding: 25px 0;
   color: var(--rn-muted);
-  font-size: 13px;
-  line-height: 20.8px;
+  font-size: 15px;
+  line-height: 23px;
 }
+.rn-hero-reassurance strong { color: var(--rn-ink); }
 
 /* Hero preview: product-as-object on gold */
 .rn-hero-preview {
@@ -7672,9 +7676,9 @@ body { min-width: 0; }
   border-radius: 999px;
   background: var(--rn-blue-soft);
   color: var(--rn-ink);
-  font-size: 10.54px;
+  font-size: 12.5px;
   font-weight: 600;
-  line-height: 14.06px;
+  line-height: 16px;
   white-space: nowrap;
 }
 .rn-referral-card h2 {
@@ -7726,8 +7730,8 @@ body { min-width: 0; }
   border: 0.88px solid var(--rn-line);
   border-radius: 10.54px;
   background: #fff;
-  color: #858b99;
-  font-size: 10.54px;
+  color: #5f6676;
+  font-size: 11px;
   font-weight: 700;
   line-height: 14.93px;
   transition: background-color 220ms ease, border-color 220ms ease;
@@ -7741,14 +7745,14 @@ body { min-width: 0; }
 }
 .rn-step-copy strong {
   color: var(--rn-ink);
-  font-size: 12.3px;
+  font-size: 14px;
   font-weight: 700;
   line-height: 20.64px;
 }
 .rn-step-copy small {
   color: var(--rn-muted);
-  font-size: 10.54px;
-  line-height: 14.06px;
+  font-size: 13px;
+  line-height: 17px;
 }
 .rn-card-divider {
   width: 100%;
@@ -7759,9 +7763,10 @@ body { min-width: 0; }
 }
 .rn-card-eyebrow {
   color: var(--rn-navy);
-  font-size: 10.54px;
-  font-weight: 600;
-  line-height: 14.06px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 16px;
+  letter-spacing: 0.6px;
 }
 .rn-next-step {
   width: 100%;
@@ -7801,38 +7806,45 @@ body { min-width: 0; }
 .rn-draft-note {
   margin-top: -6px;
   color: var(--rn-muted);
-  font-size: 10.54px;
-  line-height: 14.06px;
+  font-size: 13px;
+  line-height: 18px;
 }
 .rn-card-actions {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: 15.81px;
+  gap: 8px 12px;
 }
+/* The card is meant to be clicked, so its controls are sized like real UI (44px targets). */
 .rn-card-primary {
-  padding: 11.42px 19.33px;
+  min-height: 44px;
+  padding: 0 20px;
   border: 0;
   border-radius: 999px;
   background: var(--rn-indigo);
   color: #fff;
-  font-size: 11.42px;
+  font-size: 15px;
   font-weight: 600;
-  line-height: 14.06px;
+  line-height: 20px;
   cursor: pointer;
 }
 .rn-card-primary:hover { background: #3650b8; }
 .rn-card-secondary {
-  padding: 4px 0;
+  min-height: 44px;
+  padding: 0 12px;
   border: 0;
+  border-radius: 999px;
   background: none;
-  color: var(--rn-muted);
-  font-size: 11.42px;
+  color: var(--rn-ink);
+  font-size: 15px;
   font-weight: 600;
-  line-height: 14.06px;
+  line-height: 20px;
+  text-decoration: underline;
+  text-decoration-color: #c7cbd6;
+  text-underline-offset: 3px;
   cursor: pointer;
 }
-.rn-card-secondary:hover { color: var(--rn-ink); text-decoration: underline; text-underline-offset: 3px; }
+.rn-card-secondary:hover { background: var(--rn-paper); text-decoration-color: currentColor; }
 
 /* Feature cards */
 .rn-features {
@@ -7898,7 +7910,7 @@ body { min-width: 0; }
 }
 .rn-feature-number {
   color: var(--rn-gold-text);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   line-height: 17px;
   letter-spacing: -0.11px;
@@ -8045,8 +8057,8 @@ body { min-width: 0; }
 .rn-faq-list details > p {
   margin-bottom: 20.8px;
   color: var(--rn-muted);
-  font-size: 13px;
-  line-height: normal;
+  font-size: 15px;
+  line-height: 23px;
 }
 
 .rn-safety {
@@ -8326,4 +8338,147 @@ body { min-width: 0; }
   background: transparent;
   border-radius: 0;
   box-shadow: none;
+}
+
+
+/* ==========================================================================
+   Critique revisions (Nov 2026): merged how-it-works, data/trust block,
+   closing CTA, guest banner, in-page validation, and per-language type.
+   ========================================================================== */
+.rn-feature-row { margin: 0; padding: 0; }
+.rn-handoff-number svg { color: var(--rn-indigo); }
+.rn-data { background: #eef3fb; }
+.rn-about {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-width: 760px;
+  margin: 56px auto 0;
+  padding: 0 28px;
+  text-align: center;
+}
+.rn-about h2 {
+  color: var(--rn-ink);
+  font-size: 22px;
+  font-weight: 700;
+  line-height: 28px;
+}
+.rn-about p {
+  color: var(--rn-muted);
+  font-size: 16px;
+  line-height: 26px;
+}
+.rn-about a {
+  color: var(--rn-indigo);
+  font-weight: 700;
+  text-underline-offset: 3px;
+}
+.rn-closing {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+  padding: 56px 28px;
+  border: 1px solid var(--rn-line);
+  border-radius: 28px;
+  background: #fff;
+  text-align: center;
+}
+.rn-closing p {
+  margin-bottom: 8px;
+  color: var(--rn-muted);
+  font-size: 16px;
+  line-height: 24px;
+}
+@media (max-width: 640px) {
+  .rn-about { margin-top: 40px; padding: 0 4px; text-align: left; }
+  .rn-closing { padding: 40px 20px; border-radius: 22px; }
+  .rn-closing .rn-button-primary { white-space: normal; height: auto; min-height: 50px; text-align: left; }
+  .rn-hero-actions .rn-button-primary { white-space: normal; height: auto; min-height: 50px; }
+}
+
+.guest-banner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px 20px;
+  margin-bottom: 20px;
+  padding: 16px 20px;
+  border: 1px solid #ecd488;
+  border-radius: 16px;
+  background: #fff8e2;
+}
+.guest-banner-copy {
+  display: flex;
+  flex: 1 1 320px;
+  flex-direction: column;
+  gap: 2px;
+  color: #3d4352;
+  font-size: 15px;
+  line-height: 22px;
+}
+.guest-banner-copy strong { color: #212633; font-size: 16px; }
+.guest-banner-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 14px;
+}
+.guest-banner-actions .text-button { min-height: 44px; }
+
+.auth-field-error {
+  display: block;
+  margin-top: 6px;
+  color: #a12a1f;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+}
+.auth-form input[aria-invalid="true"] {
+  border-color: #b3261e;
+  box-shadow: 0 0 0 3px rgba(179, 38, 30, 0.12);
+}
+.auth-guest-note { margin-bottom: 12px; }
+
+/* Non-Latin languages: Source Serif Pro has no CJK glyphs, and the tight
+   Latin tracking squeezes CJK characters, so use matched serif faces and
+   reset letter-spacing on every heading-style element. */
+:root:lang(ja) { --font-serif: "Noto Serif JP", "Hiragino Mincho ProN", "Yu Mincho", serif; }
+:root:lang(zh) { --font-serif: "Noto Serif SC", "Songti SC", "SimSun", serif; }
+:lang(ja) .rn-landing h1, :lang(ja) .rn-landing h2, :lang(ja) .rn-landing h3,
+:lang(ja) .rn-landing .rn-floating-tag, :lang(ja) .rn-landing .rn-next-step,
+:lang(ja) .rn-handoff-text strong, :lang(ja) .auth-card h1 {
+  font-family: "Noto Serif JP", "Hiragino Mincho ProN", "Yu Mincho", serif;
+}
+:lang(zh) .rn-landing h1, :lang(zh) .rn-landing h2, :lang(zh) .rn-landing h3,
+:lang(zh) .rn-landing .rn-floating-tag, :lang(zh) .rn-landing .rn-next-step,
+:lang(zh) .rn-handoff-text strong, :lang(zh) .auth-card h1 {
+  font-family: "Noto Serif SC", "Songti SC", "SimSun", serif;
+}
+:lang(ja) .rn-landing, :lang(zh) .rn-landing,
+:lang(ja) .dashboard-shell, :lang(zh) .dashboard-shell,
+:lang(ja) .auth-screen, :lang(zh) .auth-screen {
+  font-family: "Source Sans Pro", "Noto Sans JP", "Noto Sans SC", "Hiragino Sans", "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+:lang(ja) :is(h1, h2, h3, .rn-h2, .rn-eyebrow, .rn-next-step, .rn-floating-tag),
+:lang(zh) :is(h1, h2, h3, .rn-h2, .rn-eyebrow, .rn-next-step, .rn-floating-tag) {
+  letter-spacing: 0 !important;
+}
+:lang(ja) .rn-hero h1, :lang(zh) .rn-hero h1 {
+  font-size: clamp(38px, 3.5vw, 48px);
+  line-height: 1.35;
+  word-break: keep-all;
+  line-break: strict;
+}
+:lang(ja) body, :lang(zh) body { line-break: strict; }
+@media (max-width: 640px) {
+  :lang(ja) .rn-hero h1, :lang(zh) .rn-hero h1 { font-size: 32px; line-height: 44px; }
+}
+:lang(ja) .rn-section-header h2, :lang(zh) .rn-section-header h2 { max-width: 22em; }
+:lang(ja) .rn-handoff-copy h2, :lang(zh) .rn-handoff-copy h2 { max-width: 12em; }
+:lang(ja) .rn-hero h1 em, :lang(zh) .rn-hero h1 em { font-style: normal; }
+@media (min-width: 641px) {
+  :lang(ja) .rn-hero h1, :lang(zh) .rn-hero h1 { font-size: clamp(36px, 3.1vw, 44px); }
 }
