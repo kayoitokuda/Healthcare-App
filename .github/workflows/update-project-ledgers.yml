@@ -1,0 +1,48 @@
+name: Update Referral Navigator project logs
+
+on:
+  pull_request:
+    types: [closed]
+  deployment_status:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read
+  deployments: read
+
+concurrency:
+  group: project-ledger-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || (github.event_name == 'deployment_status' && format('deployment-{0}', github.event.deployment.id) || github.run_id) }}
+  cancel-in-progress: false
+
+jobs:
+  update-ledgers:
+    if: >-
+      (github.event_name == 'pull_request' && github.event.pull_request.merged == true) ||
+      (github.event_name == 'deployment_status' &&
+       github.event.deployment_status.state == 'success' &&
+       github.event.deployment.environment == 'Preview') ||
+      github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install Sheets API client
+        run: npm install --no-save --ignore-scripts googleapis
+
+      - name: Update spreadsheet logs
+        env:
+          GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
+          RN_SHEET_ID: ${{ vars.RN_SHEET_ID }}
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
+          GITHUB_EVENT_PATH: ${{ github.event_path }}
+          GITHUB_STEP_SUMMARY: ${{ github.step_summary }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: node scripts/update-project-ledgers.mjs
