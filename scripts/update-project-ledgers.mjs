@@ -16,18 +16,24 @@ function finish(message) {
 
 function stripMarkup(value = "") {
   return String(value)
-    .replace(/<!--[\\s\\S]*?-->/g, "")
-    .replace(/\\r/g, "")
+    .replace(/<!--[\s\S]*?-->/g, "")
+    .replace(/\r/g, "")
     .trim();
 }
 
 function field(body, label) {
-  const escaped = label.replace(/[.*+?^${}()|[\\]\\\\]/g, "\\\\$&");
-  const match = body.match(new RegExp(
-    `(?:^|\\n)\\s*#{2,3}\\s*${escaped}\\s*\\n([\\s\\S]*?)(?=\\n\\s*#{2,3}\\s|$)`,
-    "i",
-  ));
-  return stripMarkup(match?.[1] ?? "");
+  const lines = String(body ?? "").split(/\r?\n/);
+  const headingIndex = lines.findIndex((line) =>
+    /^#{2,3}\s+/.test(line) &&
+    line.replace(/^#{2,3}\s+/, "").trim().toLowerCase() === label.toLowerCase()
+  );
+  if (headingIndex < 0) return "";
+  const content = [];
+  for (let index = headingIndex + 1; index < lines.length; index += 1) {
+    if (/^\s*#{1,6}\s+/.test(lines[index])) break;
+    content.push(lines[index]);
+  }
+  return stripMarkup(content.join("\n"));
 }
 
 function pacificDate(value, includeTime = false) {
@@ -44,8 +50,8 @@ function pacificDate(value, includeTime = false) {
 
 function versionFromRef(ref, requested) {
   if (requested) return requested;
-  const match = String(ref ?? "").match(/(?:^|\\/)(v\\d+\\.\\d+\\.\\d+)(?:[-/]|$)/i)
-    ?? String(ref ?? "").match(/^(v\\d+\\.\\d+\\.\\d+)(?:[-/]|$)/i);
+  const match = String(ref ?? "").match(/(?:^|\/)(v\d+\.\d+\.\d+)(?:[-/]|$)/i)
+    ?? String(ref ?? "").match(/^(v\d+\.\d+\.\d+)(?:[-/]|$)/i);
   return match ? match[1] : "Preview";
 }
 
@@ -136,7 +142,7 @@ async function recordPreview(sheets, event) {
     });
     if (response.ok) {
       const data = await response.json();
-      commitMessage = data.commit?.message?.split("\\n")[0] ?? commitMessage;
+      commitMessage = data.commit?.message?.split("\n")[0] ?? commitMessage;
     }
   }
   const createdAt = deployment.created_at ?? status.created_at;
@@ -211,7 +217,7 @@ async function recordMergedPullRequest(sheets, event) {
   }
 
   const maxId = values.slice(1).reduce((max, row) => {
-    const match = String(row[0] ?? "").match(/^RN-(\\d+)$/);
+    const match = String(row[0] ?? "").match(/^RN-(\d+)$/);
     return match ? Math.max(max, Number(match[1])) : max;
   }, 0);
   const branch = pr.head?.ref ?? "";
