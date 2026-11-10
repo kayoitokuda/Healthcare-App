@@ -8315,3 +8315,15 @@ body { min-width: 0; }
   height: 27.2921px;
   object-fit: contain;
 }
+
+
+/* Main logomarks follow the Figma lockup without a colored tile. */
+.rn-landing .rn-brand-mark:not(.rn-brand-mark--footer),
+.brand-mark,
+.auth-brand-mark,
+.landing-header .brand-mark,
+.dashboard-shell > .topbar .brand-mark {
+  background: transparent;
+  border-radius: 0;
+  box-shadow: none;
+}
