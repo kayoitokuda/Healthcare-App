@@ -974,6 +974,8 @@ function InlineDraftPanel({
   copied,
   contextual = false,
   aiAvailable = true,
+  referral,
+  currentQuestion,
   onKindChange,
   onDraftChange,
   onCopy,
@@ -985,6 +987,8 @@ function InlineDraftPanel({
   copied: boolean;
   contextual?: boolean;
   aiAvailable?: boolean;
+  referral: Referral;
+  currentQuestion: string;
   onKindChange: (kind: "Call script" | "Portal message" | "Email") => void;
   onDraftChange: (draft: string) => void;
   onCopy: () => void;
@@ -992,37 +996,90 @@ function InlineDraftPanel({
   onClose: () => void;
 }) {
   const { language } = useAppLanguage();
+  const aiConsentKey = "rn-ai-draft-assist-enabled";
+  const [aiEnabled, setAiEnabled] = useState(() => {
+    try { return window.localStorage.getItem(aiConsentKey) === "true"; } catch { return false; }
+  });
   const [improving, setImproving] = useState(false);
   const [improveError, setImproveError] = useState("");
+  const [aiSuggestions, setAiSuggestions] = useState<string[]>([]);
+  const autoGenerationKey = useRef("");
+  const userEditedDraft = useRef(false);
 
-  async function improveWithAI() {
-    if (improving) return;
+  async function generateWithAI() {
+    if (improving || !aiAvailable) return;
     setImproving(true);
     setImproveError("");
+    setAiSuggestions([]);
     try {
       const sessionResult = await supabase?.auth.getSession();
       const accessToken = sessionResult?.data.session?.access_token;
       if (!accessToken) throw new Error("Sign in again to use AI draft assist.");
+      const referralContext = {
+        specialty: referral.specialty,
+        referringOffice: referral.from,
+        specialistOffice: referral.to,
+        updates: referral.updates.map((update) => ({
+          date: update.eventDate ?? update.date,
+          source: update.source,
+          title: update.title,
+          detail: update.detail,
+          ...(update.eventType ? { eventType: update.eventType } : {}),
+          ...(update.eventTypes?.length ? { eventTypes: update.eventTypes } : {}),
+          ...(update.milestone ? { milestone: update.milestone } : {}),
+          ...(update.milestones?.length ? { milestones: update.milestones } : {}),
+          ...(update.outcomeReason ? { outcomeReason: update.outcomeReason } : {}),
+          ...(update.outcomeSuggestion ? { outcomeSuggestion: update.outcomeSuggestion } : {}),
+        })),
+      };
       const response = await fetch("/api/script-assist", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: "Bearer " + accessToken,
         },
-        body: JSON.stringify({ kind, language, draft }),
+        body: JSON.stringify({ kind, language, currentQuestion, referral: referralContext }),
       });
       const result = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(result.error || "AI draft assist is unavailable.");
-      if (typeof result.draft !== "string" || !result.draft.trim()) {
-        throw new Error("The AI returned an empty draft. Please try again.");
+      if (typeof result.draft !== "string" || !result.draft.trim() || !Array.isArray(result.suggestions)) {
+        throw new Error("The AI response was incomplete. Please retry.");
       }
-      onDraftChange(result.draft);
+      setAiSuggestions(result.suggestions.filter((item: unknown) => typeof item === "string" && item.trim()).slice(0, 4));
+      if (!userEditedDraft.current) onDraftChange(result.draft);
     } catch (error) {
       setImproveError(error instanceof Error ? error.message : "AI draft assist is unavailable.");
     } finally {
       setImproving(false);
     }
   }
+
+  function handleAIConsentChange(enabled: boolean) {
+    setAiEnabled(enabled);
+    setAiSuggestions([]);
+    setImproveError("");
+    userEditedDraft.current = false;
+    autoGenerationKey.current = "";
+    try { window.localStorage.setItem(aiConsentKey, String(enabled)); } catch { /* Preference storage is optional. */ }
+  }
+
+  function retryAI() {
+    autoGenerationKey.current = "";
+    userEditedDraft.current = false;
+    void generateWithAI();
+  }
+
+  useEffect(() => {
+    if (!aiAvailable || !aiEnabled) {
+      autoGenerationKey.current = "";
+      return;
+    }
+    const requestKey = [referral.id, kind, currentQuestion].join(":");
+    if (autoGenerationKey.current === requestKey) return;
+    autoGenerationKey.current = requestKey;
+    userEditedDraft.current = false;
+    void generateWithAI();
+  }, [aiAvailable, aiEnabled, referral.id, kind, currentQuestion]);
 
   return (
     <section className="inline-draft section-card" aria-label="Review your follow-up draft">
@@ -1037,8 +1094,8 @@ function InlineDraftPanel({
       </div>
       <p className="modal-intro">
         {contextual
-          ? "Your saved update is included as context. Check the office and wording before you contact anyone. Nothing is sent from here."
-          : "Edit this draft for your situation. Nothing is sent from here."}
+          ? "Your saved update is included as context. Check the office and wording before you contact anyone. Nothing is sent to an office from here."
+          : "Edit this draft for your situation. Nothing is sent to an office from here."}
       </p>
       <div className="segmented" role="group" aria-label="Draft format">
         {(["Call script", "Portal message", "Email"] as const).map((option) => (
@@ -1053,25 +1110,53 @@ function InlineDraftPanel({
           </button>
         ))}
       </div>
+      {aiAvailable ? (
+        <div className="helper-note ai-disclosure">
+          <label className="ai-consent-toggle">
+            <input
+              type="checkbox"
+              checked={aiEnabled}
+              onChange={(event) => handleAIConsentChange(event.target.checked)}
+            />
+            <span>{translateText("Automatically use AI suggestions for this referral", language)}</span>
+          </label>
+          <p>{translateText("When enabled, AI uses this referral’s office names, specialty, and logged updates to suggest questions and prepare a draft. That context is sent to OpenAI. Remove names, birth dates, record or member numbers, diagnosis details, and other identifying health information from updates first. Do not use real patient information unless your organization has approved this AI service.", language)}</p>
+        </div>
+      ) : (
+        <p className="helper-note ai-disclosure">{translateText("Create a free account to use AI draft suggestions.", language)}</p>
+      )}
+      {aiAvailable && aiEnabled && improving && (
+        <p className="helper-note" role="status" aria-live="polite">
+          <Sparkles size={15} /> {translateText("Reviewing this referral’s history and preparing suggestions…", language)}
+        </p>
+      )}
+      {aiAvailable && aiEnabled && aiSuggestions.length > 0 && (
+        <div className="helper-note ai-suggestions" aria-live="polite">
+          <strong>{translateText("Suggested topics to ask about", language)}</strong>
+          <ul>{aiSuggestions.map((suggestion, index) => <li key={index}>{suggestion}</li>)}</ul>
+        </div>
+      )}
       <label>
         {kind} draft
         <textarea
           className="draft-area"
           value={draft}
-          onChange={(event) => onDraftChange(event.target.value)}
+          onChange={(event) => {
+            userEditedDraft.current = true;
+            onDraftChange(event.target.value);
+          }}
           rows={6}
         />
       </label>
-      {aiAvailable ? <p className="helper-note ai-disclosure">
-        {translateText("When you choose AI improvement, this draft is sent to OpenAI to rewrite. Remove names, birth dates, record or member numbers, diagnosis details, and other identifying health information first. Do not use with real patient information unless your organization has approved this AI service.", language)}
-      </p> : (
-        <p className="helper-note ai-disclosure">{translateText("Create a free account to improve drafts with AI.", language)}</p>
+      {improveError && (
+        <div className="helper-note" role="status" aria-live="polite">
+          <span>{improveError}</span>
+          {aiEnabled && <button className="text-button" type="button" onClick={retryAI} disabled={improving}>
+            {translateText("Retry AI suggestions", language)}
+          </button>}
+        </div>
       )}
-      {improveError && <p className="helper-note" role="status" aria-live="polite">{improveError}</p>}
       <div className="inline-draft-actions">
-        {aiAvailable && <button className="secondary-button" type="button" onClick={improveWithAI} disabled={improving}>
-          <Sparkles size={16} /> {improving ? translateText("Improving draft…", language) : translateText("Improve with AI", language)}
-        </button>}
         <button className="primary-button" type="button" onClick={onCopy}>
           {copied ? <Check size={16} /> : <Copy size={16} />}
           {copied ? "Copied to clipboard" : "Copy draft to review"}
@@ -1142,6 +1227,7 @@ function ReferralNavigatorApp({ guest }: { guest?: GuestControls } = {}) {
     "Call script" | "Portal message" | "Email"
   >("Call script");
   const [messageDraft, setMessageDraft] = useState("");
+  const [messageQuestion, setMessageQuestion] = useState("");
   const [copied, setCopied] = useState(false);
   const [newSpecialty, setNewSpecialty] = useState("");
   const [newFrom, setNewFrom] = useState("");
@@ -1477,6 +1563,7 @@ function ReferralNavigatorApp({ guest }: { guest?: GuestControls } = {}) {
   function startToolkitDraft(recipient: string, question: string, target: Referral) {
     setSelected(target.id);
     setMessageKind("Call script");
+    setMessageQuestion(question);
     const localizedRecipient = recipient === "your health plan" && language !== "en"
       ? translateText(recipient, language)
       : recipient;
@@ -1520,6 +1607,7 @@ function ReferralNavigatorApp({ guest }: { guest?: GuestControls } = {}) {
             : sent
               ? `Could you confirm whether you received my ${target.specialty} referral?`
               : `Could you confirm whether you sent my ${target.specialty} referral?`;
+    setMessageQuestion(question);
     const localizedRecipient = recipient === "your health plan" && language !== "en"
       ? translateText(recipient, language)
       : recipient;
@@ -1847,7 +1935,7 @@ function ReferralNavigatorApp({ guest }: { guest?: GuestControls } = {}) {
                   </button>
                 </div>
                 {inlineDraftId === referral.id && inlineDraftPlacement === "next-step" && (
-                  <InlineDraftPanel aiAvailable={!isGuest}
+                  <InlineDraftPanel aiAvailable={!isGuest} referral={referral} currentQuestion={messageQuestion}
                     kind={messageKind}
                     draft={messageDraft}
                     copied={copied}
@@ -1901,7 +1989,7 @@ function ReferralNavigatorApp({ guest }: { guest?: GuestControls } = {}) {
                       {inlineDraftId === referral.id &&
                         inlineDraftPlacement === "care-step" &&
                         inlineDraftContextId === update.id && (
-                          <InlineDraftPanel aiAvailable={!isGuest}
+                          <InlineDraftPanel aiAvailable={!isGuest} referral={referral} currentQuestion={messageQuestion}
                             kind={messageKind}
                             draft={messageDraft}
                             copied={copied}
@@ -2331,7 +2419,7 @@ function ReferralNavigatorApp({ guest }: { guest?: GuestControls } = {}) {
                       <span><strong>{action.title}</strong><small>{item.specialty} · {action.detail}</small></span>
                       <ArrowRight size={16} aria-hidden="true" />
                     </button>
-                    {inlineDraftId === item.id && inlineDraftPlacement === "next-step" && <InlineDraftPanel aiAvailable={!isGuest} kind={messageKind} draft={messageDraft} copied={copied} contextual={inlineDraftContextId !== null} onKindChange={(kind) => startMessage(kind, item, latestItemEvent?.id, "next-step")} onDraftChange={setMessageDraft} onCopy={copyDraft} onContact={() => logContactAttempt(item)} onClose={() => setInlineDraftId(null)} />}
+                    {inlineDraftId === item.id && inlineDraftPlacement === "next-step" && <InlineDraftPanel aiAvailable={!isGuest} referral={item} currentQuestion={messageQuestion} kind={messageKind} draft={messageDraft} copied={copied} contextual={inlineDraftContextId !== null} onKindChange={(kind) => startMessage(kind, item, latestItemEvent?.id, "next-step")} onDraftChange={setMessageDraft} onCopy={copyDraft} onContact={() => logContactAttempt(item)} onClose={() => setInlineDraftId(null)} />}
                   </div>;
                 })}
                 {activeReferrals.length > 2 && <button type="button" className="mobile-overview-view-next" onClick={() => navigateDashboard("next-steps")}>All next steps <ArrowRight size={15} aria-hidden="true" /></button>}
@@ -2447,7 +2535,7 @@ function ReferralNavigatorApp({ guest }: { guest?: GuestControls } = {}) {
             {nextReferral ? <button className="primary-button" onClick={() => startMessage("Call script", nextReferral)}><Phone size={16} /> Prepare a call script</button> : <button className="primary-button" onClick={openNewReferral}><Plus size={16} /> Add a referral</button>}
             <button className="text-button" onClick={() => navigateDashboard("next-steps")}>All next steps <ArrowRight size={15} /></button>
           </div>
-          {nextReferral && inlineDraftId === nextReferral.id && inlineDraftPlacement === "next-step" && <div className="overview-inline-draft"><InlineDraftPanel aiAvailable={!isGuest} kind={messageKind} draft={messageDraft} copied={copied} contextual={inlineDraftContextId !== null} onKindChange={(kind) => startMessage(kind, nextReferral, latestReferralEvent?.id ?? null, "next-step")} onDraftChange={setMessageDraft} onCopy={copyDraft} onContact={() => logContactAttempt(nextReferral)} onClose={() => setInlineDraftId(null)} /></div>}
+          {nextReferral && inlineDraftId === nextReferral.id && inlineDraftPlacement === "next-step" && <div className="overview-inline-draft"><InlineDraftPanel aiAvailable={!isGuest} referral={nextReferral} currentQuestion={messageQuestion} kind={messageKind} draft={messageDraft} copied={copied} contextual={inlineDraftContextId !== null} onKindChange={(kind) => startMessage(kind, nextReferral, latestReferralEvent?.id ?? null, "next-step")} onDraftChange={setMessageDraft} onCopy={copyDraft} onContact={() => logContactAttempt(nextReferral)} onClose={() => setInlineDraftId(null)} /></div>}
         </section>
         </>}
 
@@ -2541,7 +2629,7 @@ function ReferralNavigatorApp({ guest }: { guest?: GuestControls } = {}) {
                         <Phone size={16} /> Prepare a call script
                       </button>
                       {inlineDraftId === r.id && (
-                        <InlineDraftPanel aiAvailable={!isGuest}
+                        <InlineDraftPanel aiAvailable={!isGuest} referral={r} currentQuestion={messageQuestion}
                           kind={messageKind}
                           draft={messageDraft}
                           copied={copied}
@@ -2579,7 +2667,7 @@ function ReferralNavigatorApp({ guest }: { guest?: GuestControls } = {}) {
             return <article className="next-step-card" key={item.id}>
               <div className="next-step-card-main"><span className="guide-icon"><MessageCircle size={18} /></span><div><p className="eyebrow">{item.specialty}</p><h2>{action.title}</h2><p>{action.detail}</p><small>Based on the updates you recorded. Confirm details with the relevant office.</small></div></div>
               <div className="next-step-card-actions"><button className="primary-button" onClick={() => startMessage("Call script", item, latestItemEvent?.id, "next-step")}><Phone size={16} /> Prepare a call script</button><button className="secondary-button" onClick={() => { setDashboardPage("referrals"); setSelected(item.id); }}>Open referral <ArrowRight size={15} /></button></div>
-              {inlineDraftId === item.id && inlineDraftPlacement === "next-step" && <InlineDraftPanel aiAvailable={!isGuest} kind={messageKind} draft={messageDraft} copied={copied} contextual={inlineDraftContextId !== null} onKindChange={(kind) => startMessage(kind, item, latestItemEvent?.id, "next-step")} onDraftChange={setMessageDraft} onCopy={copyDraft} onContact={() => logContactAttempt(item)} onClose={() => setInlineDraftId(null)} />}
+              {inlineDraftId === item.id && inlineDraftPlacement === "next-step" && <InlineDraftPanel aiAvailable={!isGuest} referral={item} currentQuestion={messageQuestion} kind={messageKind} draft={messageDraft} copied={copied} contextual={inlineDraftContextId !== null} onKindChange={(kind) => startMessage(kind, item, latestItemEvent?.id, "next-step")} onDraftChange={setMessageDraft} onCopy={copyDraft} onContact={() => logContactAttempt(item)} onClose={() => setInlineDraftId(null)} />}
             </article>;
           })}
         </section>}

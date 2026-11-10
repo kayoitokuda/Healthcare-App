@@ -698,6 +698,18 @@ const rows: Array<[string, string, string, string, string]> = [
   ["The referral you started on this device will move into your new account.", "この端末で始めた紹介の記録は、新しいアカウントに移されます。", "你在此设备上开始的转诊记录会转入新账户。", "La referencia que empezaste en este dispositivo pasará a tu nueva cuenta.", "Giấy giới thiệu bạn bắt đầu trên thiết bị này sẽ được chuyển vào tài khoản mới."],
   ["The referral you started on this device will move into your account when you sign in.", "この端末で始めた紹介の記録は、サインインするとアカウントに移されます。", "登录后，你在此设备上开始的转诊记录会转入你的账户。", "La referencia que empezaste en este dispositivo pasará a tu cuenta cuando inicies sesión.", "Giấy giới thiệu bạn bắt đầu trên thiết bị này sẽ được chuyển vào tài khoản khi bạn đăng nhập."],
   ["Only you can see the referrals you save. You can delete them at any time.", "保存した紹介の記録はあなただけが見られます。いつでも削除できます。", "你保存的转诊记录只有你能看到，并可随时删除。", "Solo tú puedes ver las referencias que guardas. Puedes borrarlas cuando quieras.", "Chỉ bạn xem được các giấy giới thiệu đã lưu. Bạn có thể xóa bất cứ lúc nào."],
+  ["Automatically use AI suggestions for this referral", "この紹介についてAIの提案を自動で使う", "自动使用 AI 为此转诊提供建议", "Usar sugerencias de IA automáticamente para esta referencia", "Tự động dùng gợi ý AI cho giấy giới thiệu này"],
+  ["When enabled, AI uses this referral’s office names, specialty, and logged updates to suggest questions and prepare a draft. That context is sent to OpenAI. Remove names, birth dates, record or member numbers, diagnosis details, and other identifying health information from updates first. Do not use real patient information unless your organization has approved this AI service.",
+    "有効にすると、AIはこの紹介の医療機関名、専門分野、記録された更新内容を使って質問を提案し、下書きを作成します。その情報はOpenAIに送信されます。更新内容から氏名、生年月日、記録番号や会員番号、診断の詳細など、本人を特定できる健康情報を先に削除してください。組織がこのAIサービスを承認していない場合は、実際の患者情報を使用しないでください。",
+    "启用后，AI 会使用此转诊的诊所名称、专科和记录的更新内容来建议问题并准备草稿。这些信息会发送给 OpenAI。请先从更新中删除姓名、出生日期、病历或会员编号、诊断详情及其他可识别健康信息。除非所在机构已批准此 AI 服务，否则请勿使用真实患者信息。",
+    "Al activarla, la IA usa los nombres de los consultorios, la especialidad y las actualizaciones registradas de esta referencia para sugerir preguntas y preparar un borrador. Ese contexto se envía a OpenAI. Primero elimina de las actualizaciones nombres, fechas de nacimiento, números de expediente o afiliación, diagnósticos y otros datos de salud identificables. No uses información real de pacientes salvo que tu organización haya aprobado este servicio de IA.",
+    "Khi bật, AI dùng tên phòng khám, chuyên khoa và các cập nhật đã ghi của giấy giới thiệu này để gợi ý câu hỏi và chuẩn bị bản nháp. Thông tin đó được gửi đến OpenAI. Trước tiên, hãy xóa tên, ngày sinh, số hồ sơ hoặc số thành viên, chi tiết chẩn đoán và thông tin sức khỏe có thể nhận dạng khác khỏi các cập nhật. Không dùng thông tin bệnh nhân thực nếu tổ chức chưa phê duyệt dịch vụ AI này."
+  ],
+  ["Reviewing this referral’s history and preparing suggestions…", "この紹介の履歴を確認して提案を準備しています…", "正在查看此转诊记录并准备建议…", "Revisando el historial de esta referencia y preparando sugerencias…", "Đang xem lịch sử giấy giới thiệu và chuẩn bị gợi ý…"],
+  ["Suggested topics to ask about", "確認する質問の候補", "建议询问的事项", "Temas sugeridos para consultar", "Chủ đề nên hỏi"],
+  ["Retry AI suggestions", "AIの提案を再試行", "重试 AI 建议", "Reintentar sugerencias de IA", "Thử lại gợi ý AI"],
+  ["Create a free account to use AI draft suggestions.", "AIの下書き提案を使うには無料アカウントを作成してください。", "创建免费账户以使用 AI 草稿建议。", "Crea una cuenta gratis para usar sugerencias de borradores con IA.", "Tạo tài khoản miễn phí để dùng gợi ý bản nháp AI."],
+
 ];
 
 const dictionary = Object.fromEntries(
