@@ -122,7 +122,7 @@ async function recordPreview(sheets, event) {
     return;
   }
 
-  const rows = await readValues(sheets, "'Version Links'!A1:M200");
+  const rows = await readValues(sheets, "'Version Links'!A1:M111");
   const headers = rows[0] ?? [];
   const expected = ["Version", "Build / purpose", "Branch", "Branch / production URL (changes over time)", "Fixed deployment URL", "Other aliases", "Build created (Pacific)", "Vercel state", "Commit SHA", "Commit message", "Notes", "Vercel details", "Recorded on"];
   if (expected.some((header, index) => headers[index] !== header)) {
@@ -185,7 +185,7 @@ async function recordMergedPullRequest(sheets, event) {
     finish("Skipped: pull request was closed without merging.");
     return;
   }
-  const values = await readValues(sheets, "'Decision Log'!A1:K200");
+  const values = await readValues(sheets, "'Decision Log'!A1:K1021");
   const headers = values[0] ?? [];
   const expected = ["Decision ID", "Decision date / precision", "Version / phase", "Area", "Decision / direction", "Reason / problem", "Status", "Source / reference", "Evidence / uncertainty", "Validation / follow-up", "Logged on"];
   if (expected.some((header, index) => headers[index] !== header)) {
