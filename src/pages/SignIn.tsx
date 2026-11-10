@@ -16,7 +16,7 @@ function signupProgress(step: number, language: AppLanguage) {
   const name = signupStepNames[language][step];
   return {
     en: `Step ${current} of 3 · ${name}`,
-    ja: `全3ステップ中 ${current} · ${name}`,
+    ja: `ステップ ${current}/3 · ${name}`,
     zh: `第 ${current} 步，共 3 步 · ${name}`,
     es: `Paso ${current} de 3 · ${name}`,
     vi: `Bước ${current} trên 3 · ${name}`,
@@ -57,9 +57,13 @@ function localizeAuthError(message: string, language: AppLanguage) {
 export default function SignIn({
   initialMode = "sign-in",
   onBack,
+  backLabel = "← Back to home",
+  hasGuestReferrals = false,
 }: {
   initialMode?: "sign-in" | "sign-up";
   onBack?: () => void;
+  backLabel?: string;
+  hasGuestReferrals?: boolean;
 }) {
   const { signIn, signUp, configured } = useAuth();
   const { language } = useAppLanguage();
@@ -75,9 +79,34 @@ export default function SignIn({
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
+  // Validation is rendered in the page (not the browser's bubble) so it is
+  // translated with the rest of the screen and announced to screen readers.
+  const [fieldError, setFieldError] = useState<{ field: string; message: string } | null>(null);
+
+  function fieldProps(field: "name" | "email" | "password") {
+    const invalid = fieldError?.field === field;
+    return {
+      "aria-invalid": invalid || undefined,
+      "aria-describedby": [invalid ? `${field}-error` : "", field === "password" && mode === "sign-up" ? "signup-password-hint" : ""].filter(Boolean).join(" ") || undefined,
+      onInput: () => setFieldError((current) => (current?.field === field ? null : current)),
+    };
+  }
+
+  function errorFor(field: string) {
+    return fieldError?.field === field ? (
+      <span className="auth-field-error" id={`${field}-error`}>{translateText(fieldError.message, language)}</span>
+    ) : null;
+  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const invalidInput = formRef.current?.querySelector<HTMLInputElement>("input:invalid");
+    if (invalidInput) {
+      setFieldError({ field: invalidInput.name, message: validationMessage(invalidInput) });
+      invalidInput.focus();
+      return;
+    }
+    setFieldError(null);
     if (mode === "sign-up" && signupStep < 2) {
       setSignupStep(signupStep + 1);
       return;
@@ -107,6 +136,7 @@ export default function SignIn({
   function changeMode(nextMode: "sign-in" | "sign-up") {
     setMode(nextMode);
     setSignupStep(0);
+    setFieldError(null);
     setError("");
     setNotice("");
   }
@@ -123,7 +153,7 @@ export default function SignIn({
         </div>
         {onBack && (
           <button className="auth-back" type="button" onClick={onBack}>
-            {translateText("← Back to home", language)}
+            {translateText(backLabel, language)}
           </button>
         )}
         <p className="auth-eyebrow">{translateText("YOUR REFERRAL, ORGANIZED", language)}</p>
@@ -132,7 +162,7 @@ export default function SignIn({
           {translateText(
             mode === "sign-in"
               ? "Sign in to keep your referral details and updates together."
-              : "Create an account to save your referral details securely for your own use.",
+              : "Create a free account to keep your referrals and open them on any device.",
             language,
           )}
         </p>
@@ -145,57 +175,60 @@ export default function SignIn({
         {error && <p className="auth-alert" role="alert">{error}</p>}
         {notice && <p className="auth-notice" role="status">{translateText(notice, language)}</p>}
 
-        {mode === "sign-up" && (
-          <p role="status">{signupProgress(signupStep, language)}</p>
+        {hasGuestReferrals && (
+          <p className="auth-notice auth-guest-note">
+            {translateText(
+              mode === "sign-up"
+                ? "The referral you started on this device will move into your new account."
+                : "The referral you started on this device will move into your account when you sign in.",
+              language,
+            )}
+          </p>
         )}
-        <form ref={formRef} className="auth-form" onSubmit={handleSubmit} aria-busy={busy}>
+        {mode === "sign-up" && (
+          <p className="auth-progress" role="status">{signupProgress(signupStep, language)}</p>
+        )}
+        <form ref={formRef} className="auth-form" onSubmit={handleSubmit} aria-busy={busy} noValidate>
           {mode === "sign-up" && signupStep === 0 && (
             <label>
               {translateText("Name", language)}
               <input
+                name="name"
                 autoComplete="name"
                 value={fullName}
-                onChange={(event) => {
-                  event.currentTarget.setCustomValidity("");
-                  setFullName(event.target.value);
-                }}
-                onInput={(event) => event.currentTarget.setCustomValidity("")}
-                onInvalid={(event) => event.currentTarget.setCustomValidity(translateText(validationMessage(event.currentTarget), language))}
+                onChange={(event) => setFullName(event.target.value)}
+                {...fieldProps("name")}
                 required
               />
+              {errorFor("name")}
             </label>
           )}
           {(mode === "sign-in" || signupStep === 1) && <label>
             {translateText("Email", language)}
             <input
+              name="email"
               autoComplete="email"
               type="email"
               value={email}
-              onChange={(event) => {
-                event.currentTarget.setCustomValidity("");
-                setEmail(event.target.value);
-              }}
-              onInput={(event) => event.currentTarget.setCustomValidity("")}
-              onInvalid={(event) => event.currentTarget.setCustomValidity(translateText(validationMessage(event.currentTarget), language))}
+              onChange={(event) => setEmail(event.target.value)}
+              {...fieldProps("email")}
               required
             />
+            {errorFor("email")}
           </label>}
           {(mode === "sign-in" || signupStep === 2) && <label>
             {translateText("Password", language)}
             <input
               autoComplete={mode === "sign-in" ? "current-password" : "new-password"}
               type="password"
+              name="password"
               minLength={mode === "sign-up" ? 8 : undefined}
-              aria-describedby={mode === "sign-up" ? "signup-password-hint" : undefined}
               value={password}
-              onChange={(event) => {
-                event.currentTarget.setCustomValidity("");
-                setPassword(event.target.value);
-              }}
-              onInput={(event) => event.currentTarget.setCustomValidity("")}
-              onInvalid={(event) => event.currentTarget.setCustomValidity(translateText(validationMessage(event.currentTarget), language))}
+              onChange={(event) => setPassword(event.target.value)}
+              {...fieldProps("password")}
               required
             />
+            {errorFor("password")}
             {mode === "sign-up" && <small id="signup-password-hint">{translateText("Use at least 8 characters.", language)}</small>}
           </label>}
           <button className="auth-submit" type="submit" disabled={busy || !configured} aria-busy={busy}>
@@ -227,7 +260,7 @@ export default function SignIn({
 
         <p className="auth-privacy">
           <ShieldCheck size={15} />
-          {translateText("Updates are entered by you. Referral status isn’t checked automatically.", language)}
+          {translateText("Only you can see the referrals you save. You can delete them at any time.", language)}
         </p>
       </section>
     </main>
