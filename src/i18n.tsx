@@ -623,6 +623,15 @@ const rows: Array<[string, string, string, string, string]> = [
   ["Explore","見る","探索","Explorar","Khám phá"],
   ["What you can track","記録できること","可跟踪的内容","Qué puedes registrar","Những gì bạn có thể theo dõi"],
   ["Common questions","よくある質問","常见问题","Preguntas frecuentes","Câu hỏi thường gặp"],
+  ["Improve with AI", "AIで文章を改善", "用 AI 改进文稿", "Mejorar con IA", "Cải thiện bằng AI"],
+  ["Improving draft…", "下書きを改善中…", "正在改进文稿…", "Mejorando el borrador…", "Đang cải thiện bản nháp…"],
+  ["When you choose AI improvement, this draft is sent to OpenAI to rewrite. Remove names, birth dates, record or member numbers, diagnosis details, and other identifying health information first. Do not use with real patient information unless your organization has approved this AI service.",
+    "AIでの改善を選択すると、この下書きはOpenAIに送信され、書き換えられます。先に氏名、生年月日、記録番号や会員番号、診断の詳細など、本人を特定できる健康情報を削除してください。組織がこのAIサービスを承認していない場合は、実際の患者情報に使用しないでください。",
+    "选择 AI 改进后，此草稿会发送给 OpenAI 进行改写。请先删除姓名、出生日期、病历或会员编号、诊断详情及其他可识别健康信息。除非所在机构已批准此 AI 服务，否则请勿用于真实患者信息。",
+    "Al elegir la mejora con IA, este borrador se envía a OpenAI para reescribirlo. Primero elimina nombres, fechas de nacimiento, números de expediente o afiliación, diagnósticos y otros datos de salud identificables. No lo uses con información real de pacientes salvo que tu organización haya aprobado este servicio de IA.",
+    "Khi chọn cải thiện bằng AI, bản nháp này sẽ được gửi đến OpenAI để viết lại. Trước tiên, hãy xóa tên, ngày sinh, số hồ sơ hoặc số thành viên, chi tiết chẩn đoán và thông tin sức khỏe có thể nhận dạng khác. Không dùng với thông tin bệnh nhân thực nếu tổ chức của bạn chưa phê duyệt dịch vụ AI này."
+  ],
+
 ];
 
 const dictionary = Object.fromEntries(

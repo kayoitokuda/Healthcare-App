@@ -32,6 +32,7 @@ import {
   Pencil,
   ShieldCheck,
   Settings,
+  Sparkles,
   Stethoscope,
   Trash2,
   X,
@@ -974,6 +975,39 @@ function InlineDraftPanel({
   onContact: () => void;
   onClose: () => void;
 }) {
+  const { language } = useAppLanguage();
+  const [improving, setImproving] = useState(false);
+  const [improveError, setImproveError] = useState("");
+
+  async function improveWithAI() {
+    if (improving) return;
+    setImproving(true);
+    setImproveError("");
+    try {
+      const sessionResult = await supabase?.auth.getSession();
+      const accessToken = sessionResult?.data.session?.access_token;
+      if (!accessToken) throw new Error("Sign in again to use AI draft assist.");
+      const response = await fetch("/api/script-assist", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + accessToken,
+        },
+        body: JSON.stringify({ kind, language, draft }),
+      });
+      const result = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(result.error || "AI draft assist is unavailable.");
+      if (typeof result.draft !== "string" || !result.draft.trim()) {
+        throw new Error("The AI returned an empty draft. Please try again.");
+      }
+      onDraftChange(result.draft);
+    } catch (error) {
+      setImproveError(error instanceof Error ? error.message : "AI draft assist is unavailable.");
+    } finally {
+      setImproving(false);
+    }
+  }
+
   return (
     <section className="inline-draft section-card" aria-label="Review your follow-up draft">
       <div className="section-title-row">
@@ -1012,7 +1046,14 @@ function InlineDraftPanel({
           rows={6}
         />
       </label>
+      <p className="helper-note ai-disclosure">
+        {translateText("When you choose AI improvement, this draft is sent to OpenAI to rewrite. Remove names, birth dates, record or member numbers, diagnosis details, and other identifying health information first. Do not use with real patient information unless your organization has approved this AI service.", language)}
+      </p>
+      {improveError && <p className="helper-note" role="status" aria-live="polite">{improveError}</p>}
       <div className="inline-draft-actions">
+        <button className="secondary-button" type="button" onClick={improveWithAI} disabled={improving}>
+          <Sparkles size={16} /> {improving ? translateText("Improving draft…", language) : translateText("Improve with AI", language)}
+        </button>
         <button className="primary-button" type="button" onClick={onCopy}>
           {copied ? <Check size={16} /> : <Copy size={16} />}
           {copied ? "Copied to clipboard" : "Copy draft to review"}
