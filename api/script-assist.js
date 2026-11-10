@@ -113,14 +113,16 @@ export default async function handler(request, response) {
       const requestId = aiResponse.headers.get("x-request-id") || "";
       console.error("AI referral assist upstream error", aiResponse.status, safeCode || "no_code", requestId);
 
+      const creditUnavailable = ["insufficient_quota", "billing_hard_limit_reached", "credit_balance_exhausted"].includes(safeCode);
       let message = "OpenAI returned an error. Try again in a moment.";
       if (aiResponse.status === 401) message = "OpenAI rejected the API key (401). Check OPENAI_API_KEY in the Vercel Preview environment.";
       else if (aiResponse.status === 403) message = "This API key does not have permission to use the selected OpenAI model or project.";
-      else if (aiResponse.status === 429 && ["insufficient_quota", "billing_hard_limit_reached"].includes(safeCode)) message = "OpenAI API billing or usage limits are blocking requests. Check billing and project limits in the OpenAI Platform.";
+      else if (aiResponse.status === 429 && creditUnavailable) message = "Your OpenAI API credit balance or usage limit is blocking requests. Add API credits or adjust the project budget in the OpenAI Platform, then try again.";
       else if (aiResponse.status === 429) message = "OpenAI rate-limited this request. Wait a moment and retry.";
       else if (aiResponse.status === 404 || safeCode === "model_not_found") message = "The selected OpenAI model is unavailable to this API project.";
       else if (aiResponse.status === 400) message = "OpenAI rejected the request format (400). Retry once; if it repeats, share the error code shown in Vercel logs.";
-      return response.status(502).json({ error: message, errorCode: safeCode || "openai_http_" + aiResponse.status });
+      const retryable = (aiResponse.status === 429 && !creditUnavailable) || aiResponse.status >= 500;
+      return response.status(502).json({ error: message, errorCode: safeCode || "openai_http_" + aiResponse.status, retryable });
     }
 
     const outputText = typeof result.output_text === "string"
